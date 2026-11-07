@@ -1,0 +1,23 @@
+{
+  "title": "Seat a deep-well plate in a spring-tab deck nest, pushing the tab back with the plate's own end",
+  "category": "Impact on jobs",
+  "keywords": [
+    "lab automation",
+    "liquid handler",
+    "deck",
+    "plate nest",
+    "spring tab",
+    "microplate",
+    "SBS",
+    "layout lots"
+  ],
+  "instruction": "Set the plate in the nest on the deck.",
+  "context": "Medical and clinical laboratory technicians and biological technicians load plates onto liquid-handler decks whose nests hold each plate with a spring tab that pushes it into a fixed corner. Lowered straight down, a plate lands on the tab and sits proud, and the pipetting head hits it. Unlike TK-T3XFRM (hold a clip's thumb tab open), TK-GPFKUG (hold a pusher back) and TK-7FTC8C (snap onto a DIN rail latch), one hand pushes the tab back with the plate's own end and the tab seats it.",
+  "setup": "Positions are from the robot's view: 'in front' is the distance ahead of the line through the two arm bases, 'right' is measured from the midline halfway between the bases, heights are above the table top. Nest (fixed, grey painted aluminium): a deck plate 161 x 101 x 4 mm, from 25.5 to 41.6 cm in front of the arm bases, centred 12.0 cm right of the midline; its top (the nest floor) is 4 mm high. On it stand walls 10 mm tall: a datum wall 10 mm thick across the near end (25.5 to 26.5 cm in front), and two side walls 6 mm thick along the sides from 26.5 to 41.6 cm, their inner faces 89 mm apart (1.5 mm play a side for the plate). Spring tab (black steel): an 8 mm thick, 30 mm wide post standing on the floor 35 mm tall (25 mm above the walls), centred across the pocket, its pocket face 38.9 cm in front of the arm bases at rest, so the pocket from the datum wall to the tab is 124 mm long, 4 mm shorter than the plate. It slides 15 mm away from the pocket and presses back toward the datum wall with 1.5 N at its stop, rising to 2.4 N at full travel. Behind it, a grey tab housing 12 x 40 x 35 mm from 40.4 to 41.6 cm. Deep-well plate (loose, white polypropylene, 80 g): 128 x 86 x 44 mm (SBS footprint), lying flat on the table. Lot A (the screenshot): long side front to back, centred 20.0 cm in front of the arm bases and 21.0 cm right of the midline, to the right of the nest. Lot B: long side front to back, centred 18.0 cm in front and 2.0 cm right, on the other side of the nest. Lot C: turned a quarter turn (long side left to right), centred 16.5 cm in front and 22.5 cm right. Nothing else is on the table. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Measure with a ruler and feeler gauge. Seated: both ends' undersides (all four bottom corners) within 1 mm of the nest floor, the plate between the side walls, its near end within 1 mm of the datum wall, and the tab held back at least 2 mm from its stop by the plate (it is pressing on the plate). Released: no part of either gripper within 5 mm of the plate. 1.0 per trial when the plate is seated, released and not moving. Otherwise 0, pass/fail: for example the plate resting on the tab (proud), one end raised more than 1 mm, stopped short of the datum wall, hanging above the floor between the tab and the datum wall, still in the gripper, or anywhere else. The plate's A1 corner is not scored (the model plate has none). Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "900 steps (45 seconds at 20 Hz)",
+  "reset_notes": "Lift the plate out (the tab springs back to its stop) and lay it flat on the table at the lot's start: lot A and lot B long side front to back, lot C turned a quarter turn. Nothing is consumed. Run with -E object_jitter=0 and --epochs 3.",
+  "fidelity": "Rigid boxes. The tab is a sliding post with a preloaded spring and square edges, no lead-in chamfer, and taller than many real tabs; the plate is a solid box with no wells, skirt or A1 corner, so orientation is not checked. Friction and masses are simulator values. The three lots stop a single fixed habit or one replayed layout, not a memorised replay of all three.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B and C); demo: 1.0 in each lot",
+  "media": "M-VTUK7Z"
+}
