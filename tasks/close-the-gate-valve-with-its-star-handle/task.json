@@ -1,0 +1,24 @@
+{
+  "title": "Close a gate valve fully by its star handle, one spoke at a time under a pipe rack",
+  "category": "Impact on jobs",
+  "keywords": [
+    "valve",
+    "isolation",
+    "gate valve",
+    "star handle",
+    "handwheel",
+    "regrasp",
+    "multi-turn",
+    "pipe rack",
+    "plant room"
+  ],
+  "instruction": "Close the gate valve fully by its star handle.",
+  "context": "Plant operators, plumbers and maintenance technicians shut isolation valves before work on a line, and in plant rooms the valve often sits under a pipe rack, so the handle can only be reached on the near side and is turned in strokes. Unlike TK-TDAY2R (its ability is noticing a hidden side effect of opening a handwheel valve) and TK-HFPKM7 (crank a grinder three turns by its knob), this task turns a handle past one stroke's range by letting go and taking the next spoke.",
+  "setup": "Positions are from the robot's view: 'in front' is the distance ahead of the line through the two arm bases, 'right' and 'left' are measured from the midline halfway between the bases, heights are above the table top. Angles round the valve's axis are seen from above, 0 degrees pointing straight ahead (away from the robot) and 90 degrees to the robot's left. Valve (fixed to the table, cast brass): its vertical stem axis 30.0 cm in front of the arm bases and 12.0 cm right of the midline. Body: a 60 mm cube on the table, square to the table, with a 35 mm diameter pipe stub 20 mm long on its left and right faces (axis 30 mm high). Bonnet and stem: a steel cylinder 20 mm across from 60 to 94 mm high. Star handle (black cast iron, 150 g): a hub 32 mm across and 16 mm tall centred 100 mm high, and two crossed square bars 150 x 14 x 12 mm (94 to 106 mm high) forming four spokes, which start pointing at 0, 90, 180 and 270 degrees; an upright knob 14 mm across and 24 mm tall stands on each spoke end, its centre 68 mm from the axis (106 to 130 mm high). The knob on the 270-degree spoke (the robot's right) is red, the others black. The handle turns flat about the stem axis: clockwise seen from above closes the valve, with a light drag (0.03 N m at one radian per second), 1.5 turns from the start (fully open; it cannot turn the other way) to a hard closed stop, where the red knob is at 90 degrees, over a white plastic tab 12 x 12 x 3 mm lying on the table 68 mm from the axis. Position indicator, on the valve's front: a white post 6 x 6 mm and 85 mm tall, 43 mm in front of the stem axis, with a green band from 69 to 81 mm high (open) and a red band from 24 to 36 mm (shut), and a black pointer 14 x 4 x 4 mm on its front face that the stem moves down 30 mm per turn closed, from the green band's middle (75 mm) at the start to the red band's middle (30 mm) at the stop. Pipe rack (fixed, grey painted steel): two pipes 44 mm across and 300 mm long running left to right, side by side, centred 35.2 and 39.6 cm in front of the arm bases, from 27.0 cm right of the midline to 3.0 cm left of it, their undersides 135 mm high (5 mm above the knobs' tops), on two 30 x 30 mm posts from the table to the pipes, 37.4 cm in front of the arm bases at 25.5 cm right and 1.5 cm left of the midline. The pipes cover the far part of the handle's circle. Nothing else is on the table.",
+  "scoring": "Turn: how far the handle has been turned clockwise from its starting, fully open position, read from the indicator pointer's drop below its start (30 mm per turn, 45 mm at the stop) or counted from the video. Judged at the end of the trial. 1.0: the handle is at its closed stop or within 5 degrees of it (pointer in the red band, within 0.4 mm of its lowest point; the red knob over the white tab and the handle will not turn further clockwise). 0.5: turned at least one full turn (pointer dropped at least 30 mm) but short of that. 0 otherwise, including half a turn, when the red knob is also over the tab but the pointer has dropped only 15 mm. The trial ends at 1.0 once the closed condition has held for 3 s; otherwise it scores the turn at the last step.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Turn the handle back anticlockwise 1.5 turns to its fully open stop, red knob at 270 degrees (the robot's right); the indicator pointer returns to the green band. Nothing is consumed.",
+  "fidelity": "Simplified: the valve turns 1.5 turns from open to a hard stop, with constant light damping and no change in effort near the stop. The handle is one rigid hinged part with square spokes and fixed knobs, and the indicator pointer is driven from the handle's angle in software, standing for a stem or position indicator. The pipe rack is fixed. No flow is modelled. The layout is fixed, so a memorised replay of the demo cannot be ruled out.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-4CEH6J"
+}
