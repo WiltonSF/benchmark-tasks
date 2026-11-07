@@ -1,0 +1,22 @@
+{
+  "title": "Fit a brake caliper with new, thicker pads back over its disc",
+  "category": "Impact on jobs",
+  "keywords": [
+    "automotive repair",
+    "disc brake",
+    "pad change",
+    "caliper",
+    "piston push-back",
+    "clearance",
+    "articulated part"
+  ],
+  "instruction": "Fit the caliper over the brake disc so it sits on its bracket, then let go.",
+  "context": "Automotive technicians (O*NET 49-3023.00) do this on every disc pad change. New pads are thicker than the worn ones and the piston is still out, so the gap between them is narrower than the disc: the piston is pushed back first, which the instruction does not say. Unlike TK-BMS7T9 (centre a captive crossbar, as told, before docking) and TK-MS2APD (retract a box cutter's blade before stowing it), the robot must see unprompted that the part will not fit and make the clearance itself.",
+  "setup": "Positions are from the robot's view: 'in front' is away from the arm bases, 'left' and 'right' are the robot's, the midline is halfway between the arm bases, heights are above the table top. Brake disc (fixed): a bare steel disc 80 mm across and 28 mm thick standing on edge, its faces toward and away from the robot, its centre 33.0 cm in front of the arm bases, 8.0 cm right of the midline and 4.5 cm up (top edge 8.5 cm up), on a steel hub 24 mm across running 40 mm back from its far face, carried by a steel block 40 x 30 mm and 33 mm tall. Caliper bracket (fixed): two steel abutment blocks 52 mm front to back, 14 mm wide and 80 mm tall, centred on the disc's mid-plane front to back, from 44 to 58 mm left and right of the disc's centre; their tops are 5 mm below the disc's top. Caliper (loose, 0.43 kg, red painted steel, standing on its feet on the bench, centred 25.0 cm in front and 22.0 cm right of the midline): two legs 8 mm thick, 112 mm long left to right and 40 mm tall, 56 mm apart inside; two ears 56 x 10 x 10 mm joining the legs at the ends, their undersides 20 mm above the feet; a bar 72 x 10 x 8 mm across the legs' tops, 30 to 40 mm right of centre, with a 20 mm grip boss on its middle; open above the pads. Pads: tan friction blocks 10 mm thick, 50 mm wide and 25 mm tall, from 5 to 30 mm above the feet. The far pad is fixed to the far leg; the near pad sits on the piston (a bright steel cylinder 18 mm across and 6 mm long behind the pad), which slides 16 mm toward the robot into the near leg. Pushed back, it stays there; moving it takes about 1 N. The pad gap is 20 mm (new pads); pushed fully back it is 36 mm. Stop block (fixed, yellow painted steel, 10 mm front to back, 100 mm wide, 10 mm tall) on the bench on the robot's side of the caliper, 3 mm from its near leg. Nothing else is on the table.",
+  "scoring": "Pass/fail. Fitted: the caliper hangs on the bracket ready for its bolts: both ears rest on the abutments (undersides from 1 mm below to 2 mm above the abutment tops), its centre is within 4 mm of the disc's mid-plane front to back and within 10 mm of the disc's centre left to right, it is tilted at most 5 degrees and turned at most 10 degrees from its starting heading (piston toward the robot), with the disc between the pads; it is released (no gripper finger within 5 mm of it) and still. 1.0 once it has been fitted, released and still without a break for 1 s. 0 otherwise: perched on the disc's rim (new pads leave a 20 mm gap over the 28 mm disc), the piston pushed back but the caliper anywhere other than fitted (on the bench, on the bracket off the disc), on its side, held or touched, moving, turned round, or off the table.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Push the piston back out to its start (a 20 mm pad gap; in the simulator a scene reset does this) and stand the caliper on its feet on the bench with its near leg 3 mm from the stop block, the block between it and the robot, as in the screenshot.",
+  "fidelity": "Rigid bodies. The piston is a ratcheted slider, no fluid: about 1 N moves it (a real one needs a C-clamp), so forcing the caliper onto the disc can push it part way; in our traces that left it jammed on the rim. A 0.43 kg trainer-scale caliper on an 80 mm disc (real: 2 to 5 kg on about 300 mm), hung on two abutments at 12 o'clock with no pins or bolts. The stop block stands in for holding the caliper. The scorer locates the grippers from the arms' joint angles. One fixed layout.",
+  "scores": "Dream-1 run: 0.0 (1,200 steps); demo: 1.0",
+  "media": "M-ECHAE7"
+}
