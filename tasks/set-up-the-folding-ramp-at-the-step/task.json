@@ -1,0 +1,23 @@
+{
+  "title": "Set up a two-section folding ramp from the floor to the top of a step",
+  "category": "Societal relevance",
+  "keywords": [
+    "accessibility",
+    "wheelchair ramp",
+    "folding ramp",
+    "hinge",
+    "unfold before use",
+    "incline",
+    "bimanual",
+    "care work"
+  ],
+  "instruction": "Set up the folding ramp onto the step for a wheelchair.",
+  "context": "Personal care and home health aides (O*NET 31-1122.00, 31-1121.00) set up portable ramps at a client's step for a wheelchair. This ramp folds across its length: laid folded it is half as long and about 20 deg steep, and a ramp not resting on the step's edge, or crooked to it, slips under the chair. Unlike TK-UYFM6W (planks laid flat across a dock gap) and TK-9J8ZVH (unfold a laptop stand in a square), this task needs a part opened to the length its use requires, then laid as an incline.",
+  "setup": "Positions are from the midpoint between the two arm bases: 'in front' is away from the arms, 'left' is the robot's left; heights are above the table top, which stands for the floor. Step (fixed, grey painted wood block): 100 mm deep, 200 mm wide, 35 mm high, its front face (the face toward the robot, which the ramp is set against) 37.0 cm in front of the arm bases, spanning 8.0 cm right to 12.0 cm left of the midline. Folding ramp (loose, aluminium, 220 g): two panels, each 100 mm long and 70 mm wide, made of a 6 mm dark grey deck with a 6 mm wide, 25 mm high silver rail along each long side (the rail's bottom flush with the deck's bottom). The panels are joined by a hinge across the rail tops at one end (an 8 mm grey barrel between the rails); opened flat they make one ramp 200 mm long. It lies folded, its long side front to back: the base panel (120 g) rails up on the table, spanning 22.0 to 32.0 cm in front of the arm bases and centred 2.0 cm left of the midline, with the hinge at its end nearest the robot; the second panel (100 g) lies face down on it, rails on rails, so the folded ramp is 50 mm high. Opened, the second panel swings over the hinge toward the robot. The hinge has a sprung catch: once opened to within 2 deg of flat, a spring (4 N m/rad) pulls it back to flat whenever it bends, until reset; it cannot open past flat. Nothing else is on the table.",
+  "scoring": "Measured with a straightedge along the rails (straight: the two panels in line within 8 deg), a side photo (the ends and the step's front edge) and a top photo (squareness). Unfolded: straight, rails up (decks within 30 deg of level-up). Released and still: no gripper within 5 mm, moving under 1 cm/s and turning under 0.5 rad/s. 1.0: unfolded, released and still; one end's bottom edge on the floor (2 mm below to 1.5 mm above the table top) in front of the step's face toward the robot; the underside within 2 mm of the step's top at that face's top edge; the other end at least 15 mm past that edge; the run within 10 deg of square to the face; both rails within the step's width at both ends; either end may be up. 0.5: unfolded, released and still, lying unaided (both ends' bottom edges within 1.5 mm of the table or step top, or across the step's edge as above, or level on the step's top) but not as for 1.0. 0: anything else, including folded, bent, upside down, held, or off the table (lowest point over 5 mm below the table top). Scored at the last step, or 1.0 once held for 1 s.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Fold the second panel back over onto the base panel (releasing the hinge catch), and lay the folded ramp back on its marks, base panel down and rails up, hinge end toward the robot. The step is fixed. Nothing is consumed.",
+  "fidelity": "Approximate, about 1:5 scale: rigid boxes and a cylinder with the simulator's default friction (1.2 static, 1.0 dynamic). Laid out, the slope is about 12 deg, steeper than the 1:12 that codes ask of fixed ramps; it stands for an assisted portable ramp, and no wheelchair is used. The hinge catch is a spring, not a rigid lock: it pulls the hinge flat (4 N m/rad) once within 2 deg of flat, so a laid ramp bends under 2 deg. The panels have no lips or non-slip surface.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-TWFQWG"
+}
