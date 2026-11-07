@@ -1,0 +1,21 @@
+{
+  "title": "Stand a bike on its side stand, clear of the wall it leans on",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bicycle",
+    "side stand",
+    "kickstand",
+    "tipping",
+    "hinged leg",
+    "bike shop"
+  ],
+  "instruction": "Stand the bike up on its kickstand, clear of the wall.",
+  "context": "Done by bicycle repairers (O*NET 49-3091.00) and bike-shop staff many times a day. A side stand holds a bike only if it is swung down and the bike is then leaned onto it; pulled upright without it, or past it, the bike falls and can bend a lever or derailleur. Unlike TK-KTLPR3 (unfold a tripod and stand it) and TK-CGNU3G (two halves that lean on each other), a loose body is tipped through upright onto its own leg.",
+  "setup": "Distances in cm: x forward from the line between the arm bases, y to the robot's left of the midpoint between them; heights above the table top. Model bicycle (loose, 720 g in all, painted steel and rubber), its length along y, front to the robot's left: two black wheels 12 across and 1.2 wide, fixed (they do not turn), touching the table at x 27, y -14 (rear) and +8 (front); a frame of red 12 mm square tubes (top tube 13 up, y -11 to +9); a black saddle 2.5 x 6 x 1.2, top 15.6 up, at y -8; a black handlebar 12 across (along x), its centre 14.8 up, at y +7. Side stand (orange 8 mm square bar, on the robot's side): a 5 cm crank out toward the robot from the frame, 5 up at y -6, then a 4 cm leg, folded pointing back along the frame. It swings down about an axis along x; past 45 degrees a spring snaps it down to its stop, short of that back up. Down, its foot (the leg's end, 8 mm square) is centred 5.6 toward the robot from the centreline between the tyres (outer edge 6.0) and 1 cm above the table with the bike upright. Wall (fixed, grey painted board): 2 thick, 50 long, 25 tall, face at x 36, centred y 0. The bike starts leaning 11.5 degrees back, the handlebar's end touching the wall, stand folded.",
+  "scoring": "Pass/fail. Lean is the angle of the bike's plane from vertical, measured with a protractor from the front. 0 if at any time the bike lay down (leaned more than 35 degrees either way). 1.0: both tyres and the stand's foot on the table (within 2 mm), the bike leaning 4 to 14 degrees toward the robot (the stand side), every part of it at least 3 cm from the wall, no gripper finger within 5 mm of any part of it, and still, for 1 s. 0 otherwise: against or within 3 cm of the wall (stand down or not), upright or leaning under 4 degrees (on its tyres alone), the foot or a tyre off the table, a finger within 5 mm, moving, or lying down at any point.",
+  "run_limit": "800 steps (40 seconds at 20 Hz)",
+  "reset_notes": "Fold the stand up, stand the bike 9 cm from the wall and lean it back until the handlebar touches the wall. Nothing is consumed.",
+  "fidelity": "Approximate: a model bike about a sixth of real size, built from rigid boxes and cylinders. The wheels are fixed (they do not turn or steer) and have flat treads 1.2 cm wide, so the model can stand upright on its tyres alone, which a real bike cannot, and cannot roll off its stand. The stand's spring is a detent. The start lean is set at reset. Masses and friction are the simulator's values. One fixed layout: a memorised replay of the demo cannot be ruled out.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-7AEE6T"
+}
