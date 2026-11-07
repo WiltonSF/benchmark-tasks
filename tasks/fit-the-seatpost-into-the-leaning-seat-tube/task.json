@@ -1,0 +1,20 @@
+{
+  "title": "Fit a seatpost into a seat tube that leans back 17 degrees",
+  "category": "Impact on jobs",
+  "keywords": [
+    "insertion",
+    "inclined bore",
+    "tilted grip",
+    "bicycle",
+    "assembly"
+  ],
+  "instruction": "Put the seatpost into the bike frame seat tube, past its minimum-insertion line, and let go.",
+  "context": "A bike's seat tube leans about 17 degrees (a 73-degree seat angle), so a seatpost has to go in along the tube, not straight down; pushed in upright it jams at the mouth. A post left with its minimum-insertion line showing can crack the frame under a rider. Done by: bicycle repairers (O*NET 49-3091.00). Unlike accepted TK-TPC59R (choose the pin that fits, push it straight down) and TK-CFSYC8, the bore here leans, so the part must be turned to its angle first.",
+  "setup": "Station table; world x away from the arm bases, y to the robot's left. Fixed, grey steel bike-frame stand, side-on to the robot: a dark base block 100 x 160 x 10 mm centred at x 280 mm, y 190 mm; a seat tube whose bottom sits at x 280 mm, y 170 mm, 12 mm above the table, leaning 17 degrees from vertical with its open top toward the robot's left (+y). The tube is a square bore 32 x 32 mm inside with 4 mm walls, 95 mm long, with a 5 mm stop plate at the bottom (90 mm from the stop to the mouth); a dark 30 mm cube lug on its +y side 55 mm up; a dark cradle bar 60 x 12 x 12 mm on the base block 30 mm to the -y side of its foot. Fixed: a yellow plastic stand socket, 52 x 52 x 40 mm with a 36 x 36 mm hole, centred at x 170 mm, y 250 mm. Loose: an aluminium seatpost, 28 mm round, 140 mm long, 150 g, with a black saddle block 16 x 60 x 12 mm (long side along y) on top and a 6 mm black band 62-68 mm from its bottom end (the minimum-insertion line), standing upright in the socket. Friction 1.2 static, 1.0 dynamic.",
+  "scoring": "Pass/fail, read at the end. 1.0 when the post rests in the seat tube on its own: the top edge of its band is at or below the tube's top edge (the bottom end at least 68 mm in, measured along the tube), its axis within 3 degrees of the tube's, nothing of the gripper within 3 cm of it, still for 1 s, and the tube at its 17-degree lean (within 2 degrees) throughout the trial. 0 otherwise, including a post jammed at the mouth with the band showing, a post held in place, a post that fell out, or one standing anywhere else.",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "Stand the post back upright in its socket; nothing is consumed. Run with object_jitter=0.",
+  "fidelity": "The bore is square, built from four boxes, with 2 mm per side of clearance, where a real seat tube is round and fits its post to a fraction of a millimetre. The post slides to a stop plate and is let go, where a real post is clamped at saddle height. The tube is a hinged link held on its stop by its own weight, standing in for a rigid frame. The layout is fixed, so a memorised replay of one motion cannot be ruled out. The demo alone uses a tilted-grip helper (tilt.py).",
+  "scores": "Dream-1 run: 0.0 (1,200 steps); demo: 1.0",
+  "media": "M-8RKYDH"
+}
