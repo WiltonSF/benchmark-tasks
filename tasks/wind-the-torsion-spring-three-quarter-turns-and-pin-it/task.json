@@ -1,0 +1,22 @@
+{
+  "title": "Wind a torsion spring three quarter turns, passing the cone from hand to hand, and pin it",
+  "category": "Impact on jobs",
+  "keywords": [
+    "torsion spring",
+    "winding bars",
+    "garage door",
+    "bimanual",
+    "handover",
+    "stored energy",
+    "spring-loaded"
+  ],
+  "instruction": "Wind the spring three quarter turns and lock it with the red set pin.",
+  "context": "Garage-door installers wind a door's torsion spring by turning its winding cone with bars, one bar always holding the cone while the other moves on; a cone let loose spins back and can break wrists. Here neither grip can follow the cone past a bridge, so the load must pass between the arms. Done by: door installers (O*NET 49-9011). Unlike TK-PW77VZ (a gate valve's handwheel, which stays where it is let go), the spring back-drives the cone, so each grip must overlap the next.",
+  "setup": "Positions are from the robot's view: 'in front' is away from the arm bases, 'left' and 'right' are the robot's, heights are above the table top. Angles about the cone's axis are measured anticlockwise seen from above, from straight ahead (0 = away from the robot, 90 = left, 180 = toward the robot, 270 = right). Winder base (fixed, dark-grey steel): a plate 28 x 28 cm, 2 cm thick, centred 22 cm in front of the arm bases on the midline. Winding cone (grey steel, 0.3 kg): a disc 27 cm across and 2 cm thick lying on the base (2 to 4 cm up), turning about a vertical axis through its centre. Hub (fixed, dark-grey steel): a round cover 14 cm across over the disc's middle, standing 9.8 cm up, so the disc is open only from 7 cm out. A torsion spring (0.03 N m per radian) pulls it clockwise back to a stop at its start; it can be wound anticlockwise up to 300 degrees. Bars (steel, fixed in the cone): four upright rods 16 mm across and 4 cm tall (4 to 8 cm up), 12 cm from the axis, a quarter turn apart, at 118 (blue), 208, 298 and 28 degrees (orange) at the start. Bridges (fixed, dark-grey steel): two stepped bars made of 12 mm blocks, 31 mm wide and 1 cm thick, their undersides 8.8 cm up (8 mm above the bar tops), running along the radius from 6.9 to 15.1 cm out from the hub, the near bridge at 200 degrees and the far bridge at 20 degrees, each on a 1.5 cm square post at its outer end. Set pin (red steel, 0.03 kg): a rod 10 mm across through the near bridge, 12 cm from the axis, with a round knob 2 cm across and 1.5 cm tall on top. Raised, its tip is 8.5 cm up, clear of the bars, and the knob's top is 13 cm up. Pushed down 14 mm or more it latches (17 mm travel), its tip standing in the bars' path; pulled back up past 10 mm it frees. Nothing else is on the table.",
+  "scoring": "Judged on the video and a final top photo; the wind angle is how far the cone has turned from its start, read from the blue bar. Score 0 if at any time the cone turns back more than 30 degrees from the most it has been wound (a slip, or a bar let go with nothing holding the cone), whatever happens after. Otherwise the end state counts only with the pin pushed down and latched, the cone still, and no part of either gripper within 3 cm of the cone (disc or bars) or the pin's knob: 1.0 if wound 268 degrees, within 3 (an orange bar resting on the pin, the blue bar near 26 degrees); 0.5 if wound 178 within 3 (blue bar near 296 degrees); 0.25 if wound 88 within 3 (blue bar near 206 degrees); 0 for anything else, including the pin up, a held cone or bar, or the pin pressed before any winding. The trial ends at 1.0 once that state has held for 3 s; otherwise it scores the last step.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Pull the pin's knob up until it frees, hold a bar and let the cone turn back to its stop under control, and check the blue bar is back at its start. Nothing is consumed.",
+  "fidelity": "Rigid parts. The spring is far weaker than a door spring (0.14 N m at three quarter turns), but a cone let go at 50 degrees still runs back to its stop. The bars are fixed in the cone instead of moved between sockets, a latching pin stands in for the set screws, and a real spring takes about 30 quarter turns. The layout is fixed, so a replay of one memorised motion cannot be ruled out.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-78QM5J"
+}
