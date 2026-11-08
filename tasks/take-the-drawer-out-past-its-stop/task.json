@@ -1,0 +1,21 @@
+{
+  "title": "Take a drawer right out of its chest past the anti-pull-out stop",
+  "category": "Impact on jobs",
+  "keywords": [
+    "furniture",
+    "drawer",
+    "anti-pull-out stop",
+    "tilting",
+    "removal",
+    "household"
+  ],
+  "instruction": "Take the drawer out of the chest and set it down on the table.",
+  "context": "Movers and furniture repairers (O*NET 53-7062.00, 49-9099.00) take drawers out before carrying or fixing a chest. A tab on the drawer's back meets the rail above the opening; pulling harder only strains them. The drawer comes out by lifting its front so the tab drops under the rail; the instruction does not say how. Unlike TK-USR7FZ (a door lifted off its hinges inside an angle window) and TK-7FTC8C (a module tilted to hook onto a DIN rail), this is a lean-and-draw move on a sliding part.",
+  "setup": "The setup photo is taken from the robot's side, so it shows the chest from behind: the drawer's front, handle, stop tab and the front rail all face away from the camera and the robot. The chest faces away so that the drawer pulls out toward the middle of the table, within the arm's reach. Positions in cm from the midpoint between the arm bases on the table top: x away from the arms, y to the robot's left, heights above the table. Chest (fixed, oiled pine, 12 mm boards), its open front facing away from the robot at x 25.0, centred on y -12.0: two sides 17.2 cm deep (x 7.8 to 25.0), 15.3 cm tall, at y -21.7 to -20.5 and -3.5 to -2.3 (inside 17.0 cm wide); a back panel at x 7.8 to 9.0; a top board from 14.1 to 15.3 cm high. Two runners (darker pine strips, 1.5 cm wide, 1 cm thick) along the inside of the sides, x 9.0 to 25.0, tops 4.0 cm up. A front rail (dark pine) across the opening's top, 8 mm deep (x 24.2 to 25.0), its underside 12.2 cm up. Under the runners the chest is open to the table (the lower drawer has been taken out). Drawer (loose, 6 mm birch plywood open box, 250 g): 14.0 cm deep (x), 16.0 cm wide, 7.0 cm tall, sitting shut on the runners, its front flush with the chest's front (x 11.0 to 25.0, bottom 4.0 cm up), so its top is 12 mm below the rail. On its back top edge a red plastic stop tab, 8.0 cm wide, 6 mm thick, standing 16 mm above the drawer's top. On its front a black-painted steel bar handle, 6.0 cm long (along y), 12 mm thick, 2.0 cm tall, centred 4.5 cm above the drawer's bottom, held 4.5 cm off the front by two 8 mm steel stems. Pulled straight out 12.6 cm, the tab meets the back of the rail. Nothing else is on the table.",
+  "scoring": "Pass/fail. Score 1.0: the drawer is out of the chest and standing upright on the table anywhere clear of the chest's footprint (no part of it over the rectangle x 7.8 to 25.0, y -21.7 to -2.3), its bottom within 5 degrees of level and on the table (no more than 1 mm up), still and let go (no part of either gripper within 5 mm of it). Score 0 in every other case: still in the chest at any extension, held at the stop, held in the air, on its side or upside down, or still moving. The trial ends at 1.0 once that has held for 1 s; otherwise it scores the state at the last step. A ruler and a photo from above check it.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Push the drawer back in shut on its runners, front flush with the chest's front (on a real chest, lift its front to pass the tab back in). The chest does not move. Nothing is consumed.",
+  "fidelity": "Approximate. Rigid boxes, friction 1.2/1.0. The chest is fixed and the tab and rail cannot break, so pulling harder never frees the drawer (a real trial scores 0 if either breaks). The drawer is small and light, like a bedside chest; the 16 mm tab and 12 mm gap need a lean of about 18 degrees, steeper than many real drawers. One fixed layout: a replay of the demo's waypoints would pass.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-VQPN2F"
+}
