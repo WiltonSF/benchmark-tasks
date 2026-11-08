@@ -1,0 +1,23 @@
+{
+  "title": "Flip the short-part stop up before loading a long bar against the fence and end stop",
+  "category": "Impact on jobs",
+  "keywords": [
+    "machine shop",
+    "cut-off saw",
+    "flip stop",
+    "fixture changeover",
+    "fence",
+    "end stop",
+    "hinged mechanism",
+    "bimanual"
+  ],
+  "instruction": "Set the long bar flat against the fence and the end stop, ready for the long cut.",
+  "context": "Cut-off saws and drill fixtures have flip stops that swing down to locate short parts and up out of the way for long ones. After short parts the stop is still down, and a long bar forced onto it sits high and crooked. The instruction does not mention it. Done by: saw setters (O*NET 51-7041.00, 51-4031.00). Unlike TK-46W443, TK-FQYPNG, TK-TM34E6 and TK-VNC9LD (lock, remove or release a blocker), the blocker is a fixture's own stop that stays up only once past its balance point.",
+  "setup": "Positions in cm from the midpoint between the two arm bases (61 cm apart): 'in front' is away from the arm bases, left and right are the robot's, heights are above the table top. Fixture (fixed, grey painted steel): a fence 28.0 cm long, 2.0 cm thick and 3.0 cm tall, running straight out from 17.0 to 45.0 cm in front, its working face 2.0 cm left of the midline (it occupies 2.0 to 4.0 cm left); an end stop block 3.0 cm deep, 4.5 cm wide and 3.0 cm tall at the far end, from 42.0 to 45.0 cm in front and from 2.0 cm left to 2.5 cm right of the midline, its face toward the robot at 42.0 cm. Flip stop (red painted aluminium plate, 40 g): 1.0 cm thick (29.0 to 30.0 cm in front, so its face toward the end stop is 12.0 cm from it), 4.5 cm wide (from the fence face to 2.5 cm right of the midline) and 2.6 cm tall (4 mm to 30 mm high), hinged along its top edge to the fence's top front edge by a hinge pin (grey cylinder, 8 mm diameter, 24 mm long, along the fence at 29.5 cm in front, 30 mm high). It starts hanging down across the strip of table in front of the fence face, resting on its lower stop. It swings up and back over the fence to a stop at 135 degrees; past about 120 degrees its weight holds it on that stop, below that it falls back down. Long bar (loose, maple): 18.0 x 3.0 x 2.5 cm tall, 100 g, lying on a 18.0 x 3.0 cm face with its length running front to back, centred 24.0 cm in front and 20.0 cm right of the midline. Nothing else is on the table.",
+  "scoring": "Measured at the end with a ruler, a protractor and a photo. The bar is flat when it lies on an 18 x 3 cm face, its underside at most 1 mm above the table and tilted less than 2 degrees. Its side gap is measured at both ends of its long face toward the fence, from that face to the fence face; its end gap at both edges of its end face toward the end stop. The flip stop is up when it is turned up and back over the fence by at least 125 degrees (its own weight then holds it up). Released means no part of either gripper within 5 mm of the bar. Score 1.0: the flip stop up, the bar flat, released and still (under 1 cm/s), both side gaps at most 1.5 mm and both end gaps at most 1 mm. Score 0.5: the same, but with both end gaps at most 5 mm. Score 0 in every other case, including the flip stop down, part way up or resting on the bar, the bar on top of the flip stop, short of it, behind the fence, tilted, held or off the table. The trial ends at 1.0 once the 1.0 condition has held for 3 s; otherwise it scores the condition at the last step. Possible scores: 0, 0.5, 1.0.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Swing the flip stop back down onto its lower stop and lay the bar back at its start, flat, length front to back. Nothing is consumed.",
+  "fidelity": "Approximate. Rigid boxes and cylinders; no saw. The flip stop is held up only by its weight past its balance point, with no detent or locking knob. The bar is a plain block with the simulator's friction, not measured maple. The release check uses the simulator's finger and gripper collision shapes; on a real bench, check by eye that both grippers are clear. The layout is fixed, so a memorised replay of the right moves cannot be ruled out.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-YL24DQ"
+}
