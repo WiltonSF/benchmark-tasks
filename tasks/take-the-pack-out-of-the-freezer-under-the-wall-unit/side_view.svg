@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="896" height="720" viewBox="0 0 896 720"><rect width="100%" height="100%" fill="white"/>
+<rect x="0.0" y="672.0" width="896.0" height="48.0" fill="#e8d6a8" stroke="none" stroke-width="1"/>
+<rect x="208.0" y="640.0" width="384.0" height="32.0" fill="#eeeeec" stroke="#333" stroke-width="1"/>
+<rect x="208.0" y="480.0" width="24.0" height="192.0" fill="#eeeeec" stroke="#333" stroke-width="1"/>
+<rect x="568.0" y="480.0" width="24.0" height="192.0" fill="#eeeeec" stroke="#333" stroke-width="1"/>
+<rect x="824.0" y="32.0" width="32.0" height="640.0" fill="#cdc7bd" stroke="#333" stroke-width="1"/>
+<rect x="474.2" y="91.2" width="349.8" height="224.0" fill="#808085" stroke="#333" stroke-width="1"/>
+<rect x="474.2" y="315.2" width="19.2" height="19.2" fill="#f28c1a" stroke="#333" stroke-width="1"/>
+<polygon points="330.1,180.0 592.0,460.8 578.0,473.9 316.1,193.1" fill="#9ec2db" stroke="#333" stroke-width="1"/>
+<polygon points="583.4,479.7 714.4,620.2 796.3,543.8 665.3,403.4" fill="#808085" stroke="#333" stroke-width="1"/>
+<rect x="424.0" y="560.0" width="96.0" height="80.0" fill="#2650d9" stroke="#333" stroke-width="1"/>
+<line x1="472.0" y1="585.6" x2="88.7" y2="296.7" stroke="#c00" stroke-width="2" stroke-dasharray="6,4"/>
+<text x="88.7" y="280.7" font-family="sans-serif" font-size="13" text-anchor="start">the demo's grip axis, leaning 53 degrees</text>
+<text x="224.0" y="700.8" font-family="sans-serif" font-size="13" text-anchor="start">freezer: 240 mm deep, 120 mm tall, inside 100 mm deep</text>
+<text x="472.0" y="544.0" font-family="sans-serif" font-size="13" text-anchor="middle">pack</text>
+<text x="322.1" y="164.0" font-family="sans-serif" font-size="13" text-anchor="middle">lid, 47 degrees open</text>
+<text x="490.2" y="203.2" font-family="sans-serif" font-size="13" text-anchor="start">wall cupboard</text>
+<text x="466.2" y="347.2" font-family="sans-serif" font-size="13" text-anchor="end">orange bumper: the lid's stop</text>
+<text x="600.0" y="652.8" font-family="sans-serif" font-size="12" text-anchor="start">counterbalance arm</text>
+<text x="816.0" y="56.0" font-family="sans-serif" font-size="13" text-anchor="end">wall</text>
+<text x="8.0" y="12.8" font-family="sans-serif" font-size="12" text-anchor="start">Side view from the robot's right, to scale from task.py; the arms are to the left</text>
+</svg>
