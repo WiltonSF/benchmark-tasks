@@ -1,0 +1,23 @@
+{
+  "title": "Drive a bushing to its depth below the housing face, choosing the stepped driver over the plain drift",
+  "category": "Impact on jobs",
+  "keywords": [
+    "tool use",
+    "tool choice",
+    "press fit",
+    "bushing",
+    "depth",
+    "stepped driver",
+    "mechanic",
+    "layout lots"
+  ],
+  "instruction": "Fit the bronze bushing 5 mm below the housing face, then take the tool out and let go of it.",
+  "context": "Done by: automotive and small-engine mechanics and millwrights (O*NET 49-3023, 49-3053, 49-9041). Bushings and seals are set a fixed depth below a housing face so a washer or seal fits above them; one left proud blocks the shaft, one driven too deep covers the oil hole and needs a puller. The bore is too narrow for fingers or for the mushroomed drift. Unlike TK-2H9ERX and TK-93R4YG, the robot must pick the tool whose collar sets the depth, then use it.",
+  "setup": "Distances from the midpoint between the two arm bases: 'in front' is away from the arms, 'left' and 'right' are the robot's, heights are above the table top. Housing (fixed, grey cast iron): a block 80 x 80 mm and 40 mm tall, centred 34.0 cm in front on the midline. On its vertical axis is a round bore 10 mm across and 30 mm deep. Bushing (bronze sleeve, 10 mm outside, 3 mm bore, 15 mm long, 20 g): started square in the bore by hand, its top 1 mm below the housing face. It is a press fit: it moves down only when pushed with more than about 1.5 N and never comes back up. Two tool stands (fixed, dark painted steel): blocks 32 x 32 mm and 35 mm tall, centred 22.0 cm in front and 10.0 cm left and right of the midline, each with a 14 mm square socket through it. Stepped driver (loose, steel, 80 g): a 16 mm square handle 45 mm long over a round collar 36 mm across and 5 mm thick, with a 7 mm round pilot 5.4 mm long under the collar. It stands in its socket with the collar resting on the stand. Plain drift (loose, steel, 80 g): the same handle over a 9 mm round rod 60 mm long with no collar; its last 3 mm is mushroomed out to 12 mm across, wider than the bore. It stands in its socket with its end on the table, 25 mm of rod showing above the stand. Lot A (the screenshot): the driver in the right-hand stand, the drift in the left-hand one. Lot B: the two tools swap stands. Nothing else is on the table. Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "Depth is how far the bushing's top is below the housing face (a depth gauge or a ruler across the face). Score 1.0 when, for 1 s: the depth is 4.25 to 5.75 mm; no part of either tool is in the bore more than 0.5 mm below the face; no part of either gripper is within 5 mm of the bushing or of either tool; neither tool has fallen below the table top (lowest point at most 5 mm below it) and both are at rest (under 1 cm/s); and the bushing is still. Score 0 in every other case: the bushing less than 4.25 mm down (fingertips and the drift's mushroomed end cannot enter the bore, so neither can move it), driven more than 5.75 mm (it cannot be drawn back), a tool left in the bore or still held, or a tool off the table. The bushing slides straight down its bore and stays level. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz) per trial",
+  "reset_notes": "Pull the bushing back up until its top is 1 mm below the face (in the simulator the scene reset does this). Stand the driver in the right-hand socket with its collar on the stand and the drift in the left-hand socket with its rod on the table (lot A); swap them for lot B.",
+  "fidelity": "Rigid primitives. The press fit is a vertical slider with a one-way ratchet: the bushing moves down only under more than 1.5 N and never back up, and it does not collide with its bore. The bore is boxes cut to a stepped circle. Grips are straight-down. Lots stop a fixed side habit, not a memorised replay of both layouts.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A and B); demo: 1.0 in each lot",
+  "media": "M-DS8EP6"
+}
