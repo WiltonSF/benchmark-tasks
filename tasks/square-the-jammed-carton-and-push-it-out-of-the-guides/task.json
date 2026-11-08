@@ -1,0 +1,21 @@
+{
+  "title": "Clear a carton jammed askew where the conveyor guides narrow",
+  "category": "Impact on jobs",
+  "keywords": [
+    "conveyor",
+    "jam clearing",
+    "guide rails",
+    "non-prehensile pushing",
+    "backing off",
+    "material handling"
+  ],
+  "instruction": "Clear the jammed carton: push it through the guides and out of their far end.",
+  "context": "Conveyor operators and material handlers (O*NET 53-7011.00, 53-7062.00) clear cartons that turn askew and catch at a guide joint. Pushing forward turns a caught carton harder into the guides; it must be backed off and fed in square. Unlike TK-RWRT5A (a gripped beam squared by pulling a named end, method given) and TK-FH6K6V (a crate pushed round a maze, never jammed), this carton is too wide to grip, starts jammed, must be backed off by pushing alone, and no method is given.",
+  "setup": "Positions in cm from the midpoint between the two arm bases on the table top: x away from the arms, y to the robot's left, heights above the table. Lane: centre line along x at y -12.0 (in front of the right arm), on the bare table. Guides (fixed, unpainted steel bars, 4.0 cm tall, standing on the table along x): before the shoulder, two bars 18.0 cm long (x 16.0 to 34.0) and 1.2 cm thick, inner faces at y -6.1 and -17.9 (11.8 cm apart); past the shoulder, two bars painted safety yellow 6.0 cm long (x 34.0 to 40.0) and 1.8 cm thick, sharing the same outer faces (y -4.9 and -19.1), inner faces at y -6.7 and -17.3 (10.6 cm apart). So at x 34.0 each guide steps 6 mm in at a square shoulder with no lead-in, and the lane is open at both ends (x 16.0 and x 40.0). Carton (loose, dark brown corrugated cardboard box): 12.0 cm long, 10.0 cm wide, 5.0 cm tall, 300 g, flat on the table, its centre at x 28.8, y -12.0, turned 9 degrees counter-clockwise seen from above. Its corners are then at (x, y): front-left (34.0, -6.1), front-right (35.5, -16.0), rear-left (22.1, -8.0), rear-right (23.7, -17.9): the front-left corner is touching the left shoulder face and the left guide, the rear-right corner touches the right guide, and the front-right corner is already 1.5 cm into the narrow part. It is too wide to grip either way (the gripper opens 9.4 cm). Nothing else is on the table.",
+  "scoring": "The carton must go through the lane, never around the guides. Measured with a ruler from the guides' near end (x 16.0), shoulders (x 34.0) and far end (x 40.0), with a photo from above and the video. Flat: top within 5 degrees of level, underside on the table (within 1 mm). Let go: no part of either gripper within 5 mm of the carton. Score 1.0: every part of the carton beyond the far end (x 40.0 or more), its centre within 6 cm of the lane's centre line (y -12.0), flat, still (under 1 cm/s) and let go. Score 0.5: in the narrow part, square to the lane within 3 degrees, leading edge at least 3.0 cm past the shoulders and some of it still before the far end, flat, still and let go. Score 0 for the whole trial if at any moment the carton's near end goes back past the guides' near end (below x 16.0), or any part of it is beyond a guide's outer face (y -4.9 or -19.1) between x 16.0 and 40.0. Score 0 in every other case: still caught, backed off but not fed in, tipped, off the table, moving, or touched by a gripper. The trial ends at 1.0 once that has held for 1 s; otherwise the last step is scored.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Set the carton back flat in the lane, turned 9 degrees counter-clockwise, with its front-left corner against the left shoulder face and the left guide and its rear-right corner against the right guide (corner positions in setup). The guides do not move. Nothing is consumed.",
+  "fidelity": "Approximate. Rigid boxes with one high friction for every contact (1.2 static, 1.0 dynamic); real cartons crush at a corner. The conveyor is the bare table, with no rollers or belt. The 6 mm step stands for a misaligned joint between two guide sections, where the downstream section is set narrower with no lead-in. The layout is fixed, so a memorised replay of the demo cannot be ruled out; general habits fail (README).",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-E9RS5A"
+}
