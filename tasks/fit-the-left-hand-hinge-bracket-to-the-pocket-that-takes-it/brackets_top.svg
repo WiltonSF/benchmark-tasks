@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="910" height="599" font-family="sans-serif">
+<rect width="910" height="599" fill="#f4efe4"/>
+<polygon points="39.0,39.0 39.0,195.0 871.0,195.0 871.0,39.0" fill="#9aa0a6" stroke="#333" stroke-width="1.5"/>
+<polygon points="98.8,53.3 98.8,180.7 291.2,180.7 291.2,53.3" fill="#c9ccd0" stroke="#333" stroke-width="1.5"/>
+<polygon points="98.8,53.3 98.8,89.7 135.2,89.7 135.2,53.3" fill="#2a2a2e" stroke="#333" stroke-width="1.5"/>
+<polygon points="618.8,53.3 618.8,180.7 811.2,180.7 811.2,53.3" fill="#c9ccd0" stroke="#333" stroke-width="1.5"/>
+<polygon points="774.8,53.3 774.8,89.7 811.2,89.7 811.2,53.3" fill="#2a2a2e" stroke="#333" stroke-width="1.5"/>
+<polygon points="421.2,375.7 421.2,482.3 540.8,482.3 540.8,375.7" fill="#d5d8dc" stroke="#333" stroke-width="1.5"/>
+<polygon points="369.2,427.7 369.2,482.3 421.2,482.3 421.2,427.7" fill="#d5d8dc" stroke="#333" stroke-width="1.5"/>
+<polygon points="421.2,375.7 421.2,396.5 540.8,396.5 540.8,375.7" fill="#7d8288" stroke="#333" stroke-width="1.5"/>
+<polygon points="83.2,375.7 83.2,482.3 202.8,482.3 202.8,375.7" fill="#d5d8dc" stroke="#333" stroke-width="1.5"/>
+<polygon points="202.8,427.7 202.8,482.3 254.8,482.3 254.8,427.7" fill="#d5d8dc" stroke="#333" stroke-width="1.5"/>
+<polygon points="83.2,375.7 83.2,396.5 202.8,396.5 202.8,375.7" fill="#7d8288" stroke="#333" stroke-width="1.5"/>
+<polygon points="655.2,375.7 655.2,482.3 774.8,482.3 774.8,375.7" fill="#d5d8dc" stroke="#333" stroke-width="1.5"/>
+<polygon points="774.8,427.7 774.8,482.3 826.8,482.3 826.8,427.7" fill="#d5d8dc" stroke="#333" stroke-width="1.5"/>
+<polygon points="655.2,375.7 655.2,396.5 774.8,396.5 774.8,375.7" fill="#7d8288" stroke="#333" stroke-width="1.5"/>
+<text x="455" y="587" text-anchor="middle" font-size="16" fill="#333">Lot A from above (robot at the bottom): frame, pockets with dark pegs, brackets (legs darker)</text>
+</svg>
