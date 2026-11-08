@@ -1,0 +1,21 @@
+{
+  "title": "Set the anchor bolt in the drilled hole that is deep enough",
+  "category": "Impact on jobs",
+  "keywords": [
+    "construction",
+    "anchor bolt",
+    "trial fit",
+    "hidden depth",
+    "probe then act",
+    "layout lots"
+  ],
+  "instruction": "Set the anchor bolt flush in one of the three drilled holes.",
+  "context": "Done by: construction laborers, carpenters, electricians (O*NET 47-2061, 47-2031, 47-2111). A hole that hits rebar stops short, looking the same from above; an anchor in it stands proud and cannot carry its load. Fitters check with a depth rod or a test fit. Here the hidden property is fit depth, the probe is the anchor itself, and the end state is the installed anchor. Unlike TK-TPC59R (a pin picked by visible size) and TK-DA2CEU (a hidden ball in one bore), no hole can be told apart by eye.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' and 'right' are from the robot's view, heights are above the table top, and the midline is halfway between the two arm bases. Concrete slab (fixed, grey): 80 mm front to back, 240 mm left to right, 60 mm tall, centred 32 cm in front of the arm bases and 14.5 cm left of the midline. Three drilled holes in its top, 16 mm square, lined dark, centred 32 cm in front and 22, 14.5 and 7 cm left of the midline (holes 1, 2, 3 from left to right). Each is 50 mm deep. In two of them a dark steel plug (loose, 15 x 15 x 25 mm, 150 g) stands on the hole floor, so those holes are 25 mm deep; the plugs cannot be seen from above. Anchor bolt (loose, steel, 60 g): a round shaft 12 mm across and 40 mm long ending in a 5 mm long tip 9 mm across (45 mm below the washer), a round washer 26 mm across and 4 mm thick, and a square nut 12 x 12 x 18 mm on top. It starts standing in a fixed yellow plastic holder (44 x 44 x 42 mm with a 16 mm square hole through it) centred 20 cm in front and 28 cm left of the midline, its tip on the table and its washer 3 mm above the holder. Lot A: the plugs are in holes 1 and 3, so hole 2 is full depth. Lot B: plugs in holes 1 and 2 (hole 3 full depth). Lot C: plugs in holes 2 and 3 (hole 1 full depth). Nothing else is on the table. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Pass/fail per trial. Score 1.0 when, after the robot has let go (no gripper within 5 mm of the anchor), the anchor stands in the full-depth hole: its axis within 3 mm of the hole's centre front to back and left to right, tilted at most 3 degrees, the washer's underside within 1 mm of the slab top, and the anchor and plugs still for 1 s. Score 0 otherwise: the anchor in a 25 mm hole (its washer then stands 20 mm proud), held, tilted, lying on the slab, on the table or left in its holder. Trying the anchor in other holes first is allowed. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Lift the anchor out and stand it in its holder. Put the two plugs in the holes for the lot (lot A: holes 1 and 3; lot B: 1 and 2; lot C: 2 and 3), standing on the hole floor. Nothing is consumed. Run with -E object_jitter=0 and --epochs 3.",
+  "fidelity": "Rigid boxes and cylinders. Real anchor holes are round and drilled to the anchor's size; these are square with 2 mm of play each side, so this is a test fit, not a wedge or sleeve setting, and the anchor is not tightened. Rebar is stood in for by a plug at the hole floor, loose only so the lots can move it; it cannot be reached. The lots stop single-hole habits (always the same, the nearest or the middle hole). Trying the holes in a fixed order and checking each fit is itself a valid test fit.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B and C); demo: 1.0 in each lot",
+  "media": "M-TEKBW5"
+}
