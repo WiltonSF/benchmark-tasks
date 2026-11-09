@@ -1,0 +1,20 @@
+{
+  "title": "Open the lift landing door with the drop key",
+  "category": "Impact on jobs",
+  "keywords": [
+    "elevator",
+    "drop key",
+    "gravity latch",
+    "tool through an opening",
+    "bimanual"
+  ],
+  "instruction": "Open the sliding door.",
+  "context": "Done by: elevator and escalator installers and repairers (O*NET 47-4021); only trained mechanics and firefighters may open landing doors. A hooked key goes through a small hole and lifts a gravity latch hidden behind the wall, held up while the other hand slides the door. Unlike TK-YRMGNB, TK-W2TDHY and our TK-VNC9LD (lift a gravity hook in plain sight, by hand), the robot lifts a latch it cannot see, by feel, through a slot, with a tool.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' and 'right' are from the robot's view, heights are above the table top, and the midline is halfway between the two arm bases. Landing wall (fixed, pale painted steel): 10 mm thick, 36 to 37 cm in front, from 12 cm right to 18 cm left of the midline, 150 mm tall, with a key slot 20 mm wide (11 to 13 cm left) from 45 to 115 mm up. Door (blue-grey steel panel, 0.4 kg, slides to the right only, up to 100 mm, light damping, no closer): 10 mm thick, 37.5 to 38.5 cm in front, 5 to 130 mm up, from 21 cm right to 9 cm left when closed; on its back a lug 15 x 18 x 15 mm (38.5 to 40 cm in front, 6.2 to 8 cm left, 60 to 75 mm up); on its front, beyond the wall's right end, a black pull handle 25 mm front to back, 20 mm wide, from 30 to 120 mm up, 18 to 20 cm right of the midline. Latch, hidden from the top camera behind the wall (a fixed post at 38.8 to 40 cm in front, 16.5 to 18 cm left, 60 mm tall): an orange steel bar, 50 g, 12 mm front to back and 10 mm tall (80 to 90 mm up), lying along the wall from 16.5 cm left to 5 cm left, with a knee at its post end that drops to a hinge at 55 mm up on the post (axis front to back) and a catch 10 mm wide hanging from its free end down to 60 mm, just right of the lug. Gravity holds it down on its stop; pulling the door presses it harder onto the stop. It can swing up to about 50 degrees. The bar passes 5 mm above the key's hook when the key is pushed through the slot. Drop key (loose, steel, 60 g): a black grip block 20 mm front to back, 30 mm wide, 30 mm tall centred 12 cm in front and 22 cm left, a rod 10 x 10 mm running 200 mm forward from it along the table, and a red hook 10 x 10 mm rising 20 mm at the rod's far end.",
+  "scoring": "Score 0 for the trial if a gripper ever enters the space behind the wall (beyond its back face, up to 50 cm in front of the arm bases, between the wall's two ends, up to 30 cm above the table). Otherwise, at the end, with no gripper within 5 mm of the door or its handle and the door still for 1 s: 1.0 if the door is slid open at least 60 mm from closed and the key is wholly back in front of the wall's front face (the key may be held or lying anywhere there). 0.5 if the door is slid open at least 10 mm but not 1.0 (less than 60 mm, or the key still through the slot). 0 otherwise. A pull on the handle without the key moves the door about 2 mm.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Slide the door closed, let the latch drop onto its stop, lay the key back on its spot with the hook up. Nothing is consumed. Run with -E object_jitter=0.",
+  "fidelity": "A bench mock-up: rigid boxes. Real drop keys mostly turn or swing to trip a pivoting interlock arm; here the latch is simplified to a gravity bar lifted by an upturned hook. The door has no closer, so it stays where it is left; a real landing door closes itself. Masses and friction are simulator values. The layout is fixed, so a memorised replay is not ruled out.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-3QHLST"
+}
