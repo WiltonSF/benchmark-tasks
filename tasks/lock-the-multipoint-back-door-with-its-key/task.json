@@ -1,0 +1,22 @@
+{
+  "title": "Lock a multipoint back door: lift the handle before the key will turn",
+  "category": "Impact on jobs",
+  "keywords": [
+    "door lock",
+    "multipoint lock",
+    "lever handle",
+    "key",
+    "interlock",
+    "unstated precondition",
+    "housekeeping"
+  ],
+  "instruction": "Lock the back door with the key.",
+  "context": "Done by: housekeeping cleaners, property managers and home care aides locking up (O*NET 37-2012, 11-9141, 31-1122). Most uPVC back doors in UK and European homes have a multipoint lock whose key turns only after the handle is lifted to throw the hooks; the instruction does not say so. Unlike TK-93MYCS and TK-C7KNQP, where the order is in the instruction or the story, here the order comes only from the hardware.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' and 'right' are from the robot's view, heights are above the table top, and the midline is halfway between the two arm bases. Door section (fixed, white uPVC): a leaf 20 mm thick, 300 mm wide and 170 mm tall standing on the table, its face toward the robot 34.5 cm in front of the arm bases, running from 25 cm right of the midline to 5 cm left of it. Beside its left edge, flush with its face, a white frame stile 40 mm deep, 20 mm wide and 200 mm tall; a steel keep 40 x 30 x 12 mm sits over the leaf's left edge from 180 to 192 mm up. In that edge, a steel hook bolt 12 x 16 x 40 mm (20 g; 130 to 170 mm up, standing 8 mm proud of the face) rises 30 mm into the keep as the handle lifts. Handle: a grey back plate 36 mm wide and 130 mm tall on the door face, centred 4 cm right of the midline; a grey rose 24 mm across on a spindle 120 mm up; on it a black lever (30 g) 12 mm thick, 16 mm tall and 110 mm long, with a white 15 mm end, whose centre line stands 40 mm out from the door, running level from 8 mm left of the spindle to 102 mm right of it. It has two notches, level and lifted 0.7 rad (40 degrees), an upper stop at 0.8 rad (46 degrees), and presses down to 0.6 rad below level, springing back. Lock: a grey escutcheon plate 36 mm wide and 60 mm tall on the door face, centred 2 cm left of the midline and 62 mm up. Key (20 g; steel, red bow with a white stripe along it), already in the lock: a shank 10 mm across reaching 72 mm out from the door and a bow 6 mm thick, 20 mm wide and 45 mm long (from 5 mm below to 40 mm above the shank), pointing up. It turns toward the left, 1.6 rad (92 degrees) to its stop; with the handle less than 0.5 rad lifted it stops at 0.15 rad (9 degrees), and once past 0.3 rad (17 degrees) it holds the handle at 0.5 rad or higher. Nothing else is on the table.",
+  "scoring": "Judged at the end, after the robot has let go (no gripper within 5 mm of the handle lever or the key), with neither the handle nor the key turning more than 0.002 rad in a control step (0.04 rad/s) for the final 1 s. 1.0: locked: the handle lifted 0.5 rad (29 degrees) or more above level and the key turned 1.4 rad (80 degrees) or more, within 11 degrees of its stop. 0.25: the handle resting in its upper notch, 0.65 rad (37 degrees) or more (hook bolt thrown), with the key short of 1.4 rad. 0 otherwise: handle level, pressed down or only part way up, key tried first and stopped at its interlock, or still being held. A side photo shows the lever angle and the bolt; a front photo shows the key bow's angle.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Turn the key back to upright (bow up), then press the handle back to level; the hook bolt drops with it. Nothing is consumed. Run with -E object_jitter=0.",
+  "fidelity": "A scaled mock-up of the lower part of a door. The leaf does not swing: it is fixed with the lock. The lock gear is joint limits: the key's travel opens only with the handle lifted, and the hook bolt follows the handle. A real euro-cylinder key turns a full turn and springs back upright; here it turns 1.6 rad to a stop and stays. Forcing the key is not modelled. The key stands out further than a real one, on its own plate to the side. Masses and friction are simulator values.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-PET5V3"
+}
