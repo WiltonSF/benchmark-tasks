@@ -1,0 +1,21 @@
+{
+  "title": "Slide the service cover off its hidden tabs, then lift it off",
+  "category": "Impact on jobs",
+  "keywords": [
+    "cover removal",
+    "hidden tabs",
+    "undercut",
+    "slide then lift",
+    "equipment repair",
+    "layout lots"
+  ],
+  "instruction": "Take the cover off the unit and lay it on the grey mat.",
+  "context": "Done by: computer, appliance and electrical repairers (O*NET 49-2011, 49-9031, 49-2094). PC side panels and appliance covers hook under a lip at one edge; a straight pull jams them. The cover must slide away from the lip first. Unlike TK-MG5GRS (lift a drawer past its stop, always the same way) and TK-7FTC8C (hook a module on a DIN rail), the free direction must be read from a visible cue, the orange lip, which moves between trials.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' and 'right' are from the robot's view, heights are above the table top, and the midline is halfway between the two arm bases. Unit (painted steel, rigid, 5 kg, loose but not moved by the task), centred 32 cm in front and 6 cm left of the midline: a floor 184 x 140 x 6 mm (184 mm along the lip axis described next), walls up to 60 mm high (end walls 16 mm thick, side walls 15 mm), an open top. Dark grey except at one end, the lip end, which is painted orange: its end wall, an upright 6 mm thick at the outer face rising to 68 mm, and a lip plate 21 mm wide, 4 mm thick (68 to 72 mm high) across the full 140 mm width, its inner edge 71 mm from the unit's centre. Under the lip, between 75 and 85 mm from the centre and 60 to 68 mm high, keeper blocks leave two slots 24 mm wide centred 35 mm either side of the unit's centre line. Cover (loose, rigid, 0.30 kg, bare aluminium): a plate 150 x 122 x 6 mm lying on the wall tops (underside 60 mm up), centred on the unit, its 150 mm side along the lip axis; two tabs 20 x 10 x 6 mm in line with the plate stick out of its lip-side edge into the slots, so the plate's edge lies 4 mm under the lip and the tabs 10 mm further in, with 2 mm between the tab tops and the lip; a dark grey acetal plastic grip post 24 x 24 mm, 25 mm tall, at the plate's centre. Mat (fixed, grey rubber): 220 mm front to back, 200 mm wide, 3 mm thick, centred 24 cm in front and 27 cm left of the midline. Lot A: the lip at the unit's far edge. Lot B: unit and cover turned 180 degrees about the unit's centre (the lip at the near edge). Lot C: turned 90 degrees anticlockwise seen from above (the lip at the left edge). Trials are run on lots A, B and C and averaged (--epochs 3); --epochs 1 tests only lot A. The screenshot shows lot A.",
+  "scoring": "Score 0 for the trial if at any point the unit moves more than 3 mm or tilts more than 3 degrees. Otherwise, at the end, after the robot has let go (no gripper within 5 mm of the cover) and with the cover still for 1 s: 1.0 if the cover lies on the mat, its lowest point within 2 mm of the mat's top, tilted at most 5 degrees, the whole plate inside the mat's outline (either way round, post up). 0.5 if the cover is still in the unit, lying flat in its seat (underside within 2 mm of the 60 mm wall tops, tilted at most 3 degrees) and slid away from the lip far enough that both tabs are wholly clear of the lip's inner edge (at least 14 mm from the start). 0 otherwise, including a cover still under the lip, wedged, held, on the table or off the mat. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Lay the cover back in the unit with its tabs in the slots and its edge under the lip, flat on the wall tops. Turn the unit and cover together for the lot: lot A lip far, lot B lip near, lot C lip on the left. Nothing is consumed. Run with -E object_jitter=0 and --epochs 3.",
+  "fidelity": "Rigid boxes. The cover is a 6 mm aluminium plate; a real panel is thinner sheet steel and its tabs flex, here they cannot bend, so a straight pull only jams. The unit is a loose 5 kg box only so the lots can turn it. No screws: they are taken as removed. Friction is a simulator value. The three lots stop fixed habits (always toward the robot, or diagonally), not a memorised replay of all three layouts.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B and C); demo: 1.0 in each lot",
+  "media": "M-9XC7U4"
+}
