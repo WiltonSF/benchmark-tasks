@@ -1,0 +1,22 @@
+{
+  "title": "Dock the transfer box to the cage before raising its sliding door",
+  "category": "Impact on jobs",
+  "keywords": [
+    "veterinary",
+    "animal handling",
+    "guillotine door",
+    "docking",
+    "unstated rule",
+    "layout lots",
+    "bimanual"
+  ],
+  "instruction": "Open the cage door so the cat can go into the transfer box.",
+  "context": "Done by: veterinary technicians and animal caretakers (O*NET 29-2056, 39-2021). A frightened cat is moved without handling: the box's open end is butted flush against the cage doorway first, then the sliding door is raised; a gap is an escape route. The rule is not stated. Unlike TK-76YEDY (two airlock gates never open together) and TK-8BVMQK (lock another cage first), a loose box must be turned and sealed to the doorway before the door is opened.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' and 'right' are from the robot's view, heights are above the table top, and the midline is halfway between the two arm bases. Cage (fixed, grey painted steel): 150 x 150 mm outside, walls 5 mm thick and 80 mm tall on a 5 mm floor, with a barred roof (four dark 4 x 4 mm bars running front to back across the top, 18 and 54 mm left and right of the cage's centre line), centred 40 cm in front of the arm bases and 6 cm right of the midline, so its near face is 32.5 cm in front. A doorway 50 mm wide and 50 mm tall, from the floor's top (5 mm) up to 55 mm, is centred in the near wall. Door (steel, 0.04 kg): a plate 64 mm wide, 55 mm tall and 3 mm thick sliding up and down just inside the near wall, closing the doorway; a 10 mm stem rises from its top to a dark handle bar 50 mm long (left to right), 12 mm thick and 8 mm tall, 92 to 100 mm up. It slides up 52 mm at most and drops shut by its weight unless a catch (red pin on the wall top beside the stem) has taken it, which happens once its bottom is 46 mm above the sill. Cat: a grey block 50 mm front to back, 70 mm wide, 40 mm tall with a small head, 0.3 kg, lying at the back of the cage, centred 3.5 cm behind the cage's centre. Transfer box (loose, rigid blue plastic, 0.25 kg): 100 mm long, 80 mm wide, 66 mm tall, 4 mm walls, open at one end (72 mm wide and 58 mm tall inside), a yellow band 12 mm wide across its roof at the open end, a yellow rim 6 mm deep round the open end, and a black carry handle 60 x 10 x 12 mm along the roof; centred 30 cm in front and 20 cm left of the midline. Lot A: its open end points left. Lot B: right. Lot C: toward the robot. Every lot needs the box turned before its open end faces the cage. Nothing else is on the table. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Judged over the whole trial from the video, then at the end from a photo and a ruler. Docked: the box stands flat on the table, its open end toward the cage, square to the cage face within 5 degrees, the centre of the open end between 1 mm through and 6 mm short of the face, and the doorway wholly inside the open end seen from the front (the box's centre line within 11 mm of the doorway's). Score 0 for the trial if at any moment the door's bottom is more than 20 mm above the sill while the box is not docked (the cat could get out), or the cat is moved more than 20 mm. Otherwise, after the robot has let go (no part of either arm within 5 mm of the box or the door) and with the box still (moving under 1 cm/s): 1.0 if docked and the door up on its catch (its bottom 46 mm or more above the sill), held for 1 s, which ends the trial; 0.5 if docked at the last step with the door not up on its catch; 0 otherwise. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "900 steps (45 seconds at 20 Hz)",
+  "reset_notes": "Push the door's catch back so the door drops shut. Set the cat at the back of the cage and the box on its spot, open end left (lot A), right (lot B) or toward the robot (lot C). Nothing is consumed. Run with -E object_jitter=0 and --epochs 3.",
+  "fidelity": "Rigid boxes. The cat is a still block: no transfer is simulated, only the safe set-up for one. A real handler would hold or clip the box to the cage; here it must stand let go so the dock can be judged from a photo. The catch is modelled by the door's spring holding it up once raised 46 mm. Masses and friction are simulator values. The lots stop a fixed habit, not a memorised replay of all three.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B and C); demo: 1.0 in each lot",
+  "media": "M-YBNEC7"
+}
