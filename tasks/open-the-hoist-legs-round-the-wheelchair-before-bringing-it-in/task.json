@@ -1,0 +1,22 @@
+{
+  "title": "Open a patient hoist's legs round a wheelchair before bringing it in",
+  "category": "Impact on jobs",
+  "keywords": [
+    "patient handling",
+    "mobile hoist",
+    "wheelchair",
+    "straddle",
+    "articulated base",
+    "unstated step",
+    "layout lots"
+  ],
+  "instruction": "Bring the hoist up to the wheelchair so it is ready to lift from the seat.",
+  "context": "Done by: nursing assistants and personal care aides moving residents with a mobile hoist (O*NET 31-1131, 31-1122). Pushed in closed, the hoist's legs strike the chair and shove the resident; they must first be spread. The instruction does not mention the legs. Unlike TK-KTLPR3 (unfold tripod legs) and TK-Y9838A (park a wheelchair at a bed), the base itself is reshaped, its legs opened to straddle the chair; an overbed table instead picks its approach and slides its base under the bed.",
+  "setup": "A 1:6 model. Positions are from the midpoint between the two arm bases: 'out' is away from the arms, 'left' and 'right' are from the robot's view, heights are above the table top. Mobile hoist (loose, 0.34 kg, rigid parts): a grey base frame 90 mm front to back, 100 mm wide, 15 mm tall, standing on low-friction pads; a chrome battery box 30 x 50 x 30 mm on it, 12 mm in from its back edge; a grey mast 25 mm square, 60 mm from the frame's back edge, its top 160 mm above the table; a grey boom 20 mm wide on top of the mast reaching out toward the chair, with a red spreader block 15 mm on a side hanging under its end, 100 mm in front of the mast's centre. Two orange legs 200 x 20 x 13.5 mm ride 1.5 mm above the table, hinged on vertical pins under the frame at the mast's line (30 mm behind the frame's front edge), 45 mm left and right of the hoist's centre line, so they stick out 5 mm past the frame's sides; they start closed, parallel and pointing at the chair, 70 mm apart inside, and swing outward to a stop at 31.5 degrees. Wheelchair stand-in (loose but heavy, 3 kg, rigid), facing the robot: four chrome legs 15 mm square on a 100 x 100 mm footprint, a blue seat 100 x 100 x 10 mm with its top 90 mm up, a blue backrest 10 mm thick and 100 mm tall at the rear, and two black rear wheels 90 mm across and 8 mm wide, 58 mm either side of its centre line. Lot A: the hoist's mast 125 mm out and the chair's centre 415 mm out, both on the midline (the leg tips 40 mm short of the chair's front legs). Lot B: both 70 mm to the right. Lot C: as lot A, but the chair 40 mm farther out (its centre 455 mm out). Nothing else is on the table. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Score 0, judged over the whole trial from the video, if at any point the hoist touches the wheelchair (comes within 1 mm of it), the wheelchair moves more than 5 mm or turns more than 3 degrees, or the hoist tips more than 15 degrees or its lowest point is more than 10 mm above the table. Otherwise, read at the end with no gripper or finger within 5 mm of the hoist and the hoist still: 1.0 if both legs are open to at least 0.45 rad (26 degrees) and the red spreader block's centre is within 30 mm of the seat's centre, seen from above; 0.5 if both legs are open to at least 0.45 rad, the spreader is more than 30 mm from the seat's centre, the mast is no more than 2 mm farther from the chair's centre than at the start, and the hoist is turned at most 15 degrees from its start; 0 otherwise. Possible scores 0, 0.5, 1.0. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Close the legs, set the hoist and the chair on their spots for the lot (lot A on the midline, lot B both 70 mm right, lot C as A with the chair 40 mm farther out), the legs pointing at the chair's front. Nothing is consumed. Run with -E object_jitter=0 and --epochs 3.",
+  "fidelity": "A 1:6 model with rigid parts. A real hoist spreads both legs together with a pedal or lever and rolls on castors; here each leg is pushed on its own pin, the legs ride just clear of the table and the frame slides on low-friction pads. The chair is empty and has no footrests; touching it stands in for shoving the resident. Masses and friction are simulator values.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B and C); demo: 1.0 in each lot",
+  "media": "M-E2NW96"
+}
