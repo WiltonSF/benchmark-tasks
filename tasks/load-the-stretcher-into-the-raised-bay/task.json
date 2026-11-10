@@ -1,0 +1,22 @@
+{
+  "title": "Load a folding-leg stretcher into a raised bay",
+  "category": "Impact on jobs",
+  "keywords": [
+    "ambulance",
+    "stretcher",
+    "cot loading",
+    "folding legs",
+    "change of support",
+    "bimanual",
+    "patient transport"
+  ],
+  "instruction": "Load the stretcher into the raised bay and let go of it.",
+  "context": "Done by: ambulance drivers and attendants (O*NET 53-3011.00), who load a cot into the vehicle several times a shift. The head end goes onto the floor first; a leg pair may be released only once its end is carried, or that end drops. The instruction does not state the method. Unlike TK-NBL9FR (wheelchair up a kerb) and TK-HYNFZE (carton up by its front edge), this task needs a one-way mechanism tripped end by end at the right moment.",
+  "setup": "1:12 scale on the station table. 'In front' is away from the arm bases, 'left' and 'right' are the robot's, heights are above the table, the midline is halfway between the arm bases. Stretcher (loose, 0.45 kg, painted aluminium), head end away from the robot: an orange deck 180 mm long, 56 mm wide, 10 mm thick, its underside 68 mm up, centred 23.5 cm in front of the arm bases and 1.5 cm right of the midline (head end at 32.5 cm, foot end at 14.5 cm). Two leg pairs of 8 x 8 mm steel bars, 68 mm long, hinged at the deck's underside and joined near the feet by a cross bar: the front pair 40 mm behind the head end (legs 24 mm apart), the rear pair 75 mm in front of the foot end (legs 48 mm apart). Under each end of the deck, two grey skids 15 mm long, 10 mm wide, 14 mm deep (bottoms 54 mm up), 20 mm apart. A black push handle: a cross bar 14 mm deep, 50 mm wide, 18 mm tall, 25 mm behind the foot end, on two side arms. Two red tabs 25 x 16 x 16 mm on the deck, one above each leg pair's hinge, centred 20 mm left of the deck's centre line. Locked legs stay down. Pressing a tab 4 mm (of its 8 mm travel) frees that pair; a damped spring then swings it back and up flat under the deck in about 3 s, and a catch holds it once it passes 75 degrees. Bay (loose but 3 kg, grey painted wood): 255 mm deep, 150 mm wide, 50 mm tall, centred 1.5 cm right of the midline, its near face (the sill) 34.0 cm in front of the arm bases, with a yellow 12 mm strip along the sill edge; 10 mm wide, 15 mm tall rails along both sides, 130 mm of floor between them; a back stop 15 mm thick and 20 mm tall, 240 mm from the sill. Lot B moves the bay 30 mm farther out (sill at 37.0 cm). Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "At the end, with a ruler and the video. A leg pair is folded when it lies within 15 degrees of flat under the deck. An end is on the bay floor when both its skids rest on the floor (bottoms at most 3 mm above it) between the rails and the back stop. Let go means no part of either gripper within 5 mm of the stretcher; still means it and its legs are not moving. Score 1.0: both pairs folded, both ends on the bay floor, the deck's foot end 20 mm or more past the sill line, the deck level within 5 degrees, let go and still for 1 s. Score 0.5: the front pair folded, the head end on the bay floor with the deck's head end 20 mm or more past the sill, the deck level within 10 degrees, let go and still, but not the 1.0 state. Score 0 otherwise: a pair released before its end was carried, so the end dropped to the table; the stretcher pushed in on standing legs; still held. 0 for the trial, judged over the whole trial (watch the video), if at any time the deck tilts more than 12 degrees (an end dropped, even if it is lifted back later) or the stretcher leaves the table, or the bay is moved more than 10 mm or tilted more than 5 degrees. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Stand the stretcher back on its legs at its start, both pairs locked down. Lot A: bay sill 34.0 cm in front of the arm bases; lot B: 37.0 cm. Nothing is consumed.",
+  "fidelity": "Rigid boxes at 1:12 scale. Skids and low friction (0.4) stand in for the cot's wheels and loading wheels. A tab press trips its pair's lock until the pair folds; a light spring swings the legs up, standing in for the attendant lifting the end so the legs retract. Real cots often use one foot-end release handle. Lots stop one fixed release point, not a memorised replay of both layouts.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A and B); demo: 1.0 in each lot",
+  "media": "M-LMWHT6"
+}
