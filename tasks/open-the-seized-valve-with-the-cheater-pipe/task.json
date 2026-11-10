@@ -1,0 +1,22 @@
+{
+  "title": "Open a stiff quarter-turn valve by sliding a loose tube over its short handle as a cheater bar",
+  "category": "Impact on jobs",
+  "keywords": [
+    "valve",
+    "quarter-turn",
+    "cheater bar",
+    "leverage",
+    "tool use",
+    "maintenance",
+    "layout lots"
+  ],
+  "instruction": "Open the red valve fully.",
+  "context": "Maintenance fitters and plant operators (O*NET 49-9071, 51-8031) meet quarter-turn valves too stiff to move by hand. A common field fix, where site rules allow it, is to slide a length of pipe over the handle and push at its far end; a valve wrench or handle extension is the approved tool. Unlike TK-6V2Z35 (turn a ball valve, then fit a lockout) and TK-PW77VZ (a star handle turned spoke by spoke), this handle cannot be turned at all until it is lengthened with a loose tube.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' and 'right' are from the robot's view, heights are above the table top, and the midline is halfway between the two arm bases. Deck plate (fixed, dark grey steel): 440 mm front to back, 700 mm left to right, 40 mm thick, lying on the table from 6 to 50 cm in front of the arm bases and from 46 cm right to 24 cm left of the midline. Valve (fixed): its vertical stem axis is 40.0 cm in front of the arm bases and 5.0 cm right of the midline. On the deck around the stem is a brass gland ring 60 mm across and 6 mm tall. The red handle turns flat about the stem: a round hub 40 mm across and 20 mm tall, and a square bar 20 x 20 mm reaching 80 mm from the axis, its underside 7 mm above the deck. Shut (the start), the handle points straight at the robot; fully open, it points to the robot's right, a quarter turn counterclockwise seen from above, where it meets a stop. Two painted lines on the deck, 10 mm wide and 80 mm long (from 50 to 130 mm out from the axis): a yellow one parallel to the open position, 40 mm in front of it, and a white one parallel to the shut position, 40 mm to its left. Tube (loose, aluminium, 0.4 kg): square tube 350 mm long, 36 x 36 mm outside, 3 mm wall (30 mm bore), lying flat on the deck. Lot A: the tube runs front to back, centred 27.0 cm in front of the arm bases and 10.0 cm left of the midline. Lot B: also front to back, centred 24.0 cm in front and 25.0 cm right of the midline. Lot C: running left to right, centred 17.0 cm in front and 5.0 cm left of the midline. Nothing else is on the table. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Measure the handle's angle from its shut position (pointing at the robot) toward open (pointing to the robot's right, parallel to the yellow line) with a protractor seen from above. Released means no part of either gripper or finger is within 5 mm of the handle or the tube, and the tube is still. Score 1.0: the handle is turned at least 85 degrees (within 5 degrees of the open stop), released. Score 0.5: turned at least 45 degrees but less than 85, released. Score 0 otherwise: turned less than 45 degrees, or the robot still holding or touching the handle or the tube, or the tube still moving. Where the tube ends up does not matter. The trial ends at 1.0 once the 1.0 condition has held for 1 s; otherwise it scores the condition at the last step. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Turn the handle back to shut (pointing at the robot). Lay the tube flat on the deck at the lot's place: lot A front to back, centred 27 cm in front and 10 cm left of the midline; lot B front to back, centred 24 cm in front and 25 cm right; lot C left to right, centred 17 cm in front and 5 cm left. Nothing is consumed.",
+  "fidelity": "Approximate. Stiffness is stem friction of 12 N m, the same at rest and moving, with about 3 degrees of give; a real seized valve breaks loose, then turns more easily. Both arms on the bare handle (one twisting, one pushing) reached about 9 N m: 2.6 degrees of give, no slip. The tube is square, with 10 mm total play, 5 mm each side, and stops at the gland ring, 50 mm of it over the handle. Lots stop a fixed habit, not a memorised replay of all three layouts.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B and C); demo: 1.0 in each lot",
+  "media": "M-VXM475"
+}
