@@ -1,0 +1,22 @@
+{
+  "title": "Park a radial drill's arm without its spindle striking the parts on the table",
+  "category": "Impact on jobs",
+  "keywords": [
+    "machine tool",
+    "radial drill",
+    "swept path",
+    "obstacle clearance",
+    "hinge",
+    "slide",
+    "layout lots"
+  ],
+  "instruction": "Park the drill: swing its arm round to the yellow line and slide the drill head in to the column. Do not let the drill head hit the parts on the table.",
+  "context": "At the end of a job an operator swings a radial drill's arm out of the way and runs the head in to the column, while the next batch of parts is already laid out under it. The spindle hangs lower than the parts, so the head must be at a radius clear of them as the arm sweeps past. Done by: drilling machine operators (O*NET 51-4032). Unlike TK-MZSKQL and TK-S73PNH, this task needs a swept tool's radius chosen from where obstacles stand.",
+  "setup": "Station table, world frame from the robot: x away from the arm bases, y to the robot's left. A dark grey steel base plate, 310 x 300 x 6 mm, x 100-410 mm, y 30-330 mm, fixed. A green steel column, 44 mm across, 140 mm tall, fixed at x 350, y 70 mm. A green steel arm turns on it about the vertical: 280 mm long (250 mm out from the column's axis), 44 mm wide, 12 mm thick, its underside 80 mm above the table, made of two 12 mm rails with a 20 mm slot between them from 72 to 228 mm out. It starts pointing straight at the robot and swings only clockwise seen from above, through 110 degrees, to a stop where it points 70 degrees left of straight ahead; a yellow line 10 mm wide on the plate, 40-240 mm out from the column, lies under the parked arm. A red steel drill head (150 g) rides on the arm: round flanges 40 mm across on top of the rails and 3 mm under them (it cannot be lifted off), a white knob 22 mm across and 30 mm tall on top, and a black spindle 20 mm across hanging to 30 mm above the table. Its spindle axis can be 80 to 220 mm from the column's axis and starts at 150 mm. Two aluminium parts, 100 x 30 x 50 mm tall, 400 g each, stand on the plate with their long sides along lines from the column: part 1 on the arm's line after 25 degrees of swing, part 2 after 75 degrees. Each is in the inner band (ends 62.5 and 162.5 mm from the column's axis) or the outer band (ends 137 and 237 mm). Lot A: part 1 inner, part 2 outer. Lot B: both inner. Lot C: both outer. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Per trial: 0 if at any time during the trial either aluminium part moved more than 3 mm from where it stood or tipped more than 3 degrees; this overrides everything. Otherwise, at the end of the trial, with the robot let go (no part of either gripper within 5 mm of the head or the arm) and the arm and head still: 1.0 if the arm is within 2 degrees of its stop (its centre line within 2 degrees of the yellow line) and the spindle's axis is within 5 mm of its innermost position (at most 85 mm from the column's axis); 0.5 if the arm is within 2 degrees of its stop but the head is not run in; otherwise 0. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "900 steps (45 seconds at 20 Hz) per trial; three trials (lots A, B, C)",
+  "reset_notes": "Swing the arm back to point at the robot and slide the head to 150 mm from the column's axis. Stand the two parts for the lot: on the lines 25 and 75 degrees round from the arm's start, centred 112.5 mm (inner) or 187 mm (outer) from the column's axis. Lot A: part 1 inner, part 2 outer; lot B: both inner; lot C: both outer.",
+  "fidelity": "The arm is clamped at the height set for the next batch, and a long bit with the quill fully up still hangs below the part tops. The head is a simplified round saddle pushed by hand, not by a handwheel. The drill's ways have friction 0.3 (oiled steel); the parts stand loose, so a strike shows as a moved part. Lots stop a single fixed habit, not a memorised replay of all three layouts.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B, C); demo: 1.0 in each lot",
+  "media": "M-TWVTQS"
+}
