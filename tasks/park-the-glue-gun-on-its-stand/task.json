@@ -1,0 +1,22 @@
+{
+  "title": "Park a tipped-over mini glue gun so it stands with its hot nozzle off the mat",
+  "category": "Impact on jobs",
+  "keywords": [
+    "hot glue gun",
+    "fold-out stand",
+    "detent",
+    "nose-heavy",
+    "tipping",
+    "bimanual",
+    "craft bench"
+  ],
+  "instruction": "Leave the glue gun standing on its handle on the silicone mat, with its nozzle at least 4 cm above the mat.",
+  "context": "Craft, florist and display-assembly workers set a hot glue gun down between beads many times a shift; one that tips onto its nozzle drips glue and can scorch the bench or a hand reaching past. A mini glue gun is nose-heavy and cannot stand on its handle alone. Unlike TK-TCBCWZ (a stay under a fixed reading stand), here the tool itself is loose and has to end up standing on its own.",
+  "setup": "World frame: x away from the arm bases, y to the robot's left; heights above the mat's top. Mat: orange silicone, 200 x 300 x 3 mm, fixed, centred 300 mm out and 70 mm left of the midline (x 200-400, y -80 to 220 mm). Glue gun: corded mini hot-glue gun (7 mm sticks; the cord is not modelled), blue ABS, 0.25 kg in all, nozzle pointing to the robot's right (-y), its thickness along x, centred at x 300 mm. Handle 28 mm (along the gun) x 26 mm x 86 mm. Housing 120 x 30 x 30 mm on top of it (85-115 mm up the handle), from 15 mm behind the handle's centre to 105 mm ahead; a black trigger 8 x 12 x 25 mm in front of the handle; a brass nozzle 10 mm across and 20 mm long and a brass tip 5 mm across and 8 mm long (tip end 133 mm ahead of the handle's centre, 98 mm up); a white 7 mm glue stick showing 40 mm out of the back, 100 mm up. Mass spread evenly over these (the heater sits in the housing and the handle is hollow), so the centre of mass is 31 mm ahead of the handle's centre and 80 mm up, 17 mm ahead of the handle's front edge. Stand: a silver U of 4 mm steel wire, 60 mm across (bars 56 mm apart, 13 mm outside the housing's sides), 70 mm long, lying 3 mm under the housing when folded, on a 6 mm pivot rod across the housing's underside 95 mm ahead of the handle's centre, 82 mm up; 20 g. It clicks into two positions with a sprung detent (crest 20 degrees out): folded back under the housing (0), or swung down and forward to its stop at 135 degrees, its foot then 10 mm ahead of the nozzle tip. Start: stand folded; the gun has tipped forward and rests on the front edge of its handle's base (along x 287-313 mm at y 116 mm) and the underside of its nozzle tip (y -38 mm, 2 mm up), the handle leaning 38.7 degrees from upright. Nothing else is on the table.",
+  "scoring": "Judged at the end of the trial. 1.0 if, after the robot has let go (no part of either gripper within 5 mm of the gun or its stand) and with the gun still for 1 s: the gun stands on the mat (its lowest point within 3 mm of the mat's top, and everything touching the mat inside the mat's outline), its handle within 30 degrees of vertical, the tip of its nozzle at least 40 mm above the mat, and its centre of mass over the area spanned by the points touching the mat (a gun that rests stably). How the gun is supported does not matter. Otherwise 0: for example the gun tipped onto its nozzle (handle about 39 degrees over, nozzle on the mat), lying on its side (nozzle about 15 mm up), stood on its tail, held by a gripper, still moving, or partly off the mat.",
+  "run_limit": "900 steps (45 seconds at 20 Hz)",
+  "reset_notes": "1. Fold the stand back under the housing until it clicks. 2. Stand the gun upright on its handle on the mat, the handle's base centred at x 300, y 130 mm, nozzle toward the robot's right. 3. Let go: it tips forward onto its nozzle and comes to rest. 4. Run with -E object_jitter=0.",
+  "fidelity": "Heat is not simulated: the nozzle is not hot and no glue flows. The gun is a corded mini (7 mm stick) glue gun built from boxes and cylinders at true size; its cord is not modelled. Its mass is spread evenly over that shape, which puts the balance ahead of the handle as the front heater does in a real gun. The stand's click is a spring whose rest point jumps between folded and open at the detent's crest. One fixed layout, so a memorised replay is not ruled out.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-2UFA5E"
+}
