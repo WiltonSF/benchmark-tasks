@@ -1,8 +1,8 @@
 """On the station table, in front of the left arm: a locked drop box (the kind used for after-hours returns and key
 drops). Its front is a cream panel 20 mm thick standing across the table, with a 200 mm wide, 60 mm tall slot whose
-floor is 140 mm above the table. A brass flap hangs over the slot on the outside, hinged along its top edge; it
-swings inward when something pushes it, and is pulled shut by its own weight and a spring. Behind the panel, the
-box is closed (grey sides, back, roof and a smooth floor board). A brown packet, 160 x 60 x 25 mm, lies flat on the
+floor is 140 mm above the table. A brass-coloured flap hangs over the slot on the outside, hinged along its top
+edge; it swings inward when something pushes it, and is pulled shut by its own weight and a spring. Behind the
+panel, the box is closed (grey sides, back, roof and a smooth floor board). A brown packet, 160 x 60 x 25 mm, lies flat on the
 table in front of the box, its long side pointing at the slot.
 """
 

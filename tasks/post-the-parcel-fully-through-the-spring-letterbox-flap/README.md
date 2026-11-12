@@ -1,7 +1,7 @@
 # Post a packet fully through a drop box's flap slot
 
-A locked drop box stands on the table. Its front is a 20 mm panel with a slot and a brass flap that swings inward.
-The robot posts a cardboard packet through the slot so that it drops inside and the flap falls shut behind it.
+A locked drop box stands on the table. Its front is a 20 mm panel with a slot and a brass-coloured flap that swings
+inward. The robot posts a cardboard packet through the slot so that it drops inside and the flap falls shut behind it.
 
 The gripper's fingers are about 26 mm wide (front to back) at the pads but about 68 mm wide higher up, so the hand
 cannot enter the 60 mm slot: it stops with its centre about 34 mm in front of the panel. How far the packet can be
@@ -20,6 +20,17 @@ for Isaac Lab-Arena), on the `station` scene. It uses `parts.py` (in this folder
 hinged flap and for the packet's friction. `near_misses.py` lists near-successes and wrong outcomes with the score
 each must get; they are plain-Python checks of `score()` and `success()` and need no simulator. (In the code the
 box is the object `letterbox`.)
+
+## Building the flap
+
+A solid brass plate of 210 x 66 x 3 mm would weigh about 350 g, seven times the simulated flap. The flap is built
+light instead: cut a 210 x 66 mm piece of 3 mm cast acrylic sheet (about 1.19 g/cm³, so about 49.5 g) and cover its
+outer face with brass-effect self-adhesive film (about 1.5 g more, so about 51 g). Hang it on two short pins through
+its top corners into the box's side walls, so the hinge adds almost no mass to the flap, on a hinge line 4 mm above
+the slot ceiling; it covers the slot and rests against the panel's outer face when shut. Weigh the flap with anything
+fixed to it: it should be 50 g within 2 g (sand the back face if heavy; acrylic sheet varies by about 10% in
+thickness). A 2 g difference changes the flap's weight torque by 4%. In `task.py` it is one uniform 50 g plate
+(`FLAP`), so its weight acts at its middle, as the acrylic's does.
 
 ## Run a trial
 
