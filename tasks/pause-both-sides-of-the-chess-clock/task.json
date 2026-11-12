@@ -1,0 +1,21 @@
+{
+  "title": "Pause a mechanical chess clock without starting the other player's clock",
+  "category": "Societal relevance",
+  "keywords": [
+    "chess clock",
+    "rocker",
+    "partial press",
+    "pause",
+    "arbiter",
+    "mechanism"
+  ],
+  "instruction": "Pause the chess clock so neither player's time runs, without starting the other player's clock.",
+  "context": "Arbiters and players pause a game for an arbiter ruling, a touch-move dispute or a call for help. On a mechanical clock with a seesaw rocker, the rocker's position chooses whose clock runs: pressing the raised button fully stops that clock and starts the other, which costs the other player time. With both buttons level, both movements are held and both clocks stop. Unlike TK-RSKZGJ (tip a rocker onto its stop), the goal here is the rocker's middle, not either end.",
+  "setup": "Station table. Positions in mm: x forward from the line through the arm bases, y left of their midpoint; heights above the table top. One loose part: a mechanical chess clock, 0.50 kg in all (wooden case 95 deep x 160 wide x 70 tall, 0.45 kg), centred (300, 0) on the table, its two white clock faces (56 across, centres 36 high, 40 mm either side of the middle) toward the robot, each with a black steel minute hand 22 x 2.5 and a red flag at twelve; two wooden setting knobs 12 across on the back. On top, on a 14 x 14 x 5 brass post, a brass seesaw rocker 120 long, 14 x 6 in section, pivoted at its middle 75 high about the front-to-back axis, with a black plastic button cap 18 across and 10 tall 50 mm either side of the pivot (y +50 and -50). Level, both cap tops are 88 high; the rocker's stops let a cap go 6 mm above or below that (6.9 degrees), so at the start the cap raised 6 mm is the running side's. The rocker stays where it is left (friction). Lots: in lot A the left cap (y +50) is up at its stop, so the left clock runs; in lot B the right cap is up. Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "Per trial, pass/fail, judged from a photo from the front and the video. Paused: both cap tops within 1.5 mm of the level height of 88 mm (within 3 mm of each other, rocker within 1.7 degrees of level), with no part of either gripper or its fingers within 5 mm of the clock, the rocker and the clock still, scores 1.0 once it has held unbroken for 2 s. The trial scores 0 if at any moment the other player's clock is started (the rocker goes more than 1.5 mm past level toward the cap that started down), or the clock moves more than 10 mm or tips more than 5 degrees, even if it is put back. A cap still above the band (the first clock still running) scores 0. A value exactly on a limit passes. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "1. Stand the clock on its mark, centred (300, 0) mm, faces toward the robot. 2. Lot A: press the right cap fully down so the left cap is up at its stop; lot B: the reverse. 3. Set both minute hands to twelve. 4. Park both arms at their ready pose.",
+  "fidelity": "Rigid parts. The rocker is a hinge with end stops, held where it is left by a drive that follows its own angle (friction). Which clock runs is computed from the rocker angle, and the running clock's minute hand turns at its real rate (6 degrees a minute). The lever train inside the case is not modelled. Lots vary which cap starts up; that stops a fixed one-side habit, not a replay of both lots.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A and B); demo: 1.0 in each lot",
+  "media": "M-S6C9LK"
+}
