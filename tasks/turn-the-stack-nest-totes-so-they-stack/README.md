@@ -46,14 +46,20 @@ The run prints `task_score`. Scoring is `score()` and `success()` in `task.py`, 
   tall), its centre is within 6 mm of the blue tote's centre in x and y, and it moves under 1 cm/s and turns under
   0.5 rad/s. The scorer cannot see the gripper. The 1.5 mm band is tighter than the demo's release height (5 to 7 mm
   above the ledges), so a tote still held at release height does not count.
-- "Pressing on the parts" is kept as a record over the whole trial: once any grey tote's lowest point goes below
-  43 mm above the table (2 mm below the ledge tops, so past the ledges and on its way to the parts box) while its
-  centre is over a blue tote's inside, that blue tote can no longer qualify, so the trial scores 0 from then on. A tote turned to stack is
-  held at 45 mm by the ledges and cannot reach 43 mm. The record is cleared only at a new trial: when every loose object is back
-  within 0.5 mm of its start, at rest, having got there by a jump of more than 20 mm in one control step (a scene
-  reset, which the robot cannot produce).
-- A parts box counts as unmoved when its centre is within 5 mm of its start.
+- Each blue tote is scored on its own: 0.5 when it qualifies, so 1.0 when both do. `success()` is both qualifying.
+- "Pressing on the parts" is kept as a record over the whole trial, per blue tote: once any grey tote's lowest point
+  goes below 43 mm above the table (2 mm below the ledge tops, so past the ledges and on its way to the parts box)
+  while its centre is over a blue tote's inside, that blue tote can no longer qualify, and the trial can score at most
+  0.5 from then on. A tote turned to stack is held at 45 mm by the ledges and cannot reach 43 mm.
+- A parts box counts as undisturbed while its centre stays within 5 mm of its start. This is also kept as a record
+  over the whole trial, per blue tote: once a parts box has been more than 5 mm from its start, its blue tote can no
+  longer qualify, even if the box is put back.
+- Both records are cleared only at a new trial: when every loose object is back within 0.5 mm of its start, at rest,
+  having got there by a jump of more than 20 mm in one control step (a scene reset, which the robot cannot produce).
 - Either grey tote may go on either blue tote.
+- Stacking the right grey tote needs no turn, so a policy that carries both totes straight across, or turns both,
+  scores 0.5: one blue tote qualifies and the other is pressed. Turning only the left one
+  scores 1.0.
 
 ## Scripted demo
 
@@ -65,7 +71,7 @@ the tracking error measured in GPU traces (right arm: 4.5 mm in x, 2 mm in y; le
 each tote enters its 4 mm-per-side opening centred.
 
 A GPU trace of the same demo without the turn showed the left tote nest flat onto its parts box (underside 35 mm
-above the table), so that blue tote did not qualify and the trial scored 0.
+above the table), so that blue tote did not qualify.
 
 ## Checks without a simulator
 
@@ -73,10 +79,12 @@ above the table), so that blue tote did not qualify and the trial scored 0.
 python near_misses.py   # needs yam_arena importable
 ```
 
-The task is pass/fail: 1.0 only when both blue totes qualify, otherwise 0. The cases include: both stacked (1.0);
-each one alone (0); never turning, so the left tote nests (0); nesting and then lifting out, turning and stacking
-(still 0, from the trial record); always turning, so the right tote nests (0); the two grey totes swapped between
-blue totes (1.0); lowered nest-wise to an underside height of 43.0 mm (no penalty) versus 42.9 mm (penalty); 1.5 mm
-above the ledges (1.0) versus 2 mm or 10 mm (held, 0); tilted 2 degrees; still moving; 6 mm
-versus 7 mm off centre; parts box moved 5 mm versus 6 mm; upside down; one grey tote on top of the other; parts box
-taken out and the tote nested to the blue floor.
+Each blue tote that qualifies scores 0.5. The cases include: both stacked (1.0); each one alone (0.5); never
+turning, so the left tote nests (0.5); nesting and then lifting out, turning and stacking (still 0.5, from that blue
+tote's record); always turning, so the right tote nests (0.5, and still 0.5 after it is lifted out and stacked); the
+two grey totes swapped between blue totes (1.0); lowered nest-wise to an underside height of 43.0 mm (no penalty,
+1.0 once both are stacked) versus 42.9 mm (penalty, 0.5 once both are stacked); 1.5 mm above the ledges (1.0) versus
+2 mm or 10 mm (held, 0.5); tilted 2 degrees (0.5); still moving (0.5); 6 mm (1.0) versus 7 mm (0.5) off centre;
+parts box moved 5 mm (1.0) versus 6 mm (0.5, and still 0.5 after it is put back); upside down (0.5); one grey tote on
+top of the other (0.5); left tote left on the table (0.5); parts box taken out and the tote nested to the blue floor
+(0, then 0.5 once both are stacked).

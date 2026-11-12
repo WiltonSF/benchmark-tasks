@@ -160,11 +160,12 @@ def _parts_ok(objects, side: str) -> bool:
     return bool(np.linalg.norm(np.asarray(st.pos) - PARTS[side].pos) <= PARTS_TOL + 1e-6)
 
 
-# Trial history: whether a grey tote has ever gone down past a blue tote's ledges (toward its parts box). The scorer sees one step at a
-# time, so it is kept here. It is cleared only at a new trial: every loose object back within 0.5 mm of its start
-# and at rest, having got there by a jump of more than 20 mm in one step (a scene reset, not reachable by the robot).
+# Trial history, per blue tote: whether a grey tote has ever gone down past its ledges (toward its parts box), and
+# whether its parts box has ever been more than 5 mm from its start. The scorer sees one step at a time, so both are
+# kept here. They are cleared only at a new trial: every loose object back within 0.5 mm of its start and at rest,
+# having got there by a jump of more than 20 mm in one step (a scene reset, not reachable by the robot).
 _START = {o.name: np.asarray(o.pos, float) for o in OBJECTS if o.free}
-_HISTORY = {"pressed": {"left": False, "right": False}, "prev": None}
+_HISTORY = {"pressed": {"left": False, "right": False}, "moved": {"left": False, "right": False}, "prev": None}
 
 
 def _update(objects) -> None:
@@ -174,8 +175,11 @@ def _update(objects) -> None:
     jumped = prev is None or any(np.linalg.norm(now[n] - prev[n]) > RESET_JUMP for n in _START)
     if home and jumped:
         _HISTORY["pressed"] = {"left": False, "right": False}
+        _HISTORY["moved"] = {"left": False, "right": False}
     _HISTORY["prev"] = now
     for side in BLUE_XY:
+        if not _parts_ok(objects, side):
+            _HISTORY["moved"][side] = True
         for g in GREY:
             st = objects[f"grey_{g}"]
             if _over(st, side) and st.low[2] - TOP < PRESS_Z - 1e-6:
@@ -183,16 +187,18 @@ def _update(objects) -> None:
 
 
 def pair_ok(objects, side: str) -> bool:
-    if _HISTORY["pressed"][side] or not _parts_ok(objects, side):
+    """This blue tote qualifies: a grey tote rests on its ledges, and during the trial its parts box never moved more
+    than 5 mm and no grey tote went down past its ledges."""
+    if _HISTORY["pressed"][side] or _HISTORY["moved"][side] or not _parts_ok(objects, side):
         return False
     return any(stacked(objects[f"grey_{g}"], side) for g in GREY)
 
 
 def score(objects):
-    """1.0 when each blue tote has a grey tote resting on its ledges, its parts box unmoved, and no grey tote ever
-    gone down past its ledges during the trial; else 0 (pass/fail)."""
+    """0.5 for each blue tote that qualifies (see pair_ok), so 1.0 when both do. Each blue tote is scored on its
+    own: a press or a moved parts box in one costs only that tote's 0.5."""
     _update(objects)
-    return 1.0 if pair_ok(objects, "left") and pair_ok(objects, "right") else 0.0
+    return 0.5 * pair_ok(objects, "left") + 0.5 * pair_ok(objects, "right")
 
 
 def success(objects):
