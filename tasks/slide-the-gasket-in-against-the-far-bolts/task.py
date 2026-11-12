@@ -1,9 +1,10 @@
-"""On the station table, in front of the arms: a pipe joint opened up for a new gasket. A grey steel lower flange
-lies flat on the table with a square bore in its middle and four bolt holes near its corners, two on the far side and
-two on the side nearer the robot. A matching upper flange is held level a short way above it by two posts at its
-far edge, its holes over the lower flange's holes, leaving a gap between the two. On a block in front of the gap
-lies a flat black ring gasket with a long handle tab pointing toward the robot, at the height of the gap's floor.
-Four loose steel bolts stand upright on the table, two to the robot's left of the joint and two to its right.
+"""On the station table, in front of the arms: a short flanged pipe joint opened up for a new gasket. A grey steel
+pipe stands upright on the table with a flange near its top, four bolt holes near the flange's corners, two on the far
+side and two on the side nearer the robot. A matching flange on a second short length of pipe sits level a short way
+above it, its holes over the lower flange's holes. It rests on two loose steel spacer blocks set between the flanges
+at their left and right edges, which hold the joint open. On a block in front of the gap lies a flat black ring gasket
+with a long handle tab pointing toward the robot, at the height of the gap's floor. Four loose steel bolts stand
+upright on the table, two to the robot's left of the joint and two to its right.
 """
 
 import math
@@ -19,6 +20,7 @@ from yam_arena.demo import Waypoint  # noqa: E402
 from yam_arena.task_file import TABLE_TOP  # noqa: E402
 
 SCENE = "station"
+SUCCESS_HOLD_S = 3.0  # the trial ends at 1.0 once success() has held this long: the arms are clear by then
 TOP = TABLE_TOP[SCENE]
 
 STEEL, DARK, RUBBER, BLOCK_C, BOLT_C = (0.55, 0.57, 0.60), (0.35, 0.36, 0.38), (0.08, 0.08, 0.09), \
@@ -26,13 +28,20 @@ STEEL, DARK, RUBBER, BLOCK_C, BOLT_C = (0.55, 0.57, 0.60), (0.35, 0.36, 0.38), (
 
 # World frame: x away from the arm bases, y to the robot's left, z up (m). Joint coordinates are relative to the
 # pipe axis on the table (CX, CY, TOP).
-CX, CY = 0.34, 0.0
+CX, CY = 0.32, 0.0
 HALF = 0.080  # flanges are 160 mm square
-LOW_H = 0.015  # lower flange: 0 to 15 mm
-GAP = 0.020  # 15 to 35 mm
-UP_Z0, UP_H = LOW_H + GAP, 0.010  # upper flange: 35 to 45 mm
+LOW_Z0, LOW_H = 0.020, 0.015  # lower flange: 20 to 35 mm, on the lower pipe
+LOW_TOP = LOW_Z0 + LOW_H
+GAP = 0.016  # 35 to 51 mm, held open by the spacer blocks
+UP_Z0, UP_H = LOW_TOP + GAP, 0.010  # upper flange: 51 to 61 mm
 UP_TOP = UP_Z0 + UP_H
-BORE = 0.030  # half-width of the square bore
+BORE = 0.030  # half-width of the square bore; the pipe (60 mm square tube, 5 mm wall) fills it
+PIPE_IN = 0.025  # half-width of the pipe's inside
+UP_PIPE = 0.040  # the upper pipe stands 40 mm above the upper flange
+UP_MASS = 2.1  # upper flange and its pipe, steel
+SPACER = (0.040, 0.012, GAP)  # two loose steel spacer blocks (the spreader) between the flanges
+SPACER_Y = 0.072  # their centres, left and right of the axis
+SPACER_MASS = 0.060  # steel
 BOLT_CIRCLE = 0.065
 HOLE_UP = 0.0065  # half-width of the upper flange's square bolt holes (13 mm): they locate the bolts
 HOLE_LOW = 0.008  # the lower flange's holes are clearance holes (16 mm)
@@ -40,18 +49,19 @@ H45 = BOLT_CIRCLE / math.sqrt(2)
 HOLES = {"far_left": (H45, H45), "far_right": (H45, -H45), "near_left": (-H45, H45), "near_right": (-H45, -H45)}
 FAR, NEAR = ("far_left", "far_right"), ("near_left", "near_right")
 
-# Bolt: a 10 mm shank 42 mm long under a 20 mm head 10 mm tall. Seated, the head rests on the upper flange and the
-# shank runs through both flanges, its end 3 mm above the table.
-SHANK_R, SHANK_L, HEAD_R, HEAD_H = 0.005, 0.042, 0.010, 0.010
-BOLT_MASS = 0.030
-SEATED_Z = UP_TOP - SHANK_L  # bolt origin (bottom of the shank) when seated
+# Bolt: a 10 mm shank 45 mm long under a 20 mm head 10 mm tall (M10 x 45 size). Seated, the head rests on the upper
+# flange and the shank runs through both flanges, its end 4 mm below the lower flange: with the spacers out and the
+# flanges closed on the gasket, 16 mm would stand below the lower flange for a nut.
+SHANK_R, SHANK_L, HEAD_R, HEAD_H = 0.005, 0.045, 0.010, 0.010
+BOLT_MASS = 0.052  # steel
+SEATED_Z = UP_TOP - SHANK_L  # bolt origin (bottom of the shank) when seated, relative to the table
 
 # Ring gasket: an octagonal band whose flats face the bolts, 4 mm thick, with a handle tab toward the robot.
 RING_OUT = BOLT_CIRCLE - SHANK_R - 0.0005  # outer radius: 0.5 mm inside the bolts' inner edges
 RING_IN = 0.042
 RING_T = 0.004
 TAB_LEN, TAB_W, TAB_H = 0.085, 0.020, 0.010
-RING_MASS = 0.025
+RING_MASS = 0.050  # rubber, about 41 cm3
 
 
 def _plate(z0, h, color, hole):
@@ -76,21 +86,36 @@ def _plate(z0, h, color, hole):
     return out
 
 
+def _pipe(z0, z1):
+    """A square steel tube round the pipe axis, 60 mm outside and 50 mm inside, from z0 to z1 (part frame)."""
+    h, w, c = z1 - z0, BORE - PIPE_IN, (z0 + z1) / 2
+    return [parts.box((2 * BORE, w, h), at=(0.0, s * (BORE - w / 2), c), color=STEEL) for s in (-1, 1)] + \
+        [parts.box((w, 2 * PIPE_IN, h), at=(s * (BORE - w / 2), 0.0, c), color=STEEL) for s in (-1, 1)]
+
+
 BLOCK_X = (-HALF - 0.135, -HALF)  # support block in front of the gap, its top level with the lower flange
-JOINT = parts.Part(
-    "flanges", pos=(CX, CY, TOP),
-    shapes=[*_plate(0.0, LOW_H, STEEL, HOLE_LOW), *_plate(UP_Z0, UP_H, STEEL, HOLE_UP),
-            *[parts.box((0.012, 0.012, GAP), at=(HALF - 0.008, s * 0.065, LOW_H + GAP / 2), color=DARK)
-              for s in (-1, 1)],
-            parts.box((BLOCK_X[1] - BLOCK_X[0], 0.140, LOW_H), at=(sum(BLOCK_X) / 2, 0.0, LOW_H / 2), color=BLOCK_C)],
+LOWER = parts.Part(  # fixed: the lower pipe standing on the table, its flange and the gasket's support block
+    "lower_flange", pos=(CX, CY, TOP),
+    shapes=[*_plate(LOW_Z0, LOW_H, STEEL, HOLE_LOW), *_pipe(0.0, LOW_TOP),
+            parts.box((BLOCK_X[1] - BLOCK_X[0], 0.140, LOW_TOP), at=(sum(BLOCK_X) / 2, 0.0, LOW_TOP / 2),
+                      color=BLOCK_C)],
 )
+UPPER = parts.Part(  # loose: the upper flange and its pipe, resting on the spacer blocks; origin at its underside
+    "upper_flange", pos=(CX, CY, TOP + UP_Z0), mass=UP_MASS,
+    shapes=[*_plate(0.0, UP_H, STEEL, HOLE_UP), *_pipe(0.0, UP_H + UP_PIPE)],
+)
+SPACERS = [
+    parts.Part(f"spacer_{i + 1}", pos=(CX, CY + s * SPACER_Y, TOP + LOW_TOP), mass=SPACER_MASS,
+               shapes=[parts.box(SPACER, at=(0.0, 0.0, GAP / 2), color=DARK)])
+    for i, s in enumerate((1, -1))
+]
 
 RING_START_X = -HALF - 0.065  # ring centre at the start, relative to the pipe axis
 RING_MID = 0.050  # the band is 48 overlapping discs round this radius: a round ring, its edges scalloped by 0.6 mm
 N_DISC = 48
 DISC_R = RING_OUT - RING_MID
 RING = parts.Part(
-    "gasket", pos=(CX + RING_START_X, CY, TOP + LOW_H), mass=RING_MASS,
+    "gasket", pos=(CX + RING_START_X, CY, TOP + LOW_TOP), mass=RING_MASS,
     shapes=[
         *[parts.cylinder(DISC_R, RING_T, at=(RING_MID * math.cos(a), RING_MID * math.sin(a), RING_T / 2), color=RUBBER)
           for a in (2 * math.pi * k / N_DISC for k in range(N_DISC))],
@@ -111,14 +136,14 @@ def _bolt(i, xy):
 
 BOLTS = [_bolt(i + 1, xy) for i, xy in enumerate(BOLT_SPOTS)]
 BOLT_NAMES = [b.name for b in BOLTS]
-OBJECTS = [JOINT, RING, *BOLTS]
+OBJECTS = [LOWER, UPPER, *SPACERS, RING, *BOLTS]
 
 CENTRE_TOL = 0.004
 FLAT_TOL = 3.0
 SEAT_TOL_Z = 0.0015  # ring underside to the lower flange's top
 UPRIGHT_TOL = 8.0
 HEAD_TOL = 0.002  # bolt head underside to the upper flange's top
-IN_HOLE = 0.003  # bolt head centre within 3 mm of the hole centre, seen from above
+IN_HOLE = 0.003  # bolt head centre within 3 mm of the upper flange's hole centre, seen from above
 RELEASE_GAP = 0.005
 
 
@@ -136,7 +161,11 @@ def _tilt(st) -> float:
 
 
 # -- release check: no gripper link within 5 mm of the gasket or a counted bolt ------------------------------------
-_GAP: dict[str, float] = {}  # object -> closest gripper distance at the last step (m); empty offline (no robot)
+# In the simulator an on_step hook measures, every step, each part's distance to both grippers. A part that has not
+# been measured yet (no step since the reset) is not credited: the check fails closed. Offline (near_misses.py sets
+# OFFLINE_FLAG; no simulator, no robot) each case stands for a state with the grippers away.
+_GAP: dict[str, float] = {}  # object -> closest gripper distance at the last step (m)
+OFFLINE_FLAG = "GASKET_TASK_OFFLINE_CHECK"
 _HAND_LINKS = ("gripper", "tip_left", "tip_right")
 _SPECS = {o.name: o for o in OBJECTS}
 
@@ -172,8 +201,16 @@ def _record_gaps(sim):
         _GAP[name] = min(float(analysis.hulls_to_box(hands, c, r, sz)[0]) for _, c, r, sz in boxes)
 
 
+def _offline() -> bool:
+    import os
+
+    return os.environ.get(OFFLINE_FLAG) == "1"
+
+
 def _released(name) -> bool:
-    return _GAP.get(name, math.inf) >= RELEASE_GAP - 1e-6
+    if name not in _GAP:
+        return _offline()
+    return _GAP[name] >= RELEASE_GAP - 1e-6
 
 
 def _ring_in(objects) -> bool:
@@ -181,7 +218,7 @@ def _ring_in(objects) -> bool:
     g = objects["gasket"]
     p = np.asarray(g.pos, float)
     return bool(
-        abs(p[2] - (TOP + LOW_H)) <= SEAT_TOL_Z + 1e-6
+        abs(p[2] - (TOP + LOW_TOP)) <= SEAT_TOL_Z + 1e-6
         and _tilt(g) < FLAT_TOL
         and math.hypot(p[0] - CX, p[1] - CY) <= CENTRE_TOL + 1e-6
         and g.resting()
@@ -189,20 +226,24 @@ def _ring_in(objects) -> bool:
     )
 
 
-def _bolt_in(st, hole) -> bool:
+def _bolt_in(st, upper, hole) -> bool:
+    """Upright, head on the upper flange's top and centred over one of its holes, still. Measured in the upper
+    flange's own frame, wherever it is (it is loose on its spacers)."""
     hx, hy = HOLES[hole]
-    p = np.asarray(st.pos, float)
-    head = p + _rot(st.quat_xyzw) @ np.array([0.0, 0.0, SHANK_L + HEAD_H / 2])  # centre of the head, seen from above
+    ru, pu = _rot(upper.quat_xyzw), np.asarray(upper.pos, float)
+    rb, p = _rot(st.quat_xyzw), np.asarray(st.pos, float)
+    under = ru.T @ (p + rb @ np.array([0.0, 0.0, SHANK_L]) - pu)  # centre of the head's underside
+    head = ru.T @ (p + rb @ np.array([0.0, 0.0, SHANK_L + HEAD_H / 2]) - pu)  # centre of the head
     return bool(
         _tilt(st) <= UPRIGHT_TOL + 1e-6
-        and abs(p[2] - (TOP + SEATED_Z)) <= HEAD_TOL + 1e-6
-        and math.hypot(head[0] - (CX + hx), head[1] - (CY + hy)) <= IN_HOLE + 1e-6
+        and abs(under[2] - UP_H) <= HEAD_TOL + 1e-6
+        and math.hypot(head[0] - hx, head[1] - hy) <= IN_HOLE + 1e-6
         and st.resting()
     )
 
 
 def _filled(objects, hole) -> bool:
-    return any(_bolt_in(objects[n], hole) and _released(n) for n in BOLT_NAMES)
+    return any(_bolt_in(objects[n], objects["upper_flange"], hole) and _released(n) for n in BOLT_NAMES)
 
 
 def success(objects):
@@ -211,19 +252,16 @@ def success(objects):
 
 
 def score(objects):
-    """1.0 as success(); 0.5 for the gasket centred with both far bolts in; else 0."""
+    """With the gasket centred: 0.2, plus 0.2 for each hole with a bolt in, in any order (1.0 with all four).
+    Without it: 0."""
     if not _ring_in(objects):
         return 0.0
-    if all(_filled(objects, h) for h in HOLES):
-        return 1.0
-    if all(_filled(objects, h) for h in FAR):
-        return 0.5
-    return 0.0
+    return (1 + sum(_filled(objects, h) for h in HOLES)) / 5
 
 
 # -- scripted demo: fixed waypoints, no state read ---------------------------------------------------------------
 TIP_PAST_TCP = 0.013
-TRAVEL_Z = TOP + 0.11
+TRAVEL_Z = TOP + 0.13
 FINGER_BOLT = -(HEAD_R - 0.005)  # close 5 mm past the head's faces
 FINGER_TAB = -(TAB_W / 2 - 0.003)
 FINGER_NEAR = -(HEAD_R + 0.007)  # part open: 7 mm clear of a head, narrow enough to miss the next bolt
@@ -279,7 +317,7 @@ def demo():
     right += _bolt_moves(BOLT_SPOTS[2], "far_right")
     # Grip the tab 20 mm from its end and slide the gasket in to 3 mm past touching the far bolts, let go, back out.
     grip_off = RING_OUT + TAB_LEN - 0.020  # grip point from the ring centre
-    tz = TOP + LOW_H + 0.002 + TIP_PAST_TCP  # finger tips 2 mm above the tab's underside
+    tz = TOP + LOW_TOP + 0.002 + TIP_PAST_TCP  # finger tips 2 mm above the tab's underside
     x0 = CX + RING_START_X - grip_off
     contact = math.sqrt(2) * (BOLT_CIRCLE - SHANK_R - RING_OUT)  # ring centre past the axis when it touches
     x1 = CX + contact + 0.003 - grip_off
@@ -299,4 +337,6 @@ def demo():
     _wait(right, _t(left) - 1.0, PARK_R)
     right += _bolt_moves(BOLT_SPOTS[3], "near_right")
     right.append(Waypoint(1.0, PARK_R, FINGER_NEAR, "park"))
+    right.append(Waypoint(3.0, PARK_R, FINGER_NEAR, "stay clear while the joint is judged"))
+    _wait(left, _t(right), PARK_L)
     return {"left": left, "right": right}
