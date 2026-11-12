@@ -132,10 +132,10 @@ def _clear_pair(objects) -> bool:
     return False
 
 
-# ---- history: the eight brown cubes must stay on the mat for the whole trial -----------------------------------
+# ---- history: the eight brown cubes must stay flat on the mat for the whole trial ------------------------------
 
 _START = {n: np.array(c.pos) for n, c in CUBES.items()}
-_left_mat = set()  # brown cubes whose centre has been past the mat's edge at some step this trial
+_left_mat = set()  # brown cubes that were not on the mat (lifted, stacked, tipped or off its edge) at some step
 _prev = {}  # every cube's centre at the previous call
 RESET_AT = 0.0005  # a new trial: every cube within 0.5 mm of its start and at rest...
 RESET_JUMP = 0.05  # ...having got there by a jump of over 50 mm since the previous call (a reset, not a move)
@@ -150,7 +150,7 @@ def _track(objects) -> None:
     _prev.clear()
     _prev.update(pos)
     for n in OTHERS:
-        if not _over_mat(objects[n].pos):
+        if not _on_mat(objects[n]):  # checked at every step, not only at the end
             _left_mat.add(n)
 
 
@@ -172,7 +172,7 @@ def _on_pad(s) -> bool:
 
 def success(objects):
     """The blue cube flat on the green pad, wholly within its edges, at rest; the eight brown cubes each sitting
-    flat on the mat and at rest, and none of them ever off the mat during the trial."""
+    flat on the mat at every step of the trial, and at rest at the end."""
     _track(objects)
     blue = objects[TARGET]
     return bool(_others_ok(objects) and _on_pad(blue) and blue.resting())
@@ -220,6 +220,9 @@ GRIP_OPEN = -0.036  # pads 72 mm apart: 11 mm clear of each face of the cube
 # Measured in simulation (Isaac Sim on an L40S): with the fingers turned to close along x, the left arm's TCP settles about 18 mm short of
 # its target in x (toward the robot), both over the cluster and over the pad. The grip and place aim that far out.
 REACH_DX = 0.018
+# Lifting the blue cube straight up while its left and right faces touch the pushed row tipped a brown neighbour past
+# flat (measured in simulation), so the gripped cube first slides toward the robot, where nothing is beside it.
+SLIDE = 0.06
 YAW = -np.pi / 2  # fingers close along x (+90 degrees would need joint6 past its limit)
 
 
@@ -238,7 +241,8 @@ def demo():
         Waypoint(1.5, (bx, by, TRAVEL_Z), GRIP_OPEN, "over the blue cube", YAW),
         Waypoint(1.5, (bx, by, GRIP_Z), GRIP_OPEN, "descend", YAW),
         Waypoint(0.8, (bx, by, GRIP_Z), FINGER_CLOSED, "grip", YAW),
-        Waypoint(1.2, (bx, by, TRAVEL_Z), FINGER_CLOSED, "lift", YAW),
+        Waypoint(1.5, (bx - SLIDE, by, GRIP_Z), FINGER_CLOSED, "slide it clear of its neighbours", YAW),
+        Waypoint(1.2, (bx - SLIDE, by, TRAVEL_Z), FINGER_CLOSED, "lift", YAW),
         Waypoint(1.8, (px, py, TRAVEL_Z), FINGER_CLOSED, "carry", YAW),
         Waypoint(1.2, (px, py, place_z), FINGER_CLOSED, "lower", YAW),
         Waypoint(0.6, (px, py, place_z), FINGER_OPEN, "release", YAW),

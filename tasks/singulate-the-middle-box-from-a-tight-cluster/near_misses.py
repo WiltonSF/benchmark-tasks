@@ -2,7 +2,7 @@
 
 Each case: (label, {object: (centre, size or None, velocity or None[, quat_xyzw])}, expected score, expected
 success). Objects not listed stay at their start. Cases run in order and the task keeps a whole-trial record of
-brown cubes that left the mat. It clears only when every cube is back within 0.5 mm of its start, at rest, after a
+brown cubes that were not flat on the mat at some step (lifted, stacked, tipped or past its edge). It clears only when every cube is back within 0.5 mm of its start, at rest, after a
 jump of over 50 mm since the previous call (an episode reset), so a "new trial" case must follow a case in which some
 cube is far from its start.
 """
@@ -98,12 +98,14 @@ CASES = [
      {"blue_box": ((CX, CY + PITCH, MAT_TOP + CUBE + H), None, None)}, 0.0, False),
     ("blue cube on the pad, a brown cube moved to the mat's edge (centre still over the mat)",
      {**BLUE_ON_PAD, "box_fl": (on_mat(MAT_X[1] - 0.005, 0.20), None, None)}, 1.0, True),
-    ("blue cube on the pad, a brown cube rolled onto another face, flat on the mat",
-     {**BLUE_ON_PAD, "box_nl": (start("box_nl"), None, None, tilt_x(90))}, 1.0, True),
+    ("blue cube on the pad, a brown cube slid elsewhere on the mat (never lifted)",
+     {**BLUE_ON_PAD, "box_ml": (on_mat(0.16, MAT_Y[0] + 0.05), None, None)}, 1.0, True),
     ("blue cube on the pad, a brown cube stacked on another",
      {**BLUE_ON_PAD, "box_nc": ((CX - PITCH, CY - PITCH, MAT_TOP + CUBE + H), None, None)}, 0.0, False),
+    ("new trial: starting layout", {}, 0.0, False),
     ("blue cube on the pad, a brown cube leaning 10 degrees",
      {**BLUE_ON_PAD, "box_nr": ((CX - PITCH, CY - PITCH, MAT_TOP + TILT_H), None, None, tilt_x(10))}, 0.0, False),
+    ("new trial: starting layout", {}, 0.0, False),
     ("blue cube on the pad, a brown cube still sliding", {**BLUE_ON_PAD, "box_fc": (start("box_fc"), None, MOVING)},
      0.0, False),
     # Exact limits pass; just past them fails.
@@ -115,10 +117,12 @@ CASES = [
      {**BLUE_ON_PAD, "box_nl": ((*CUBES["box_nl"].pos[:2], MAT_TOP + H + 0.003), None, None)}, 1.0, True),
     ("blue on the pad, a brown cube's bottom 3.1 mm above the mat",
      {**BLUE_ON_PAD, "box_nl": ((*CUBES["box_nl"].pos[:2], MAT_TOP + H + 0.0031), None, None)}, 0.0, False),
+    ("new trial: starting layout", {}, 0.0, False),
     ("blue on the pad, a brown cube tilted to exactly 53 mm high", {**BLUE_ON_PAD, "box_nl": tilted_on_mat("box_nl", 0.053)},
      1.0, True),
     ("blue on the pad, a brown cube tilted to 53.2 mm high", {**BLUE_ON_PAD, "box_nl": tilted_on_mat("box_nl", 0.0532)},
      0.0, False),
+    ("new trial: starting layout", {}, 0.0, False),
     ("blue cube tilted to exactly 53 mm high on the pad",
      {"blue_box": ((PX, PY, PAD_TOP + 0.0265), None, None, tilt_x(tilt_for_height(0.053)))}, 1.0, True),
     ("blue cube's edge exactly on the pad's edge", {"blue_box": (on_pad(0.015), None, None)}, 1.0, True),
@@ -145,8 +149,29 @@ CASES = [
     ("blue and a brown cube both carried to the pad",
      {"blue_box": (on_pad(-0.0, 0.0), None, None), "box_ml": ((PX, PY, PAD_TOP + CUBE + H), None, None)}, 0.0, False),
     ("new trial: starting layout", {}, 0.0, False),
-    ("brown cube lifted and set back down elsewhere on the mat, blue on the pad",
-     {**BLUE_ON_PAD, "box_ml": (on_mat(0.16, MAT_Y[0] + 0.05), None, None)}, 1.0, True),
+    # Whole-trial flatness: a brown cube lifted, stacked or tipped at any step zeroes the trial, even when every
+    # brown cube is flat on the mat again at the end.
+    ("lift: a brown cube held 20 mm above the mat", {"box_ml": ((*CUBES["box_ml"].pos[:2], MAT_TOP + H + 0.02), None, None)},
+     0.0, False),
+    ("lift: set down elsewhere on the mat, then the blue cube on the pad",
+     {**BLUE_ON_PAD, "box_ml": (on_mat(0.16, MAT_Y[0] + 0.05), None, None)}, 0.0, False),
+    ("new trial: starting layout", {}, 0.0, False),
+    ("stack: a brown cube set on top of another for a while",
+     {"box_fl": ((*CUBES["box_fc"].pos[:2], MAT_TOP + CUBE + H), None, None)}, 0.0, False),
+    ("stack: put back in its place, then the blue cube on the pad", {**BLUE_ON_PAD}, 0.0, False),
+    ("new trial: starting layout", {}, 0.0, False),
+    ("roll: a brown cube tipped 45 degrees, part way through rolling it over", {
+        "box_nl": ((*CUBES["box_nl"].pos[:2], MAT_TOP + H * math.sqrt(2)), None, None, tilt_x(45))}, 0.0, False),
+    ("roll: lying flat on another face in its place, then the blue cube on the pad",
+     {**BLUE_ON_PAD, "box_nl": (start("box_nl"), None, None, tilt_x(90))}, 0.0, False),
+    ("new trial: starting layout", {}, 0.0, False),
+    ("lift at the limit: a brown cube's bottom exactly 3 mm above the mat for a while",
+     {"box_nl": ((*CUBES["box_nl"].pos[:2], MAT_TOP + H + 0.003), None, None)}, 0.0, False),
+    ("lift at the limit: put back, then the blue cube on the pad", {**BLUE_ON_PAD}, 1.0, True),
+    ("new trial: starting layout", {}, 0.0, False),
+    ("lift past the limit: a brown cube's bottom 3.1 mm above the mat for a while",
+     {"box_nl": ((*CUBES["box_nl"].pos[:2], MAT_TOP + H + 0.0031), None, None)}, 0.0, False),
+    ("lift past the limit: put back, then the blue cube on the pad", {**BLUE_ON_PAD}, 0.0, False),
     ("new trial: starting layout", {}, 0.0, False),
 ]
 
