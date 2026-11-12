@@ -1,0 +1,22 @@
+{
+  "title": "Zero a dial indicator at its current reading without disturbing the setup",
+  "category": "Impact on jobs",
+  "keywords": [
+    "dial indicator",
+    "metrology",
+    "bezel",
+    "zeroing",
+    "inspection",
+    "machining",
+    "do not disturb"
+  ],
+  "instruction": "Zero the dial indicator at its current reading without disturbing the setup.",
+  "context": "Machinists and quality inspectors zero a dial indicator on a part or gauge block before every comparative measurement; zeroing it by pushing the plunger, or by knocking the part, shifts the reference and every reading after it is wrong. Unlike TK-RXTGF5 (lay a pointer on a fixed 120 degree mark), the target here is wherever the live pointer sits, the scale is what turns, and the measurement must stay untouched.",
+  "setup": "Station table. Positions in mm: x forward from the line through the arm bases, y left of their midpoint; heights above the table top. All parts rigid. Fixed: a black granite surface plate 240 x 240 x 40, centred (300, 140), its top at 40. On it, a 0.01 mm dial indicator lying face up, centred (250, 160): chrome case 72 across and 20 thick (45 to 65 high), with a knurled chrome bezel 75 across and 6 tall (65 to 71) carrying the white dial, 66 across. Dial marks (they turn with the bezel): a red zero line 13 x 4 from 20 to 33 mm out from the centre; black lines 8 x 2.5 at 25, 50 and 75 divisions; black dots 3 across every 10 divisions; 100 divisions per turn, clockwise seen from above. A black pointer 31 x 3 x 1 (24 mm from the centre to its tip) on a 6 mm hub, 2 mm over the dial. An 8 mm chrome stem runs forward from the case (34 to 58 mm from the centre, axis 55 high), clamped by a 10 x 16 x 16 clamp at x 302 on a 10 mm holder bar running along y to a 50 x 60 x 45 magnetic base centred (302, 50). The 4 mm plunger with a 6 mm contact point slides out of the stem along +x; one pointer turn is 1 mm of plunger travel, 10 mm range, spring force about 0.95 N. Loose: a steel block 50 x 40 x 30, 0.47 kg, from x 331.6 to 381.6 and y 140 to 180, its near face holding the plunger 2.37 mm in from its free end, so the pointer points about 133 degrees clockwise from straight ahead. Behind it, fixed, a steel parallel 15 x 80 x 40 from x 381.6 to 396.6, y 120 to 200. Steel on granite friction 0.25 static, 0.20 sliding. Lots change only where the bezel was left (zero line, clockwise from straight ahead seen from above): lot A 28.2 degrees, lot B 208.2, lot C 93.2. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Per trial, judged from a photo over the dial and the video. Zeroed: the red zero line within 2 divisions (7.2 degrees) of the pointer, either side, scores 1.0 (success once held 2 s). Within 5 divisions (18 degrees): 0.5. Further: 0. Both need the hands let go (no part of either gripper or its fingers within 5 mm of the indicator or the block), the bezel still and the block at rest. The setup is judged over the whole trial: if at any moment the plunger moves more than 2 divisions (0.02 mm) from its starting reading (pushed, lifted, or the block moved under it), or the block moves more than 0.5 mm or turns more than 1 degree, the trial scores 0, even if things are put back. A value exactly on a limit passes. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "1. Push the block back against the parallel, centred on the plunger, its near face at x 331.6 mm; let the plunger rest on it. 2. Check the pointer reads 37 divisions past 0 on its third turn (about 133 degrees clockwise from straight ahead). 3. Turn the bezel so the zero line points the lot's angle clockwise from straight ahead: A 28.2, B 208.2, C 93.2 degrees. 4. Park both arms at their ready pose.",
+  "fidelity": "Rigid parts. Plunger and pointer are coupled in code at one turn per mm, as the gear train is; bezel friction is a drive holding it where it is left. No glass crystal, no revolution counter; only every tenth division is drawn. The stand and holder are rigid: pressing on the case or bezel cannot shift the reading here, as it can on a real magnetic stand; only the plunger and block can be disturbed. Lots vary the bezel start, which stops a fixed turn, not a replay of all three.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B, C); demo: 1.0 in each lot",
+  "media": "M-B9449A"
+}
