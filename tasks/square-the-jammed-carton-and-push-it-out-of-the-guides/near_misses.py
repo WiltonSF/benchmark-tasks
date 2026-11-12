@@ -28,6 +28,13 @@ def lowx_at(low_x, deg=0.0):
     return low_x + half
 
 
+def pitched(x, deg, y=CY):
+    """Turned deg about the lane's cross axis (front end up), its lowest edge on the table."""
+    a = math.radians(deg)
+    z = TOP + HX * math.sin(a) + CARTON[2] / 2 * math.cos(a)
+    return {"carton": ((x, y, z), None, None, (0.0, -math.sin(a / 2), 0.0, math.cos(a / 2)))}
+
+
 START_DEG = math.degrees(SKEW)
 SIDE = (0.0, math.sin(math.pi / 4), 0.0, math.cos(math.pi / 4))  # tipped 90 deg onto an end
 
@@ -64,6 +71,28 @@ CASES = [
     ("around: pushed sideways beside the left guide, past its outer face", at(0.30, y=CY + 0.13), 0.0, False),
     ("around: then pushed forward beside it and back in line past the far end", at(lowx_at(XE + 0.010)), 0.0, False),
     ("scene reset to the start, last", at(START_X, deg=START_DEG), 0.0, False),
+    # Over the guides instead of through them, judged over the trial (flat on the table while between the guides'
+    # ends: top within 5 deg of level, underside at most 1 mm up):
+    ("in the wide part, underside exactly 1 mm up", at(0.25, z=Z + 0.001), 0.0, False),
+    ("in the wide part, front end tipped up exactly 5 deg", pitched(0.25, 5.0), 0.0, False),
+    ("then pushed out through the lane (still within the limits)", at(lowx_at(XE + 0.010)), 1.0, True),
+    ("scene reset to the start (over-the-guides cases)", at(START_X, deg=START_DEG), 0.0, False),
+    ("over: lifted 45 mm, clear of the shoulders, over the narrow part", at(0.37, z=Z + 0.045), 0.0, False),
+    ("over: then set down flat, wholly past the far end", at(lowx_at(XE + 0.010)), 0.0, False),
+    ("scene reset to the start (over, 2)", at(START_X, deg=START_DEG), 0.0, False),
+    ("over: lifted only 1.1 mm in the wide part", at(0.25, z=Z + 0.0011), 0.0, False),
+    ("over: then pushed out flat through the lane", at(lowx_at(XE + 0.010)), 0.0, False),
+    ("scene reset to the start (over, 3)", at(START_X, deg=START_DEG), 0.0, False),
+    ("over: front end tipped up 20 deg to ride onto the shoulders", pitched(0.30, 20.0), 0.0, False),
+    ("over: then lowered and pushed out flat", at(lowx_at(XE + 0.010)), 0.0, False),
+    ("scene reset to the start (over, 4)", at(START_X, deg=START_DEG), 0.0, False),
+    ("over: front end tipped up 5.1 deg in the wide part", pitched(0.25, 5.1), 0.0, False),
+    ("over: then pushed out flat", at(lowx_at(XE + 0.010)), 0.0, False),
+    ("scene reset to the start (over, 5)", at(START_X, deg=START_DEG), 0.0, False),
+    ("lifted only once wholly past the far end, then set down flat there", at(lowx_at(XE + 0.010), z=Z + 0.03),
+     0.0, False),
+    ("then set down flat, wholly past the far end", at(lowx_at(XE + 0.010)), 1.0, True),
+    ("scene reset to the start, final", at(START_X, deg=START_DEG), 0.0, False),
 ]
 
 

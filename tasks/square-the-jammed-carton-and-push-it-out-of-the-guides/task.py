@@ -62,14 +62,16 @@ def _rot(q) -> np.ndarray:
 
 
 # Released: an on_step callback measures, every step, how close both arms' fingers and gripper bodies are to the
-# carton. Offline (near_misses.py) there is no robot, so "clear" stays True.
+# carton. Offline (near_misses.py) there is no robot and no reset hook, so "clear" stays True.
 _grip = {"clear": True}
 
 
-# Path: the carton must go through the lane, never around the guides. Judged over the whole trial: once its near end
-# has gone back past the guides' near end, or its box has reached past a guide's outer face anywhere between the
-# guides' two ends, the trial scores 0. The record clears only at a scene reset: the carton back within 0.5 mm of
-# its start, at rest, having got there by a jump of over 20 mm in one control step.
+# Path: the carton must go through the lane, flat on the table, never around or over the guides. Judged over the
+# whole trial: once its near end has gone back past the guides' near end, its box has reached past a guide's outer
+# face anywhere between the guides' two ends, or, while any part of it is between the guides' two ends, it has been
+# off flat (top more than 5 degrees from level, or underside more than 1 mm above the table), the trial scores 0. So
+# lifting or tipping it over the shoulders earns nothing. The record clears only at a scene reset: the carton back
+# within 0.5 mm of its start, at rest, having got there by a jump of over 20 mm in one control step.
 _path = {"fault": False, "prev": None}
 
 
@@ -86,13 +88,15 @@ def _track(st) -> None:
     lo, hi = st.low, st.high
     beside = float(hi[0]) > X0 + EPS and float(lo[0]) < XE - EPS and (
         float(hi[1]) > CY + OUTER + EPS or float(lo[1]) < CY - OUTER - EPS)
-    if float(lo[0]) < X0 - EPS or beside:
+    between = float(hi[0]) > X0 + EPS and float(lo[0]) < XE - EPS
+    lifted = _tilt(st) > FLAT_DEG + EPS or float(lo[2]) - TOP > ON_TABLE + EPS
+    if float(lo[0]) < X0 - EPS or beside or (between and lifted):
         _path["fault"] = True
 
 
 @parts.on_reset
 def _grip_reset(sim):
-    _grip["clear"] = True
+    _grip["clear"] = False  # fail closed: no credit until the first measurement says the grippers are clear
     _path["fault"] = False
     _path["prev"] = None
 
@@ -165,7 +169,8 @@ def distance(objects):
 
 def score(objects):
     """1.0 as success(); 0.5 squared into the narrow part, its leading end at least 30 mm in, flat, still and let
-    go; else 0. 0 for the rest of the trial once the carton has gone round the guides."""
+    go; else 0. 0 for the rest of the trial once the carton has gone round the guides, or been off flat on the
+    table while between the guides' ends."""
     c = objects["carton"]
     _track(c)
     if _path["fault"] or not _settled(c):

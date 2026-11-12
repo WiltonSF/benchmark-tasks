@@ -38,11 +38,15 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
 bounding box (so a turned carton's box is a little larger, which only makes "beyond the far end" stricter). "Still"
 is under 1 cm/s and 0.5 rad/s. "Let go" is measured every control step by a callback that takes the convex hulls of
 both arms' finger and gripper links and their distance to the carton's box; the 1.0 and 0.5 states need it at 5 mm or
-more, so a carton still being pushed does not count. Success must hold for 1 s.
+more, so a carton still being pushed does not count. It fails closed: after each reset nothing is credited until the
+first measurement. Success must hold for 1 s.
 
-The carton must go through the lane, never around the guides. Every step `score()` and `success()` record a fault,
-which zeroes the rest of the trial, if the carton's bounding box goes back past the guides' near end (x below 0.16)
-or reaches past either guide's outer face anywhere between x 0.16 and 0.40. The record clears in the embodiment's
+The carton must go through the lane, flat on the table, never around or over the guides. Every step `score()` and
+`success()` record a fault, which zeroes the rest of the trial, if the carton's bounding box goes back past the
+guides' near end (x below 0.16) or reaches past either guide's outer face anywhere between x 0.16 and 0.40, or if,
+while any part of its box is between x 0.16 and 0.40, it is not flat: its top more than 5 degrees from level, or the
+bottom of its box more than 1 mm above the table. So a carton lifted or tipped up over the shoulders and set down
+beyond the far end scores 0. The record clears in the embodiment's
 reset hook, and offline only when the carton jumps more than 20 mm in one step back to within 0.5 mm of its start,
 at rest (a scene reset, which the robot cannot do). At the end its centre must be within 6 cm of the lane's centre
 line. The demo backs the carton off to about 11 mm short of the near-end limit.
@@ -66,6 +70,9 @@ Probe runs used the same guides and carton (some with a 6 cm carton and 5 cm gui
 - Turning it square in place by pushing back at its free corner: it pivots on the caught corner and ends up against
   the left guide, 7 to 8 mm off centre, and catches again (0). The narrow part allows 3 mm per side.
 - The mirror-image layout (turned the other way) behaved the same way with the mirrored demo (1.0).
+- With the revised scorer (flat on the table between the guides' ends, judged every step), the demo scored 1.0:
+  through the guides the carton stayed level and on the table to within the trace's 0.1 mm rounding, left the far end
+  6.6 mm clear about 18 s in, centre 4.5 mm off the lane line, and held released and still for 1 s.
 
 ## Checks without a simulator
 
@@ -77,4 +84,8 @@ Cases include: out at exactly the far end (1.0), 1 mm short and square in the na
 the shoulder (0.5) and 29 mm (0), the start pose and a harder-jammed pose (0), backed off and square but not fed in
 (0), pushed out of the near end (0), out but moving, held 5 mm up, tipped on its end or tilted 8 degrees (0), out
 but 7 cm to the side (0), and the route around the guides: backed out of the near end or pushed sideways past a
-guide's outer face, then brought back in line past the far end (0 for the rest of the trial, until a scene reset).
+guide's outer face, then brought back in line past the far end (0 for the rest of the trial, until a scene reset);
+and the route over the guides: lifted 45 mm over the narrow part, lifted 1.1 mm in the wide part, front end tipped
+up 20 degrees onto the shoulders, or tipped 5.1 degrees, each then set down flat and out past the far end (0 for the
+rest of the trial). At exactly 1 mm up or 5 degrees tipped the carton is still flat, and pushing it out then scores
+1.0. Lifting it only once it is wholly past the far end is not a fault (1.0 once set down flat there).
