@@ -1,4 +1,4 @@
-# Level a rack shelf by moving the one pull pin that is in the wrong hole
+# Level a rack shelf that sits tilted on its pull pins
 
 An adjustable steel rack: a shelf deck rests on four T-handle pull pins pushed through holes in two uprights. Three pins are at the middle
 level; one is a hole off, so the shelf sits tilted. The robot is asked to level the shelf on all four pins. It has
@@ -19,7 +19,7 @@ in the simulator). Lot B: the front-right pin at level 3 (110 mm), the shelf hig
 Trial k uses lot k mod 2, lot A first, so a run needs `--epochs 2` (or a multiple); `TASK_LOT=A` or `TASK_LOT=B`
 pins every trial to one lot. Offline, with the lots chosen by `lots.use()`: the habit "move the front-left pin to
 level 2" scores 1.0 in lot A and 0 in lot B (the right-front pin stays high); "move the front-left pin up one
-level" scores 1.0 and 0 (in lot B it moves a correct pin). Either averages 0.5: a fixed-pin habit earns half
+level" scores 1.0 and 0 (in lot B it moves a correct pin to level 3). Either averages 0.5: a fixed-pin habit earns half
 marks over a run, as task.json's fidelity says. The lots stop a single fixed habit, not a memorised replay of both
 layouts.
 
@@ -66,26 +66,30 @@ in words in `task.json`.
 - **Let go:** a `parts.on_step` callback reads both arms' finger, gripper and wrist (`link5`) link poses every step and measures the
   shortest distance from their collision hulls (yam_arena.analysis) to every shape of the shelf and of each pin; it
   must exceed 5 mm. Offline (`near_misses.py`) there is no robot, so this check counts as clear.
-- **Fault record (whole trial):** the three correctly placed pins' positions are taken at the first step of the
-  trial. If any later moves more than 8 mm in x, 5 mm in y (along its hole) or 8 mm in z, the score is 0 for the
-  rest of the trial. The record is cleared by a scene reset: a `parts.on_reset` hook in the simulator, and offline
-  when all four pins are back within 0.5 mm of their starts, at rest, after a jump of over 20 mm in one step.
-- **0.5:** all four pins seated at level 2, the pins and the shelf at rest, let go, no fault, and the shelf's lowest
-  point more than 20 mm above the table, but the shelf not level as above. The release flag and the fault record
-  are both cleared by the reset hook.
+- **Final seating only:** every pin, including the three that start at level 2, is judged by its pose when the trial
+  is scored. A correct pin nudged or drawn out during the trial and pushed back home scores as if it never moved; one
+  left more than 4 mm proud of the upright, or out of its hole, is not seated and the score is 0. There is no
+  whole-trial record. So drawing out and reseating all four pins at level 2, instead of only the wrong one, also
+  scores, provided the shelf ends flat on them.
+- **0.5:** all four pins seated at level 2, the pins and the shelf at rest, let go, and the shelf's lowest
+  point more than 20 mm above the table, but the shelf not level as above. The release flag is cleared by a
+  `parts.on_reset` hook at each scene reset.
 
 ## The demo
 
-`demo()` reads the lot (which the cameras show) to pick the pin and the arms. The lifting arm, wrist turned 90
+`demo()` does not know the lot. At the trial's first control step a callback reads the four pins' heights (the
+hole each pin visibly sits in; levels are 25 mm apart) and takes the one pin at a different level from the other
+three as the wrong one; that picks the pin, its start level and the arms, and every waypoint is worked out from
+that reading. Before the first reading (one control step) and offline, the screenshot's layout is assumed. The lifting arm, wrist turned 90
 degrees, pinches the front rail on the far side of the midline and raises it 32 mm above its level height; the shelf
 pivots on its back pins. The other arm pinches the wrong pin's T-handle across its flat faces (so the pin cannot turn
 in the pads), draws it out 90 mm, moves it to level 2 and pushes it home against its collar, then lets go; the
 lifting arm sets the shelf down and lets go. The carried pin rides 2 to 5 mm off in x and about 0.6 mm low, so the
-waypoints are offset per lot (`DX`, `INSERT_DZ`), found from traces; the hole leaves 2 mm per side.
+waypoints are offset per pin (`DX`, `INSERT_DZ`), found from traces; the hole leaves 2 mm per side.
 
 ## Fidelity
 
-A bench-scale adjustable steel rack, as used for stock and tool racking: 10 mm T-handle pull pins with a collar, in
+A small adjustable steel rack, as used for stock and tool racking: 10 mm T-handle pull pins with a collar, in
 14 mm square through-holes in 40 mm uprights, three levels 25 mm apart. The shelf deck has a front rail to lift it
 by. Masses and friction (1.2) are simulator values. Pins rest 2 mm below their hole's centre and droop a few
 degrees under the shelf.

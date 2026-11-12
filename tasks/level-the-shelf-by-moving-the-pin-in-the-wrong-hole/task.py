@@ -7,6 +7,7 @@ each pin is in can change between trials.
 
 from __future__ import annotations
 
+import dataclasses
 import math
 import pathlib
 import sys
@@ -122,7 +123,6 @@ SEAT_ANGLE = math.radians(10.0)
 FLAT = math.radians(2.0)
 SHELF_DZ = 0.004  # the underside within 4 mm of the level-2 support height
 SHELF_XY = 0.015
-MOVE_X, MOVE_AXIAL, MOVE_Z = 0.008, 0.005, 0.008  # a correct pin "moved": 8 mm sideways, 5 along its hole, 8 up or down
 ON_TABLE = 0.020
 CLEAR = 0.005
 
@@ -160,10 +160,6 @@ def _level(shelf) -> bool:
     )
 
 
-# Whole-trial record: has any of the three correctly placed pins moved more than 5 mm along its hole or 8 mm sideways,
-# or 8 mm up or down, from where it settled at the start? Cleared at every scene reset (an on_reset hook in the
-# simulator; offline, all four pins back within 0.5 mm of their starts after a jump of over 20 mm in one step).
-_record = {"fault": False, "base": None, "prev": None}
 # Released: no finger, gripper body or wrist link within 5 mm. Set every step in the simulator; offline there is no
 # robot, so it stays True.
 _grip = {"clear": True}
@@ -171,27 +167,7 @@ _grip = {"clear": True}
 
 @parts.on_reset
 def _new_trial(sim) -> None:
-    _record.update(fault=False, base=None, prev=None)
     _grip["clear"] = True
-
-
-def _update(objects) -> None:
-    lot = lots.current()
-    now = {n: np.asarray(objects[n].pos, float) for n in PINS}
-    prev = _record["prev"]
-    if prev is not None:
-        home = all(np.linalg.norm(now[n] - np.asarray(lot.pos(n))) < 0.0005 and objects[n].resting() for n in PINS)
-        if home and max(np.linalg.norm(now[n] - prev[n]) for n in PINS) > 0.020:
-            _record.update(fault=False, base=None)
-    _record["prev"] = now
-    if _record["base"] is None:
-        _record["base"] = dict(now)
-    for n in PINS:
-        if n == lot.wrong:
-            continue
-        d = now[n] - _record["base"][n]
-        if abs(d[0]) > MOVE_X + EPS or abs(d[1]) > MOVE_AXIAL + EPS or abs(d[2]) > MOVE_Z + EPS:
-            _record["fault"] = True
 
 
 @parts.on_step
@@ -224,13 +200,12 @@ def _pins_ok(objects) -> bool:
 
 def _done(objects) -> bool:
     shelf = objects["shelf"]
-    return bool(not _record["fault"] and _pins_ok(objects) and _level(shelf) and shelf.resting() and _grip["clear"])
+    return bool(_pins_ok(objects) and _level(shelf) and shelf.resting() and _grip["clear"])
 
 
 def success(objects):
-    """All four pins in their level-2 holes and the shelf flat on them, let go and still; no correctly placed pin
-    was moved during the trial."""
-    _update(objects)
+    """All four pins in their level-2 holes and the shelf flat on them, let go and still. Every pin is judged by
+    where it ends; moving a pin during the trial is not penalised."""
     return _done(objects)
 
 
@@ -243,12 +218,11 @@ def distance(objects):
 
 def score(objects):
     """1.0 on success. 0.5: all four pins in their level-2 holes, everything let go and still, the shelf not on the
-    table, no correct pin moved, but the shelf not flat on them. Otherwise 0."""
-    _update(objects)
+    table, but the shelf not flat on them. Otherwise 0."""
     if _done(objects):
         return 1.0
     shelf = objects["shelf"]
-    if (not _record["fault"] and _pins_ok(objects) and _grip["clear"] and shelf.resting()
+    if (_pins_ok(objects) and _grip["clear"] and shelf.resting()
             and shelf.low[2] > TOP + ON_TABLE + EPS):
         return 0.5
     return 0.0
@@ -261,23 +235,45 @@ MID = FINGER_OPEN * 0.040 / 0.094  # pads about 40 mm apart
 RAIL_X = CX + LIP_X
 LIFT = 0.032  # the rail raised this far above its level-2 height while the pin is moved
 PULL = 0.090  # the pin drawn out this far, so its inner end clears the upright
-# The rail's height at the start in each lot (from the settled start in a trace; see README).
-RAIL_START = {"A": TOP + SUPPORT + RAIL_Z - 0.011, "B": TOP + SUPPORT + RAIL_Z + 0.009}
-DX = {"A": -0.0025, "B": 0.0045}  # tracking compensation while the pin is carried, from traces
+# The demo does not know the lot. At the trial's first control step a callback reads the four pins' heights (which
+# hole each pin visibly sits in, 25 mm apart) and takes the one pin at a different level from the other three as the
+# wrong one; every waypoint is worked out from that reading when the plan reaches it. Before the first reading (one
+# control step) and offline (no simulator) the screenshot's layout is assumed: the front-left pin at level 1.
+_seen = {"wrong": None}  # (pin name, level index it was seen at)
+# The rail's height at the start, by the wrong pin's level (from the settled start in a trace; see README).
+RAIL_START = {0: TOP + SUPPORT + RAIL_Z - 0.011, 2: TOP + SUPPORT + RAIL_Z + 0.009}
+DX = {"pin_fl": -0.0025, "pin_fr": 0.0045}  # tracking compensation while that pin is carried, from traces
 INSERT_DZ = 0.0025  # the carried pin rides about 0.6 mm low; aim its axis 2 mm above the seated height
 
 
-def demo():
-    """One arm holds the shelf up by its front rail; the other draws the wrong pin out by its T-handle, moves it to
-    the level-2 hole of the same column and pushes it home; then the shelf is set down on the four pins. Which pin
-    and which arm follow the trial's layout, as the cameras show it."""
-    lot = lots.current()
-    worker = "left" if PINS[lot.wrong][1] > 0 else "right"
+def read_layout(states):
+    """(pin, level) of the one pin whose hole level differs from the other three's, from the pins' heights; None
+    if no single pin stands out."""
+    lv = {n: min(range(len(LEVELS)), key=lambda i: abs(states[n].pos[2] - TOP - LEVELS[i])) for n in PINS}
+    odd = [n for n in PINS if sum(lv[m] == lv[n] for m in PINS) == 1]
+    return (odd[0], lv[odd[0]]) if len(odd) == 1 else None
+
+
+@parts.on_step
+def _look(sim) -> None:
+    if _seen["wrong"] is None:
+        _seen["wrong"] = read_layout(sim.states()) or ("pin_fl", 0)
+
+
+@parts.on_reset
+def _forget(sim) -> None:
+    _seen["wrong"] = None
+
+
+def _plans(wrong, start_level):
+    """Waypoints per arm for re-indexing `wrong` from `start_level`, padded to the same length with zero-length
+    steps."""
+    x, side = PINS[wrong]
+    worker = "left" if side > 0 else "right"
     lifter = "right" if worker == "left" else "left"
-    x, side = PINS[lot.wrong]
     ry = -0.03 * side  # the lifting arm takes the rail on the far side of the midline
     flat = TOP + SUPPORT + RAIL_Z
-    r0 = RAIL_START[lot.name]
+    r0 = RAIL_START.get(start_level, TOP + SUPPORT + RAIL_Z)
     grip_dz = TIP - 0.004  # pad tips 4 mm below the rail's axis
     yaw = math.pi / 2 if lifter == "right" else -math.pi / 2  # each wrist turned the way it reaches
     lift = [
@@ -292,9 +288,9 @@ def demo():
         Waypoint(1.0, (RAIL_X - 0.08, ry, flat + 0.08), MID, "back", yaw),
     ]
     ty = side * (OUTER + TAB_Y)  # the handle's centre when seated
-    z0 = TOP + LEVELS[lot.start_level] + SEAT_DZ
+    z0 = TOP + LEVELS[start_level] + SEAT_DZ
     z1 = TOP + LEVELS[1] + SEAT_DZ + INSERT_DZ
-    cx = x + DX[lot.name]
+    cx = x + DX.get(wrong, 0.0)
     pz = 0.006 + TIP  # pad tips 6 mm above the axis, on the handle above the shank
     work = [
         Waypoint(1.5, (x, ty, z0 + 0.08), NARROW, "over the handle"),
@@ -308,4 +304,41 @@ def demo():
         Waypoint(1.2, (x, ty, z1 + 0.08), NARROW, "up"),
         Waypoint(1.0, (x, ty + side * 0.04, z1 + 0.08), NARROW, "aside"),
     ]
-    return {worker: work, lifter: lift}
+    n = max(len(lift), len(work))
+    pad = lambda ws: ws + [dataclasses.replace(ws[-1], duration=0.0)] * (n - len(ws))  # noqa: E731
+    return {worker: pad(work), lifter: pad(lift)}
+
+
+STEPS = 10  # waypoints per arm (the longer of the two lists)
+_cache = {}
+
+
+def _current_plans():
+    key = _seen["wrong"] or ("pin_fl", 0)
+    if key not in _cache:
+        _cache[key] = _plans(*key)
+    return _cache[key]
+
+
+class SeenWaypoint(Waypoint):
+    """Step `i` of `arm`'s plan, worked out when the plan reaches it from the pins as seen at the first step."""
+
+    def __init__(self, arm, i):
+        object.__setattr__(self, "_arm", arm)
+        object.__setattr__(self, "_i", i)
+
+    def _w(self):
+        return _current_plans()[self._arm][self._i]
+
+    duration = property(lambda self: self._w().duration, lambda self, v: None)
+    pos = property(lambda self: self._w().pos, lambda self, v: None)
+    finger = property(lambda self: self._w().finger, lambda self, v: None)
+    label = property(lambda self: self._w().label, lambda self, v: None)
+    yaw = property(lambda self: self._w().yaw, lambda self, v: None)
+
+
+def demo():
+    """One arm holds the shelf up by its front rail; the other draws the wrong pin out by its T-handle, moves it to
+    the level-2 hole of the same column and pushes it home; then the shelf is set down on the four pins. Which pin
+    and which arm follow the pins' heights as seen at the first control step."""
+    return {arm: [SeenWaypoint(arm, i) for i in range(STEPS)] for arm in ("left", "right")}

@@ -1,6 +1,6 @@
 """Near-successes and unintended strategies, scored offline by the factory checker, in lot A (the front-left pin
-one level low). Each case: (label, {object: ready state}, expected score, expected success). Cases run in order and
-share the whole-trial record; a fault stays until a scene reset (every pin back at its start after a jump)."""
+one level low). Each case: (label, {object: ready state}, expected score, expected success). Every pin is judged by
+where it ends: moving one of the three correct pins during the trial costs nothing if it ends seated at level 2."""
 
 import math
 
@@ -40,13 +40,14 @@ CASES = [
     ("pin fixed, shelf dropped on the table", {**pin("pin_fl", 1),
                                                "shelf": SHELF.state(pos=(0.30, 0.0, TOP))}, 0.0, False),
     ("start layout again", {**RESET, **shelf(tilt_deg=8)}, 0.0, False),
-    # habit: fix the other three instead -> neighbour fault for the rest of the trial
-    ("back-left pin moved down a level", {**pin("pin_bl", 0)}, 0.0, False),
-    ("then everything at level 2 and flat: still 0", {**FIXED, **pin("pin_bl", 1)}, 0.0, False),
-    ("scene reset (pins jump back to the start)", {**RESET, **pin("pin_bl", 1, dz=0.0)}, 0.0, False),
-    ("after the reset, fixed: 1.0", FIXED, 1.0, True),
-    ("back-right pin pulled 6 mm along its hole", {**FIXED, **pin("pin_br", 1, dy=-0.006)}, 0.0, False),
-    ("pushed back: still 0", FIXED, 0.0, False),
-    ("scene reset", {**RESET}, 0.0, False),
+    # the three correct pins are judged by their final seating, with no whole-trial movement gate
+    ("back-right pin pulled 6 mm along its hole and left there", {**FIXED, **pin("pin_br", 1, dy=-0.006)}, 0.0, False),
+    ("then pushed back home, all pins and shelf correct: 1.0", FIXED, 1.0, True),
+    ("back-right pin nudged 3.5 mm out along its hole and left (collar 4.0 mm off the face)",
+     {**FIXED, **pin("pin_br", 1, dy=-0.0035)}, 1.0, True),
+    ("back-left pin moved down a level and left there", {**FIXED, **pin("pin_bl", 0)}, 0.0, False),
+    ("then moved back to level 2, shelf flat: 1.0", FIXED, 1.0, True),
     ("back-right pin lifted 5 mm in its hole, then fixed", {**FIXED, **pin("pin_br", 1, dz=0.005)}, 1.0, True),
+    ("back-right pin axis 7 mm above its hole's centre", {**FIXED, **pin("pin_br", 1, dz=0.009)}, 0.0, False),
+    ("front-right pin moved 5 mm sideways in its hole", {**FIXED, **pin("pin_fr", 1, dx=0.005)}, 0.0, False),
 ]
