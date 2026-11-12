@@ -1,0 +1,22 @@
+{
+  "title": "Leave a desoldering pump cocked and ready in its bench cradle",
+  "category": "Impact on jobs",
+  "keywords": [
+    "desoldering pump",
+    "solder sucker",
+    "spring plunger",
+    "catch",
+    "release button",
+    "electronics rework",
+    "read the tool's state"
+  ],
+  "instruction": "Leave the desoldering pump cocked and ready, lying in its cradle.",
+  "context": "Electronics repair technicians cock a desoldering pump before taking it to the joint, so one hand holds the iron and the other fires the pump the moment the solder melts; a pump left uncocked in its cradle costs that moment, and its release button sits where a careless grip fires it. Unlike TK-5Y7J8Y (set a rat trap's spring) and a board task that slides a carriage along a rail until it clicks, the robot must cock the tool braced in a fixture without touching its own release.",
+  "setup": "Directions are from the robot: 'in front' is away from the arm bases, 'left' is toward the left arm, heights are above the table top, the midline is halfway between the arm bases. Mat (fixed, dark grey rubber, 300 x 100 x 2 mm) centred 27.0 cm in front of the arm bases and 15.0 cm left of the midline. Desoldering pump (loose, 90 g) lying on the mat along the front-to-back line, nozzle forward, centred 27.0 cm in front and 15.0 cm left: a blue aluminium barrel 25 mm across and 160 mm long; a white PTFE nozzle 12 mm across and 35 mm long at the front; a black rear cap 28 mm across and 8 mm long; a steel plunger shaft 8 mm across ending in a black knob 18 mm across and 20 mm long behind the cap; a red release button 12 x 10 mm and 6 mm tall on top of the barrel, 30 mm behind the barrel's front end. Pushing the knob 70 mm forward, until it meets the rear cap, cocks the pump: a catch holds the plunger in. Pressing the button 2.5 mm releases the catch and the spring shoots the plunger back out. The spring pushes with 2.5 N with the plunger out, rising to 6 N fully in; the button is held up with 1.5 N, rising to 2.25 N to fire. Cradle (fixed, grey ABS) along the front-to-back line, centred 4.0 cm right of the midline: a dark grey end stop whose inner face is 40.0 cm in front of the arm bases, 8 mm thick, 50 mm wide and 32 mm tall above the base, with a 16 mm notch in the middle for the nozzle; behind it a base 175 mm long, 50 mm wide and 10 mm tall; on the base two rails 8 mm wide, 8 mm tall and 160 mm long from the stop, leaving a channel 30 mm wide. Lot A (the screenshot): the pump is released, its knob 70 mm behind the rear cap. Lot B: the same place, but cocked, the knob against the rear cap. Nothing else is on the table. Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "Pass/fail. 1.0 when all of these hold at once, still for 1 second: the pump is cocked (the plunger held in by its catch, the knob within 3 mm of the rear cap); it lies in the cradle's channel, nozzle forward (barrel within 8 degrees of the channel, its axis within 4 mm of the channel's centre line, its underside within 2 mm of the channel floor, its front end within 10 mm of the end stop); no part of either gripper is within 5 mm of the pump. Otherwise 0: released, half cocked, held, on the mat, on the rails, turned round, or fired and left released. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "900 steps (45 seconds at 20 Hz)",
+  "reset_notes": "1. Lift the pump out of the cradle. 2. Lot A: press the button so the plunger is out. Lot B: push the knob in until the catch holds. 3. Lay the pump on the mat at its start, nozzle forward, button up. Nothing is consumed.",
+  "fidelity": "Rigid boxes and cylinders in PhysX. The task code runs the catch (it holds the plunger once pushed 67 mm in; the button releases it). The plunger spring (50 N/m, 2.5 to 6 N) is lighter than a real pump's. The cradle's end stop takes the push. In lot B the pump starts cocked, so handling it must not fire it.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A and B); demo: 1.0 in each lot",
+  "media": "M-PK775S"
+}
