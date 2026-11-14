@@ -171,18 +171,37 @@ RESTS = parts.Part("rod_rests", pos=ROD_START, yaw=YAW_D, shapes=_rest_shapes())
 OBJECTS = [DRAIN, STOPPER, ROD, RESTS]
 
 # -- scoring ---------------------------------------------------------------------------------------------------
-PAST_TAB = 0.002  # the tip at least 2 mm past the tab's far face
-SEAT_GAP = 0.003  # ball within 3 mm of the seat
-BALL_OFF = 0.002  # ball centre within 2 mm of the port axis
+# Everything scored is checked from outside the drain, the way a person would check the repair at a real sink, once
+# both parts have been let go (no gripper within 5 mm) and still for 1 s:
+# - readings: the rod comes out of the spout's 16 mm bore, and its outer end is at most 199 mm from the spout's end
+#   face, measured along the rod with a rule (196 mm with the ball home on the washer, so 3 mm of play); the stopper's
+#   head is centred within 4 mm on the flange, upright within 6 degrees, and at most 40 mm above it (a rule or depth
+#   gauge from the basin side);
+# - then a movement test shows that the rod is through the stopper's eye. A rod under, over, beside or short of the
+#   eye fails it.
+# The pivot nut and the lift linkage are left out (see the fidelity note), so nothing but its seat keeps the ball in
+# the port, and the test pushes at the rod's outer end, where the linkage's strap would clamp on.
+DEPTH_MAX = 0.199  # spout end face to the rod's outer end, along the rod (196 mm with the ball on the washer)
 GUIDE_OFF, GUIDE_TILT, GUIDE_LIFT = 0.004, math.radians(6.0), 0.040
-MIN_ALIGN = math.cos(math.radians(35.0))
 RELEASE_GAP = 0.005
 SUCCESS_HOLD_S = 1.0
+HOLD_STEPS = 20  # 1 s at 20 Hz
 
-
-def _eye_frame(st):
-    r = _rot(st.quat_xyzw)
-    return np.asarray(st.pos, float) + r @ np.array([0.0, 0.0, EYE_Z]), r
+# The movement test, right after the readings:
+# 1. lift (1 s): an upward push at the rod's outer end, rising steadily to LIFT_N over 0.5 s and held 0.5 s. The rod
+#    turns about its ball, its inner end goes down, and a stopper hung on it through the eye goes down with it: it
+#    must drop at least MIN_DROP.
+# 2. back (2 s): the push eases off steadily to nothing over 1 s, lowering the rod's outer end back, then nothing is
+#    applied for 1 s so the parts come to rest; the rod's inner end has lifted the stopper again: it must have risen
+#    at least MIN_DROP.
+# 3. pull (0.5 s): a steady upward pull of PULL_N (about twice the stopper's weight) on the stopper's knob. A rod
+#    through the eye catches it: it may rise at most MAX_PULL_RISE. A stopper resting on a rod under its eye, or on
+#    nothing, lifts straight off; the pull stops as soon as it passes that limit.
+# If a gripper comes within 5 mm of either part during the test or after it, the check starts again from the 1 s of
+# stillness. The test's own pushes can shift the parts, so the readings are those taken just before it.
+LIFT_N, PULL_N = 0.20, 1.00
+LIFT_STEPS, BACK_STEPS, SETTLE_STEPS, PULL_STEPS = 20, 20, 20, 10
+MIN_DROP, MAX_PULL_RISE = 0.003, 0.010
 
 
 def _rod_axis(st):
@@ -190,38 +209,47 @@ def _rod_axis(st):
     return np.asarray(st.pos, float), r[:, 1]
 
 
-def captured(objects) -> bool:
-    """The rod's axis passes through the eye's 9 mm opening (taken in the stopper's frame, at the tab's mid-plane),
-    and the tip is at least 2 mm past the tab's far face while the ball is outside its near face."""
+def _eye_frame(st):
+    r = _rot(st.quat_xyzw)
+    return np.asarray(st.pos, float) + r @ np.array([0.0, 0.0, EYE_Z]), r
+
+
+def through_eye_by_pose(objects) -> bool:
+    """Whether the rod's centreline passes through the eye's 9 mm hole, from the parts' poses. Not scored in the
+    simulator, where the movement test decides; the run log prints it beside the test's result. Offline it stands in
+    for the test's outcome (near_misses.py checks the test's readings separately)."""
     c, r = _eye_frame(objects["stopper"])
     p, d = _rod_axis(objects["pivot_rod"])
     a = r[:, 1]
     k = float(d @ a)
-    if abs(k) < MIN_ALIGN:
+    if abs(k) < math.cos(math.radians(35.0)):
         return False
-    sgn = 1.0 if k > 0 else -1.0
-    s = float((c - p) @ a) / k  # along the rod from the ball's centre to the tab's mid-plane
+    s = float((c - p) @ a) / k
     q = p + s * d - c
-    inside = math.hypot(float(q @ r[:, 0]), float(q @ r[:, 2])) < HOLE - EPS
-    tip_past = sgn * float((p + TIP * d - c) @ a) >= TAB_T / 2 + PAST_TAB - EPS
-    ball_out = sgn * float((p - c) @ a) <= -(TAB_T / 2 + BALL_L / 2) + EPS
-    return bool(inside and tip_past and ball_out and 0.0 < s < TIP)
+    return bool(math.hypot(float(q @ r[:, 0]), float(q @ r[:, 2])) < HOLE and 0.0 < s < TIP)
 
 
-def seat_gap(objects) -> float:
-    """Gap from the ball's innermost point to the seat face (m); negative would mean past it."""
+def spout_reading(objects):
+    """(distance from the spout's end face to the rod's outer end along the rod (m), the rod's offset from the port's
+    axis where it crosses that face (m)), or None if the rod does not point into the spout."""
     p, d = _rod_axis(objects["pivot_rod"])
-    p, d = RD.T @ (p - C0), RD.T @ d  # in the drain's frame: the port along -y
-    ny = abs(float(d[1]))
-    inner_y = p[1] + BALL_L / 2 * ny + BALL_R * math.sqrt(max(0.0, 1.0 - ny * ny))
-    return float(-SEAT_OUT - inner_y)
+    p, d = RD.T @ (p - C0), RD.T @ d  # drain frame: the port along -y, its end face at y = -PORT_END
+    if d[1] < math.cos(math.radians(35.0)):
+        return None
+    s = (-PORT_END - p[1]) / d[1]  # along the rod from the ball's centre to the end face
+    x = p + s * d
+    return float(s - (TIP - ROD_L)), float(math.hypot(x[0], x[2] - HP))
+
+
+def in_port(objects) -> bool:
+    """The rod comes out of the spout's bore (its centreline within the 16 mm bore, less the rod's radius)."""
+    r = spout_reading(objects)
+    return bool(r is not None and r[1] <= BORE - ROD_R + EPS)
 
 
 def seated(objects) -> bool:
-    p, _ = _rod_axis(objects["pivot_rod"])
-    p = RD.T @ (p - C0)
-    radial = math.hypot(p[0], p[2] - HP)
-    return bool(seat_gap(objects) <= SEAT_GAP + EPS and radial <= BALL_OFF + EPS and p[1] < -SEAT_OUT)
+    r = spout_reading(objects)
+    return bool(in_port(objects) and r[0] <= DEPTH_MAX + EPS)
 
 
 def in_guide(objects) -> bool:
@@ -241,22 +269,53 @@ OFFLINE_FLAG = "STOPPER_TASK_OFFLINE_CHECK"
 _HAND_LINKS = ("gripper", "tip_left", "tip_right")
 _SPECS = {o.name: o for o in OBJECTS}
 
+# The test's state: phase, steps in the phase, heights, readings and result.
+_TEST: dict = {}
 
-# The 1 s hold: the on_step hook also counts consecutive control steps on which the rod is through the eye, the
-# stopper is in its guide and both parts are let go and still. Credit needs 20 such steps (1 s at 20 Hz). Before the
-# first count (no step since the reset) nothing is credited; offline, near_misses.py's flag stands for a held state.
-HOLD_STEPS = 20
-_HOLD: dict[str, int] = {}
+
+def _new_test():
+    _TEST.clear()
+    _TEST.update(phase="wait", k=0)
 
 
 @parts.on_reset
 def _clear(sim):
     _GAP.clear()
-    _HOLD.clear()
+    _new_test()
+    _push(sim, None, None)
+
+
+def _push(sim, rod_point, stopper_point, rod_share=1.0):
+    """Set the test's pushes: rod_share x LIFT_N up at a world point on the rod, PULL_N up at the stopper's knob;
+    None for no push. They act on every physics step until changed."""
+    import torch
+
+    base = sim.env.unwrapped
+    origin = base.scene.env_origins[0].cpu().numpy()
+    dev = base.device
+    for name, point, force in (("pivot_rod", rod_point, rod_share * LIFT_N), ("stopper", stopper_point, PULL_N)):
+        comp = base.scene[name].permanent_wrench_composer
+        if point is None:
+            comp.reset()
+            continue
+        comp.set_forces_and_torques_index(
+            forces=torch.tensor([[[0.0, 0.0, force]]], dtype=torch.float32, device=dev),
+            positions=torch.tensor([[[*(np.asarray(point, float) + origin)]]], dtype=torch.float32, device=dev),
+            body_ids=[0], env_ids=torch.tensor([0], dtype=torch.int32, device=dev), is_global=True,
+        )
+
+
+def _rod_end(st):
+    p, d = _rod_axis(st)
+    return p + (TIP - ROD_L + 0.002) * d  # 2 mm in from the outer end
+
+
+def _knob(st):
+    return np.asarray(st.pos, float) + _rot(st.quat_xyzw) @ np.array([0.0, 0.0, HEAD_T + KNOB_H])
 
 
 @parts.on_step
-def _record_gaps(sim):
+def _record(sim):
     from yam_arena import analysis
 
     base = sim.env.unwrapped
@@ -279,8 +338,60 @@ def _record_gaps(sim):
         st = states[name]
         boxes = _SPECS[name].world_boxes({"base": (np.asarray(st.pos, float), _rot(st.quat_xyzw))})
         _GAP[name] = min(float(analysis.hulls_to_box(hands, c, r, sz)[0]) for _, c, r, sz in boxes)
-    held = captured(states) and in_guide(states) and _settled(states)
-    _HOLD["n"] = _HOLD.get("n", 0) + 1 if held else 0
+    _advance(sim, states)
+
+
+def _advance(sim, states):
+    """One control step of the movement test."""
+    if not _TEST:
+        _new_test()
+    t = _TEST
+    z = float(states["stopper"].pos[2])
+    let_go = _released("pivot_rod") and _released("stopper")
+    if t["phase"] != "wait" and not let_go:  # handled during or after the test: test again once let go and still
+        _push(sim, None, None)
+        _new_test()
+        return
+    if t["phase"] == "wait":
+        ready = in_guide(states) and in_port(states) and _settled(states)
+        t["k"] = t["k"] + 1 if ready else 0
+        if t["k"] >= HOLD_STEPS:  # the readings from outside, then the test
+            t.update(phase="lift", k=0, z0=z, seated=seated(states), depth=spout_reading(states)[0],
+                     pose=through_eye_by_pose(states))
+            _push(sim, _rod_end(states["pivot_rod"]), None, 1.0 / LIFT_STEPS)
+        return
+    t["k"] += 1
+    if t["phase"] == "lift":  # the push rises steadily to LIFT_N, then holds for the rest of the second
+        if t["k"] >= LIFT_STEPS:
+            t.update(phase="back", k=0, z_low=z, drop=t["z0"] - z)
+            _push(sim, _rod_end(states["pivot_rod"]), None, 1.0 - 1.0 / BACK_STEPS)
+        else:
+            _push(sim, _rod_end(states["pivot_rod"]), None, min(1.0, 2.0 * (t["k"] + 1) / LIFT_STEPS))
+    elif t["phase"] == "back":  # the push eases off steadily to nothing, so the rod is lowered, not dropped
+        if t["k"] >= BACK_STEPS:
+            t.update(phase="settle", k=0)
+            _push(sim, None, None)
+        else:
+            _push(sim, _rod_end(states["pivot_rod"]), None, max(0.0, 1.0 - (t["k"] + 1) / BACK_STEPS))
+    elif t["phase"] == "settle":  # no push, so the rod and the stopper come to rest before the reading
+        if t["k"] >= SETTLE_STEPS:
+            t.update(phase="pull", k=0, z1=z, back=z - t["z_low"], rise=0.0)
+            _push(sim, None, _knob(states["stopper"]))
+    elif t["phase"] == "pull":
+        t["rise"] = max(t["rise"], z - t["z1"])
+        if t["k"] >= PULL_STEPS or t["rise"] > MAX_PULL_RISE:
+            _push(sim, None, None)
+            t.update(phase="done", k=0, passed=test_passes(t["drop"], t["back"], t["rise"]))
+            print(f"[stopper test] t={sim.t:.2f} s: outer end {1e3 * t['depth']:.1f} mm from the spout, drop "
+                  f"{1e3 * t['drop']:.1f} mm, back {1e3 * t['back']:.1f} mm, pull rise {1e3 * t['rise']:.1f} mm, "
+                  f"passed {t['passed']}; through the eye by pose: {t['pose']}", flush=True)
+        else:
+            _push(sim, None, _knob(states["stopper"]))
+
+
+def test_passes(drop, back, rise) -> bool:
+    """The movement test's verdict from its three readings (m)."""
+    return bool(drop >= MIN_DROP - EPS and back >= MIN_DROP - EPS and rise <= MAX_PULL_RISE + EPS)
 
 
 def _released(name) -> bool:
@@ -302,23 +413,37 @@ def _settled(objects) -> bool:
                 and _released("pivot_rod") and _released("stopper"))
 
 
+def _offline(objects) -> bool:
+    """Offline only (no simulator, so no test can run): the parts' poses stand in for the test, read as it would be."""
+    return bool(os.environ.get(OFFLINE_FLAG) == "1" and through_eye_by_pose(objects) and in_guide(objects)
+                and in_port(objects) and _settled(objects))
+
+
+def _result(objects):
+    """(test passed, ball home) as the scorer last found them, or None. Once the test has passed, the result stands
+    until a gripper comes within 5 mm of either part again, which restarts the check."""
+    if not _TEST:  # no step since the reset
+        return (True, seated(objects)) if _offline(objects) else None
+    if _TEST.get("phase") != "done" or not _TEST.get("passed"):
+        return None
+    if not (_released("pivot_rod") and _released("stopper")):
+        return None
+    return True, bool(_TEST["seated"])
+
+
 def success(objects):
-    """Reconnected: the rod through the stopper's eye, its ball on the seat, the stopper in the drain, let go, still."""
-    return bool(captured(objects) and seated(objects) and in_guide(objects) and _settled(objects))
-
-
-def _held() -> bool:
-    if "n" not in _HOLD:
-        return os.environ.get(OFFLINE_FLAG) == "1"
-    return _HOLD["n"] >= HOLD_STEPS
+    """Reconnected: the readings from outside and the movement test passed, with the ball home, and let go."""
+    r = _result(objects)
+    return bool(r is not None and r[1])
 
 
 def score(objects):
-    """1.0 reconnected with the ball on its seat; 0.5 everything else holds but the ball is not seated; else 0. Each
-    needs the state held for 1 s (20 control steps)."""
-    if not (captured(objects) and in_guide(objects) and _settled(objects) and _held()):
+    """1.0: the movement test passed and the ball was home (outer end at most 199 mm from the spout) when it began;
+    0.5: the test passed but the ball was not home; else 0."""
+    r = _result(objects)
+    if r is None:
         return 0.0
-    return 1.0 if seated(objects) else 0.5
+    return 1.0 if r[1] else 0.5
 
 
 # -- demo ------------------------------------------------------------------------------------------------------
@@ -341,7 +466,8 @@ R_YAW = math.pi / 2 - (math.pi / 2 - PORT_DIR) % math.pi  # fingers close across
 def demo():
     """Left arm: pinch the stopper's head, lift it 26 mm and turn it a quarter turn, hold it there, then let go once
     the rod is in. Right arm: pick the rod up from its rests, line it up with the port and push it straight in until
-    the ball reaches its seat, let go and move away. Open loop, from the published start layout."""
+    the ball reaches its seat, let go and move away. Both then wait clear of the parts while the scorer runs its
+    movement test. Open loop, from the published start layout."""
     hz = L_GRIP_Z
     left = [
         Waypoint(1.5, (BX, BY, hz + 0.03), L_OPEN, "over the stopper"),
@@ -353,6 +479,7 @@ def demo():
         Waypoint(0.6, (BX, BY, hz + LIFT + L_DZ), L_OPEN, "let go", TURN),
         Waypoint(1.5, (BX, BY + 0.07, hz + LIFT + L_DZ), L_OPEN, "slide off sideways, pads clear of the head", TURN),
         Waypoint(1.5, (BX - 0.08, BY + 0.10, hz + 0.03), L_OPEN, "away", TURN),
+        Waypoint(14.0, (BX - 0.08, BY + 0.10, hz + 0.03), L_OPEN, "wait while the scorer tests the repair", TURN),
     ]
     sz = ROD_START[2]
     out = U[:2]  # outward along the port
@@ -379,5 +506,6 @@ def demo():
         w(0.8, home, zr + 0.03, R_OPEN, "straight up"),
         w(1.0, back, zr + 0.05, R_OPEN, "back off"),
         w(5.0, away, zr + 0.06, R_OPEN, "away"),
+        w(12.0, away, zr + 0.06, R_OPEN, "wait while the scorer tests the repair"),
     ]
     return {"left": left, "right": right}
