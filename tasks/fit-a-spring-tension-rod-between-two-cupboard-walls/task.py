@@ -92,27 +92,102 @@ SUCCESS_HOLD_S = 4.0
 TOUCH = 0.0003  # m: a cap face within 0.3 mm of a wall's inner face touches it (spring-loaded contact, not a near gap)
 LEVEL = 0.010  # m: cap centres within 10 mm of the same height for full credit
 SQUARE = 0.010  # m: cap centres within 10 mm of each other front to back for full credit
+CLEAR = 0.003  # m: the rod's lowest point at least 3 mm above the table (held by the walls, not resting on it)
+RELEASE_GAP = 0.005  # m: no gripper link within 5 mm of the rod
+PARTIAL = 0.5
+
+
+def _rot(q):
+    return parts._quat_to_matrix(q)
+
+
+def _poses(rod):
+    poses = {"base": (np.asarray(rod.pos, float), _rot(rod.quat_xyzw))}
+    if "slide" in rod.links:
+        lp, lq = rod.links["slide"]
+        poses["slide"] = (np.asarray(lp, float), _rot(lq))
+    return poses
 
 
 def _caps(rod) -> tuple[np.ndarray, np.ndarray]:
     """World centres of the tube's cap (+y end) and the bar's cap (-y end)."""
-    poses = {"base": (rod.pos, parts._quat_to_matrix(rod.quat_xyzw))}
-    if "slide" in rod.links:
-        lp, lq = rod.links["slide"]
-        poses["slide"] = (lp, parts._quat_to_matrix(lq))
-    boxes = ROD.world_boxes(poses)
+    boxes = ROD.world_boxes(_poses(rod))
     caps = [c for _, c, _, s in boxes if np.allclose(s, CAP)]
     return caps[0], caps[1]
 
 
-def _held_across(rod) -> bool:
-    """Both caps against the walls' inner faces and fully on them: the rod spans the gap and nothing else holds it
-    there (there is nothing between the walls but the table)."""
+# -- release check: no gripper link within 5 mm of the rod ---------------------------------------------------------
+# In the simulator an on_step hook measures, every step, the rod's distance to both grippers. Before the first
+# measurement after a reset the check fails closed (no credit). Offline (near_misses.py sets OFFLINE_FLAG; no
+# simulator, no robot) each case stands for a state with the grippers away.
+_GAP: dict[str, float] = {}  # "rod" -> closest gripper distance at the last step (m)
+OFFLINE_FLAG = "TENSION_ROD_TASK_OFFLINE_CHECK"
+_HAND_LINKS = ("gripper", "tip_left", "tip_right")
+
+
+@parts.on_reset
+def _clear(sim):
+    _GAP.clear()
+
+
+@parts.on_step
+def _record_gap(sim):
+    from yam_arena import analysis
+
+    base = sim.env.unwrapped
+    origin = base.scene.env_origins[0].cpu().numpy()
+    hands = []
+    for arm in ("left_robot", "right_robot"):
+        rob = base.scene[arm]
+        poses = rob.data.body_link_pose_w
+        poses = (poses.torch if hasattr(poses, "torch") else poses)[0].cpu().numpy().astype(float)
+        links = {}
+        for i, n in enumerate(rob.body_names):
+            if n in _HAND_LINKS:
+                t = np.eye(4)
+                t[:3, :3] = _rot(poses[i, 3:])
+                t[:3, 3] = poses[i, :3] - origin
+                links[n] = t
+        hands += analysis.world_hulls(links)
+    boxes = ROD.world_boxes(_poses(sim.states()["rod"]))
+    _GAP["rod"] = min(float(analysis.hulls_to_box(hands, c, r, sz)[0]) for _, c, r, sz in boxes)
+
+
+def _offline() -> bool:
+    import os
+
+    return os.environ.get(OFFLINE_FLAG) == "1"
+
+
+def _released() -> bool:
+    if "rod" not in _GAP:
+        return _offline()
+    return _GAP["rod"] >= RELEASE_GAP - 1e-6
+
+
+def _bearing(rod) -> bool:
+    """Self-supporting: both cap faces pressed on the walls' inner faces, each cap centre on its wall's face (between
+    its front and back edges, not above its top), the rod clear of the table, still and let go. Nothing but the
+    walls can then hold it (there is nothing between the walls but the table)."""
     a, b = _caps(rod)
-    half = CAP[0] / 2
     return bool(
         INNER - TOUCH - 1e-6 <= rod.high[1] <= INNER + TOUCH + 1e-6
         and -INNER - TOUCH - 1e-6 <= rod.low[1] <= -INNER + TOUCH + 1e-6
+        and all(WALL_X0 - 1e-6 <= c[0] <= WALL_X1 + 1e-6 for c in (a, b))
+        and all(c[2] <= TOP + WALL_H + 1e-6 for c in (a, b))
+        and rod.low[2] >= TOP + CLEAR - 1e-6
+        and rod.resting()
+        and _released()
+    )
+
+
+def _held_across(rod) -> bool:
+    """Self-supporting, and each cap wholly on its wall: centre at least half a cap inside both edges, top not above
+    the wall top."""
+    a, b = _caps(rod)
+    half = CAP[0] / 2
+    return bool(
+        _bearing(rod)
         and all(WALL_X0 + half - 1e-6 <= c[0] <= WALL_X1 - half + 1e-6 for c in (a, b))
         and all(c[2] + CAP[2] / 2 <= TOP + WALL_H + 1e-6 for c in (a, b))
     )
@@ -125,7 +200,7 @@ def _heights(rod):
 
 def success(objects):
     rod = objects["rod"]
-    if not (_held_across(rod) and rod.resting()):
+    if not _held_across(rod):
         return False
     za, zb = _heights(rod)
     a, b = _caps(rod)
@@ -137,8 +212,10 @@ def success(objects):
 
 
 def score(objects):
-    """1.0 fitted level and square in the band; else 0 (pass/fail)."""
-    return 1.0 if success(objects) else 0.0
+    """1.0 fitted level and square in the band; 0.5 let go and holding itself up between the walls otherwise; else 0."""
+    if success(objects):
+        return 1.0
+    return PARTIAL if _bearing(objects["rod"]) else 0.0
 
 
 # -- demo: both arms grip the rod near its ends (fingers closing across it), squeeze it shorter, lift it to the band,
