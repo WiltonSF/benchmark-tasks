@@ -194,17 +194,28 @@ OBJECTS = [PANEL, HOOK, DRIVER, HOLDER_PART]
 
 # --- scoring ----------------------------------------------------------------------------------------------------------
 EPS = 1e-6
-FLUSH = 0.0005  # plate on the face and wings on the back face: within 0.5 mm
+FLUSH = 0.0005  # every corner of the plate's underside within 0.5 mm of the face
 SQUARE_DEG = 3.0
 CROOKED_DEG = 10.0
 CLEAR = 0.005
-UNDERSIDE = TOP + STUD_D  # the board's back face
 FACE_Z = TOP + FACE
+# The pull test, run by the scorer once the hook has been let go and has stayed still for 1 s: a steady pull of PULL_N
+# straight out from the face at the foot of the hook's upright (80 mm from the bolt) for PULL_STEPS control steps, then
+# none for SETTLE_STEPS. Tight: no corner of the plate rises more than LIFT_MAX above where it was before the pull, and
+# the hook comes back to rest where it was (within 0.2 mm and 0.2 degrees).
+PULL_N = 5.0
+PULL_AT = (0.0, UPRIGHT_Y, PLATE[2])  # hook frame: the upright's foot, on the plate's centre line
+PULL_STEPS = 10  # 0.5 s at 20 Hz
+SETTLE_STEPS = 10  # 0.5 s
+LIFT_MAX = 0.0005
+LIFT_MIN = 0.00005  # the pull must visibly act: a test in which no corner rose even 0.05 mm is not a test
 
 # Released: in the simulator an on_step callback measures every step how close both arms' fingers and grippers come
 # to the hook (the screwdriver may stay in a hand). Until it has measured (or when it cannot), "clear" is None and nothing scores.
 # (Kept in the parts module so near_misses.py, which imports this file separately, can set it for offline cases.)
 _grip = parts.__dict__.setdefault("_hook_task_grip", {"clear": None})
+# The pull test's progress, read by the on_step callback that applies the pull (also kept in the parts module).
+_pull = parts.__dict__.setdefault("_hook_task_pull", {"phase": "idle"})
 # Whole-trial record: did the toggle ever run off the bolt's end? Cleared only by a scene reset (the hook back within
 # 0.5 mm of its start and at rest, after a jump of over 20 mm in one control step).
 _record = {"ran_off": False, "prev": None, "still": 0}
@@ -227,24 +238,15 @@ def _plate_corners(hook) -> np.ndarray:
     return np.array([p + r @ np.array([sx * PLATE[0] / 2, y, 0.0]) for sx in (-1, 1) for y in PLATE_Y])
 
 
-def _wing_top(hook) -> float:
-    """Lowest point of the wings' upper face (world z): it bears on the board's back face."""
-    p, q = hook.links["nut"]
-    r = _rot(q)
-    pts = [np.asarray(p) + r @ np.array([sx * WING[0] / 2, sy * WING[1] / 2, WING[2] / 2])
-           for sx in (-1, 1) for sy in (-1, 1)]
-    return float(min(v[2] for v in pts))
-
-
 def _yaw_off_deg(hook) -> float:
     """Angle between the plate's long axis (bolt end to hook end) and the pencil line's +y direction, degrees."""
     axis = _rot(hook.quat_xyzw) @ np.array([0.0, 1.0, 0.0])
     return abs(math.degrees(math.atan2(axis[0], axis[1])))
 
 
-def _tight(hook) -> bool:
+def _flush(hook) -> bool:
     z = _plate_corners(hook)[:, 2]
-    return bool(np.all(np.abs(z - FACE_Z) <= FLUSH + EPS) and _wing_top(hook) >= UNDERSIDE - FLUSH - EPS)
+    return bool(np.all(np.abs(z - FACE_Z) <= FLUSH + EPS))
 
 
 def _driver_clear(objects) -> bool:
@@ -270,25 +272,71 @@ def _update(objects) -> None:
         _record["ran_off"] = True
 
 
+def _pose(hook):
+    return np.asarray(hook.pos, float), np.asarray(hook.quat_xyzw, float), hook.joints.get("thread", 0.0)
+
+
+def _same_pose(a, b) -> bool:
+    """Within 0.2 mm, 0.2 degrees and 0.2 mm of thread travel."""
+    return bool(np.linalg.norm(a[0] - b[0]) <= 0.0002 + EPS and abs(a[2] - b[2]) <= 0.0002 + EPS
+                and abs(float(np.dot(a[1], b[1]))) >= math.cos(math.radians(0.2) / 2) - 1e-9)
+
+
 def _count_still(objects) -> None:
     """Once per control step (from score()): consecutive steps with the hook at rest and its pose and thread
     unchanged (within 0.2 mm and 0.2 degrees of the previous step)."""
     hook = objects["hook"]
-    now = (np.asarray(hook.pos, float), np.asarray(hook.quat_xyzw, float), hook.joints.get("thread", 0.0))
+    now = _pose(hook)
     was = _record.get("still_pose")
-    same = (was is not None and np.linalg.norm(now[0] - was[0]) <= 0.0002 and abs(now[2] - was[2]) <= 0.0002
-            and abs(float(np.dot(now[1], was[1]))) >= math.cos(math.radians(0.2) / 2))
+    same = was is not None and _same_pose(now, was)
     _record["still"] = _record["still"] + 1 if (same and hook.resting()) else 0
     _record["still_pose"] = now
 
 
-def _done(objects) -> float:
-    """1.0 tight and square, 0.5 tight but out of square (3 to 10 degrees), else 0; the hook released and at rest
-    for the last 1 s."""
+def _ready(objects) -> bool:
+    """Let go, the screwdriver clear, the plate flush on the face and within 10 degrees of the line."""
     hook = objects["hook"]
-    if _record["ran_off"] or _grip["clear"] is not True or not _tight(hook):
-        return 0.0
-    if not (hook.resting() and _record["still"] >= STILL_STEPS and _driver_clear(objects)):  # driver may be held
+    return bool(not _record["ran_off"] and _grip["clear"] is True and _flush(hook) and _driver_clear(objects)
+                and _yaw_off_deg(hook) <= CROOKED_DEG + EPS)
+
+
+def _pull_step(objects) -> None:
+    """Once per control step (from score()): run the pull test. It starts when the hook is ready and has been still
+    for 1 s, and starts over whenever anything touches or moves the hook (a gripper within 5 mm, the screwdriver
+    near it, the hook not back where it was after the test)."""
+    hook = objects["hook"]
+    p = _pull
+    if p["phase"] == "idle":
+        if _ready(objects) and _record["still"] >= STILL_STEPS:
+            p.update(phase="pull", k=0, ref=_pose(hook), ref_z=_plate_corners(hook)[:, 2], rise=0.0, passed=False,
+                     pulled=0)
+        return
+    if p["phase"] in ("pull", "settle"):
+        if _grip["clear"] is not True or not _driver_clear(objects) or _record["ran_off"]:
+            p.update(phase="idle")
+            return
+        p["rise"] = max(p["rise"], float(np.max(_plate_corners(hook)[:, 2] - p["ref_z"])))
+        if p["phase"] == "pull":  # fail closed: count the steps on which the wrench was really set to PULL_N
+            if "offline_applied" in p:  # near_misses.py stands in for the simulator's wrench offline
+                p["applied"] = p["offline_applied"](objects)
+            p["pulled"] += int(abs(float(p.get("applied") or 0.0) - PULL_N) < 1e-6)
+        p["k"] += 1
+        if p["phase"] == "pull" and p["k"] >= PULL_STEPS:
+            p.update(phase="settle", k=0)
+        elif p["phase"] == "settle" and p["k"] >= SETTLE_STEPS:
+            back = _same_pose(_pose(hook), p["ref"]) and hook.resting()
+            pulled = p["pulled"] >= PULL_STEPS - 1 and p["rise"] >= LIFT_MIN - EPS
+            p.update(phase="done", passed=bool(back and pulled and p["rise"] <= LIFT_MAX + EPS))
+        return
+    if not (_ready(objects) and hook.resting() and _same_pose(_pose(hook), p["ref"])):  # done, then disturbed
+        p.update(phase="idle")
+
+
+def _done(objects) -> float:
+    """1.0 tight (passed the pull test) and square, 0.5 tight but 3 to 10 degrees out of square, else 0; the hook
+    released, at rest and where the test left it."""
+    hook = objects["hook"]
+    if _pull["phase"] != "done" or not _pull["passed"] or not _ready(objects) or not hook.resting():
         return 0.0
     off = _yaw_off_deg(hook)
     if off <= SQUARE_DEG + EPS:
@@ -297,7 +345,7 @@ def _done(objects) -> float:
 
 
 def success(objects):
-    """The hook plate tight on the face and the wings tight on the back, square to the line, let go and still."""
+    """The hook plate flush on the face, held tight under the pull test, square to the line, let go and still."""
     _update(objects)
     return bool(_done(objects) == 1.0)
 
@@ -305,6 +353,7 @@ def success(objects):
 def score(objects):
     _update(objects)
     _count_still(objects)
+    _pull_step(objects)
     return _done(objects)
 
 
@@ -329,9 +378,36 @@ def _measure_grip(sim) -> None:
     _grip["clear"] = bool(hulls) and all(analysis.hulls_to_box(hulls, c, r, s)[0] > CLEAR for c, r, s in boxes)
 
 
+def _set_pull(sim, force: float) -> None:
+    import torch
+
+    base = sim.env.unwrapped
+    asset = base.scene["hook"]
+    hook = sim.states()["hook"]
+    at = np.asarray(hook.pos) + _rot(hook.quat_xyzw) @ np.asarray(PULL_AT) + parts._np(base.scene.env_origins[0])
+    dev = base.device
+    asset.permanent_wrench_composer.set_forces_and_torques_index(
+        forces=torch.tensor([[[0.0, 0.0, force]]], dtype=torch.float32, device=dev),
+        positions=torch.tensor([[[*at]]], dtype=torch.float32, device=dev),
+        body_ids=[list(asset.body_names).index("base")], env_ids=torch.tensor([0], dtype=torch.int32, device=dev),
+        is_global=True)
+    _pull["applied"] = force
+
+
+@parts.on_step
+def _apply_pull(sim) -> None:
+    """The pull test's force: on while the test is in its pull phase (set each step at the upright's foot), else off."""
+    want = PULL_N if _pull.get("phase") == "pull" else 0.0
+    if want or _pull.get("applied"):
+        _set_pull(sim, want)
+
+
 @parts.on_reset
 def _reset_grip(sim) -> None:
     _grip["clear"] = None
+    _pull.clear()
+    _pull["phase"] = "idle"
+    _set_pull(sim, 0.0)
 
 
 # --- demo: open loop from the published start layout ------------------------------------------------------------------
@@ -384,7 +460,7 @@ def _driver_plan():
         Waypoint(0.6, (ax, ay, seat + 0.004), HANDLE_GRIP, "ease the push", end),
         Waypoint(2.5, (ax, ay, carry), HANDLE_GRIP, "lift the driver off", end),
         Waypoint(2.0, (hx, hy, carry), HANDLE_GRIP, "hold the driver clear, over its holder", end),
-        Waypoint(4.0, (hx, hy, carry), HANDLE_GRIP, "wait", end),
+        Waypoint(10.0, (hx, hy, carry), HANDLE_GRIP, "wait (the pull test runs)", end),
     ]
     return w, n_seat
 
@@ -421,6 +497,6 @@ def demo():
         lw(1.0, (x, y, z), UPRIGHT_GRIP, "ease off"),
         lw(0.6, (x, y, z), -0.010, "let go"),
         lw(1.5, (x, y + 0.04, z + 0.07), -0.010, "up"),
-        lw(3.0, (x, y + 0.04, z + 0.07), -0.010, "wait clear"),
+        lw(9.0, (x, y + 0.04, z + 0.07), -0.010, "wait clear (the pull test runs)"),
     ]
     return {"left": left, "right": right}

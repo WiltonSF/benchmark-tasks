@@ -30,7 +30,7 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
 ```
 
 - **Runtime per trial:** at most 60 s of simulated time (1,200 steps at 20 Hz); about 2 to 3 minutes of wall time on
-  an L40S once Isaac Sim has started. The demo takes about 49 s.
+  an L40S once Isaac Sim has started. The demo script lasts 55 s (it waits clear while the pull test runs); its trial ends on success at about 48 s.
 - **Seeds:** submitted runs use `-E object_jitter=0`; the layout is fixed. The hook and the screwdriver are the loose
   objects; with jitter the hook's bolt would start off the hole's centre (it still sits in the hole's 3 mm play).
 
@@ -44,7 +44,7 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
   on the board's back face, which exists only while the hook is pulled outward, outweighs that drag.
 - **Checked on the GPU** with a motor on the bolt instead of the screwdriver: 2 turns with the hook not pulled
   moved the nut 0.0 mm along the bolt (it turned with the screw); then 3 turns while an arm pulled the hook moved it
-  3.80 mm (1.27 mm per turn, the lead of the 1/4-20 bolt the probe used) and drew the plate down flat on the face.
+  3.80 mm (1.27 mm per turn, the lead of the 1/4-20 bolt in an earlier build) and drew the plate down flat on the face.
 - **Screwdriver:** the shaft and tip are a link on a hinge in the handle. Its upper joint limit is the ratchet pawl:
   every control step an `on_step` callback lowers it to where the shaft has been (plus 0.02 rad play), so the shaft
   can turn anticlockwise in the handle (the back swing) but drives the screw clockwise.
@@ -58,28 +58,52 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
 
 ## Scoring as implemented
 
-`score()` and `success()` in `task.py`:
+`score()` and `success()` in `task.py`. Everything credited can be checked from outside the wall: the wings in the
+closed cavity are not looked at; whether they grip is judged by pulling on the hook, as a fitter would.
 
-- **Tight** (`_tight`): all four corners of the plate's underside within 0.5 mm of the face height (76.2 mm above
-  the table), and the lowest corner of the wings' upper face no more than 0.5 mm below the board's back face (63.5 mm).
-  With the wings at the back face and the plate on the face, no gap is left on the thread.
+- **Flush** (`_flush`): all four corners of the plate's underside within 0.5 mm of the face height (76.2 mm above
+  the table).
 - **Square** (`_yaw_off_deg`): the angle between the plate's long axis (bolt end to hook end) and the line's
   direction to the left: at most 3 degrees for 1.0, at most 10 for 0.5. A hook turned round fails.
 - **Released and still:** an `on_step` callback measures every control step the distance from both arms' finger and
   gripper hulls (`yam_arena.analysis`) to every shape of the hook (all links); all must be more than 5 mm (the
-  screwdriver may stay in a hand). Until it has measured, or if it cannot, the state is unknown and nothing scores (fail closed).
-  The screwdriver's box must also be at least 5 mm from every shape of the hook, and the hook at rest (under 1 cm/s and
-  0.5 rad/s); the screwdriver's own motion is not judged (held still in a gripper it was reported moving at 7 cm/s, so it may be held or put down). `score()` counts
-  consecutive control steps with the hook at rest and its pose and thread unchanged (within 0.2 mm and 0.2 degrees);
-  no credit before 20 of them (1 s at 20 Hz). Success must also hold 1 s.
+  screwdriver may stay in a hand). Until it has measured, or if it cannot, the state is unknown and nothing scores
+  (fail closed). The screwdriver's box must also be at least 5 mm from every shape of the hook; the screwdriver's own
+  motion is not judged (held still in a gripper it was reported moving at 7 cm/s, so it may be held or put down).
+  `score()` counts consecutive control steps with the hook at rest (under 1 cm/s and 0.5 rad/s) and its pose and
+  thread unchanged (within 0.2 mm and 0.2 degrees).
+- **Pull test** (`_pull_step`, `_apply_pull`): once the hook is flush, within 10 degrees of the line, released, clear
+  of the screwdriver and has been still for 20 control steps (1 s), the scorer pulls it: an `on_step` callback applies
+  a steady 5 N force straight out from the face (up, the panel lying face-up) at the foot of the hook's upright
+  (on the plate's centre line, 80 mm from the bolt), for 10 control steps (0.5 s), then removes it for 10 more (0.5 s).
+  Tight means no corner of the plate rose more than 0.5 mm above its height before the pull, at any step of the
+  test, and the hook is back at rest within 0.2 mm, 0.2 degrees and 0.2 mm of thread travel of its pose before the pull.
+  Fail closed: the callback records the force it set, and the test fails unless PULL_N was applied on at least 9 of
+  the 10 pull steps and some corner rose at least 0.05 mm (a pull that did not act is not a test). A gripper within
+  5 mm, the screwdriver within 5 mm or the toggle run off at any step of the test, or the hook moved after it,
+  starts the test over (after a new 1 s at rest). A hook only resting on the face, with any play left on the thread,
+  lifts under the pull until its wings meet the back of the board, and fails.
+- **Credit:** 1.0 when the last test passed and the hook is still flush, square, released, at rest and where the
+  test left it; 0.5 the same at 3 to 10 degrees; 0 otherwise, including a trial that ends before a test is finished.
+  Success needs the same 1.0 state and must hold 1 s.
 - **Whole trial:** if the nut's travel ever reaches the bolt's end (38.8 mm back from the start, less 0.5 mm, about
-  36 turns; the nut's and bolt's hinges allow 250 rad each way so this can happen), the trial scores 0, until a scene reset: the hook back within 0.5 mm of its start, at rest, after a jump of over
-  20 mm in one control step.
-- `near_misses.py` checks every tier and boundary (2.9/3.1/10/10.5 degrees, 0.5/0.6 mm at the wings and at the
-  plate, a 1 degree tilt, half the thread taken up, the toggle spun with no travel, the screwdriver left in the head
-  or 4 mm from the plate, the toggle run off then refitted). Offline there is no robot, so it sets the arms as
-  measured clear. Checked separately offline: with the arms' state unknown (`None`) the tight-and-square state
-  scores 0.
+  36 turns; the nut's and bolt's hinges allow 250 rad each way so this can happen), the trial scores 0, until a scene
+  reset: the hook back within 0.5 mm of its start, at rest, after a jump of over 20 mm in one control step.
+- **Checked on the GPU:** two probe runs applied the same 5 N pull at the upright's foot. The hook as the demo leaves it
+  (no play left on the thread) rose at most 0.27 mm, at the hook end, and came back within 0.005 mm. The same hook
+  resting with its wings 0.5 mm off the back of the board rocked its hook end up 2.2 mm. A tight hook moves at all
+  because the simulated board face is springy (2 x 10^4 N/m) and the thread's drag model keeps no clamp preload
+  (the demo ends 0.003 mm past contact). 5 N, a light tug about three times the hook's weight, separates a tight hook
+  (0.27 mm) from one with 0.5 mm play (2.2 mm); at 10 N a tight hook already moved 0.75 mm.
+  The final scripted demo passed the test and scored 1.0 (the trial ended on success at 47.5 s).
+- `near_misses.py` checks every tier and boundary (2.9/3.1/10/10.5 degrees; a lift of 0.5 mm and 0.05 mm more under the
+  pull, straight up or with the hook end rocking up; 0.4/0.6 mm off the face; a 1 degree tilt), the reviewer's case
+  (a hook resting flat with its wings 0.5 mm off the back of the board, whose hook end rocks up 2.2 mm under the pull, as measured on the GPU: 0), half
+  the thread taken up, the toggle spun with no travel, the hook not back where it was after the test, the pull never applied, a pull
+  under which no corner rose 0.05 mm, the
+  screwdriver left in the head or 4 mm from the plate, and the toggle run off then refitted. Offline there is no
+  robot and no physics, so it sets the arms as measured clear and gives the hook's pose under the pull. Checked
+  separately offline: with the arms' state unknown (`None`) the tight-and-square state scores 0.
 
 ## Scripted demo
 
@@ -90,7 +114,7 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
   0.6 mm in front of and 0.2 mm left of the head's centre, where the held tip was measured to settle short of the
   commanded point at this pose. It presses 4 mm past seated, then makes seven 190-degree clockwise strokes (wrist
   +145 to -45 degrees, the wrist's range here) with a ratchet back swing between them, eases off, lifts the driver
-  out and holds it still over its holder (it does not need putting down).
+  out and holds it still over its holder while the pull test runs (it does not need putting down).
 - Left arm: leans 45 degrees (finger tips toward the bolt; `tilt.py`) and pinches the hook's upright across its
   5 mm thickness, then pulls it 35 mm upward (commanded; the soft arm lifts the bolt end about 2.5 mm before the
   wings meet the back face) and holds it there square while the right arm turns, then eases off and lets go once
@@ -103,7 +127,7 @@ True size, fixed layout. The panel lies face-up on the bench so a straight-down 
 turns tools only about the vertical); on a wall the same pull-and-turn is needed. The thread is an ideal helical joint
 with velocity drag standing in for thread friction. The toggle starts already opened behind the board with about 2.8
 turns of thread left, so the demo is practical. The recess has square-sided 2.6 mm slots (a real #2 Phillips recess
-tapers to a cone). The board is rigid with a slightly springy surface. No damage to the board is modelled.
+tapers to a cone). The board is rigid with a slightly springy surface, and the thread holds no clamp preload: 5 N, a light tug about three times the hook's weight, separates a tight hook (0.27 mm) from one with 0.5 mm play (2.2 mm). No damage to the board is modelled.
 
 ## Licences
 
