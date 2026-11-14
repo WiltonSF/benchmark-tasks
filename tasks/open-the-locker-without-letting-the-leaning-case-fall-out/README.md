@@ -4,8 +4,9 @@ A small locker with a roof, its door hinged on the right and held by a magnetic 
 end, tipped forward past its base so that its top rests on the inside of the door. Once the door is pulled past
 the catch, the case pushes it open and leans further with it; opened in one go, the case falls out. The ability
 tested: hold the door partly open against the load and extract the case through the gap. The case holds a glass
-instrument and is marked this way up, so tipping it past 45 degrees scores 0 even if it is laid down slowly. The
-instruction only asks for the case to be taken out and stood on the mat.
+instrument and is marked this way up, so tipping it past 45 degrees scores 0 even if it is laid down slowly, and
+dropping it scores 0 even if it lands upright in place. The instruction only asks for the case to be taken out and
+stood on the mat.
 
 The task is `task.py` for the `yam_arena` embodiment of yam-isaac-lab-arena (the program's YAM embodiment for Isaac
 Lab-Arena), station scene. `parts.py` (a small parts kit) builds the locker and its hinged door; `tilt.py` lets the
@@ -44,7 +45,28 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
 - **The door.** A hinge with damping 0.3 N m s/rad. An on-step hook makes the catch: within the first 0.05 rad the
   door is pulled shut with 0.045 N m; past that it turns freely. Traced on the GPU: with the door held at 0.92 rad
   the case leaned 34 degrees; opened past about 1.1 rad unheld, the case passes 45 degrees and falls out.
-- **The tipping record** (case ever past 45 degrees) is cleared by the same reset hook, so nothing the robot does can erase it.
+- **The trial record** (case ever past 45 degrees; case ever dropped) is cleared by the same reset hook, so nothing
+  the robot does can erase it.
+
+## Dropping
+
+The case counts as dropped if, at any control step of the trial, its centre moves downward faster than 0.45 m/s
+(`DROP_SPEED`). A free fall from about 1 cm reaches this; it is checked at each 50 ms control step, so falls from about
+4.5 cm or more are always caught and shorter ones only sometimes. A case let go from 5 cm up (about 1 m/s on
+landing), one that slips out of a grip, and one that falls out of the locker when the door opens all count. Like tipping, it is
+judged over the whole trial: a dropped case scores 0 even if it ends upright on the mat. Lowering the case faster
+than 0.45 m/s in a grip also counts as dropping it, which no careful handling of a glass instrument needs.
+
+## Release check
+
+A standing case earns credit only once it is let go: an on-step hook measures, every control step, the distance from
+both arms' gripper, `tip_left` and `tip_right` link hulls to the case's box, and every one must be at least 5 mm
+(`RELEASE_GAP`) away. Until the first measurement after a reset, nothing is credited (it fails closed). Offline,
+`near_misses.py` sets `LOCKER_CASE_TASK_OFFLINE_CHECK=1` so its cases stand for states with the grippers away; its
+own runner also checks a case standing on the mat while gripped (0), a finger 4.9 mm away (0), every link exactly
+5 mm away (1.0) and no measurement yet (0). Set down gently, the case is well under the
+limit: traced every control step on the GPU, the demo's fastest downward speed of the case over the whole run was
+0.08 m/s.
 
 ## Scripted demo
 
@@ -53,7 +75,7 @@ The right arm grips the handle (4 cm from the hinge), pulls the door past the ca
 go. The left arm uses `tilt.py`: with its fingers closing front to back across the case and its fingertips leaning
 30 degrees away from the robot, it reaches down into the gap between the open door and the locker front and
 pinches the case's top. When the door is clear it lifts the case, draws it out, turns the grip back so the case
-hangs upright, and sets it on the mat from 5 mm up. The demo uses fixed waypoints only; the mat target is offset by
+hangs upright, sets it on the mat from 5 mm up, lets go and rises straight up clear of it. The demo uses fixed waypoints only; the mat target is offset by
 the 16 mm and 21 mm the case hangs from the pinch point, measured in a trace.
 
 `tilt.py` replaces `yam_arena.demo.grip_rotation` at import, in the task's own process, so a waypoint can carry a
@@ -68,12 +90,15 @@ python near_misses.py   # needs yam_arena importable
 Cases include: standing on the mat (1.0), front face on the mat's edge (1.0), leaning 4 degrees on the mat (1.0),
 overhanging the mat by 5 mm (0.5), standing on the table beside the mat (0.5), moving (0), held 1 cm up (0),
 leaning 8 degrees (0), the starting lean (0), pushed upright inside the locker (0), a 44-degree lean (not tipping),
-the door opened to 90 degrees and held (0), lying on its face (0), and stood on the mat after tipping (0).
+set down gently at 0.3 m/s then standing on the mat (1.0), lowered at exactly 0.45 m/s then standing on the mat
+(1.0), dropped from 5 cm then upright in place on the mat (0), falling out of the locker as the door opens then
+standing on the table (0), the door opened to 90 degrees and held (0), lying on its face (0), and stood on the mat
+after tipping (0). The cases run in order on one copy of the task, so the drop and tipping cases come last.
 
 ## Habits that score 0
 
 There is one case and one door, so there is no "nearest" or "leftmost" choice to guess. The habits that fail are
 ways of opening: pulling the door open in one go, opening it slowly but all the way before reaching in, or opening
-it with one arm and letting go (the case then pushes it open). Each lets the case lean past 45 degrees, which
-scores 0 for the rest of the trial; `near_misses.py` has a case for each, and for tipping the case out onto the
+it with one arm and letting go (the case then pushes it open). Each lets the case lean past 45 degrees or fall
+out, which scores 0 for the rest of the trial; `near_misses.py` has a case for each, and for tipping the case out onto the
 mat. The layout is fixed (no seeds), so a memorised replay of the demo's waypoints cannot be ruled out.

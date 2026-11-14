@@ -1,11 +1,14 @@
 """Near-successes and unintended strategies, scored offline by the factory checker.
 
 Each case: (label, {object: (centre, size or None, velocity or None[, quat_xyzw])}, expected score, expected
-success). The cases run in order on one copy of the task module, so the fall cases come last.
+success). The cases run in order on one copy of the task module, so the drop and tipping cases come last. Offline
+there is no robot, so the release check passes; _run() below also checks the release rule with a gripper on the case.
 """
 
 import math
+import os
 
+import task
 from task import CASE, LEAN0, LOCKER, MAT, MAT_TOP, MAT_XY, TOP, XD, _lean_pose
 
 H2 = CASE[2] / 2
@@ -27,8 +30,11 @@ def on_mat(dx=0.0, dy=0.0, up=0.0, deg=0.0):
     return (MAT_XY[0] + dx, MAT_XY[1] + dy, MAT_TOP + lift(deg) + up)
 
 
+os.environ[task.OFFLINE_FLAG] = "1"  # offline there is no robot: each case stands for a state with the grippers away
+
 MOVING = (0.0, 0.0, -0.05)
 lean_c, lean_q = _lean_pose(LEAN0)
+fall_c, fall_q = _lean_pose(math.radians(30.0))  # leaning 30 degrees as the door swings away from it
 edge_dx = MAT[0] / 2 - CASE[0] / 2  # case's front face flush with the mat's near edge
 
 CASES = [
@@ -51,6 +57,22 @@ CASES = [
     ("leaning 44 degrees on the door (not yet tipped)",
      {"blue_case": ((XD - 0.03, -0.025, TOP + 0.010 + lift(44.0)), None, None, tipped(44.0))}, 0.0, False),
     ("then stood on the mat: a 44-degree lean is not tipping", {"blue_case": (on_mat(), None, None)}, 1.0, True),
+    ("set down gently: lowered at 0.3 m/s, 2 mm above the mat",
+     {"blue_case": (on_mat(up=0.002), None, (0.0, 0.0, -0.3))}, 0.0, False),
+    ("then standing on the mat after being set down gently", {"blue_case": (on_mat(), None, None)}, 1.0, True),
+    ("lowered at exactly 0.45 m/s, 3 mm above the mat (the limit, not a drop)",
+     {"blue_case": (on_mat(up=0.003), None, (0.0, 0.0, -0.45))}, 0.0, False),
+    ("then standing on the mat: moving down at 0.45 m/s is not dropping", {"blue_case": (on_mat(), None, None)}, 1.0,
+     True),
+    # Drops (judged over the whole trial; from here on the record is kept, so these cases come after the clean ones).
+    ("dropped from 5 cm: falling at 0.99 m/s just above the mat",
+     {"blue_case": (on_mat(up=0.004), None, (0.0, 0.0, -0.99))}, 0.0, False),
+    ("then upright in place on the mat (the drop still counts)", {"blue_case": (on_mat(), None, None)}, 0.0, False),
+    ("falls out of the locker as the door opens: leaning 30 degrees, falling at 0.8 m/s",
+     {"blue_case": (tuple(fall_c), None, (-0.4, 0.0, -0.8), tuple(fall_q)),
+      "locker": LOCKER.state(joints={"door": 1.2})}, 0.0, False),
+    ("then standing upright on the table outside the locker (the fall still counts)",
+     {"blue_case": ((MAT_XY[0], MAT_XY[1] + 0.12, TOP + H2), None, None)}, 0.0, False),
     # Habits (each tips the case past 45 degrees, so each scores 0; they come last because the record is kept):
     # opening the door in one go, or slowly all the way before reaching in, or with one arm and letting it go.
     ("habit, door opened wide first: case tipped 60 degrees out over the locker's front edge",
@@ -106,6 +128,35 @@ def _run() -> int:
         flag = "ok  " if (got, ok) == (want, want_success) else "FAIL"
         bad += flag == "FAIL"
         print(f"{flag} {got:4.2f}  {label}")
+    return bad + _release_cases(start, state)
+
+
+def _release_cases(start, state) -> int:
+    """The release rule, which check.py cannot reach offline: a gripper within 5 mm of the case, or no measurement."""
+    import task
+
+    standing = {**start, "blue_case": state(on_mat(), CASE)}
+    checks = [
+        ("standing on the mat, still gripped (0 mm)", 0.0, {"blue_case": 0.0}),
+        ("standing on the mat, a finger 4.9 mm from the case", 0.0, {"blue_case": 0.0049}),
+        ("standing on the mat, every gripper link 5.0 mm away (limit)", 1.0, {"blue_case": 0.005}),
+    ]
+    bad = 0
+    for label, want, gaps in checks:
+        task._clear()
+        task._GAP.clear()
+        task._GAP.update(gaps)
+        got = 1.0 if task.success(standing) else float(task.score(standing))
+        flag = "ok  " if got == want else "FAIL"
+        bad += flag == "FAIL"
+        print(f"{flag} {got:4.2f}  {label}")
+    task._GAP.clear()
+    os.environ[task.OFFLINE_FLAG] = "0"  # in the simulator, before the first step has measured the grippers
+    got = float(task.score(standing))
+    os.environ[task.OFFLINE_FLAG] = "1"
+    flag = "ok  " if got == 0.0 else "FAIL"
+    bad += flag == "FAIL"
+    print(f"{flag} {got:4.2f}  standing on the mat, no gripper measurement yet: fails closed")
     return bad
 
 
