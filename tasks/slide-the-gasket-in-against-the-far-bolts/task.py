@@ -143,8 +143,18 @@ FLAT_TOL = 3.0
 SEAT_TOL_Z = 0.0015  # ring underside to the lower flange's top
 UPRIGHT_TOL = 8.0
 HEAD_TOL = 0.002  # bolt head underside to the upper flange's top
-IN_HOLE = 0.003  # bolt head centre within 3 mm of the upper flange's hole centre, seen from above
+SLACK = 0.001  # contact give allowed past a hole's wall
+IN_UP = HOLE_UP - SHANK_R + SLACK  # 2.5 mm: shank centre line from the upper hole's centre, in x and in y
+IN_LOW = HOLE_LOW - SHANK_R + SLACK  # 4.0 mm: the same in the lower flange's clearance hole
 RELEASE_GAP = 0.005
+# Upper flange over the lower one, judged at the end: centred, square, level, the joint open on its spacers (16 mm)
+# or closed onto the gasket (4 mm).
+UP_OFF = 0.003  # its centre from the pipe axis, seen from above
+UP_TURN = 2.0  # degrees about the pipe axis
+UP_LEVEL = 3.0  # degrees
+GAP_MIN, GAP_MAX = 0.003, 0.017  # its underside above the lower flange's top
+# ...and over the whole trial: never lifted off, slid aside, tipped or turned.
+MOVED_OFF, MOVED_UP, MOVED_ANGLE = 0.010, 0.005, 5.0
 
 
 def _rot(q):
@@ -160,7 +170,49 @@ def _tilt(st) -> float:
     return math.degrees(math.acos(float(np.clip(_rot(st.quat_xyzw)[2, 2], -1.0, 1.0))))
 
 
-# -- release check: no gripper link within 5 mm of the gasket or a counted bolt ------------------------------------
+def _turn(st) -> float:
+    """Turn about the vertical axis, degrees, folded to 0..45 (the flange is square)."""
+    r = _rot(st.quat_xyzw)
+    a = abs(math.degrees(math.atan2(r[1, 0], r[0, 0]))) % 90.0
+    return min(a, 90.0 - a)
+
+
+def _flange_over(u) -> bool:
+    """End state: the upper flange centred, square and level over the lower one, the joint open or closed, still and
+    let go."""
+    p = np.asarray(u.pos, float)
+    gap = p[2] - (TOP + LOW_TOP)
+    return bool(
+        math.hypot(p[0] - CX, p[1] - CY) <= UP_OFF + 1e-6
+        and _turn(u) <= UP_TURN + 1e-6
+        and _tilt(u) <= UP_LEVEL + 1e-6
+        and GAP_MIN - 1e-6 <= gap <= GAP_MAX + 1e-6
+        and u.resting()
+        and _released("upper_flange")
+    )
+
+
+def _flange_moved(u) -> bool:
+    """Whole-trial rule: lifted more than 5 mm, slid more than 10 mm off the axis, or tipped or turned over 5 deg."""
+    p = np.asarray(u.pos, float)
+    return bool(
+        math.hypot(p[0] - CX, p[1] - CY) > MOVED_OFF
+        or p[2] - (TOP + UP_Z0) > MOVED_UP
+        or _tilt(u) > MOVED_ANGLE
+        or _turn(u) > MOVED_ANGLE
+    )
+
+
+_FLANGE = {"moved": False}  # set for the rest of the trial the first step the upper flange is moved off
+
+
+def track_flange(u) -> None:
+    """Called every step (on_step below; near_misses.py calls it with hand-made states)."""
+    if _flange_moved(u):
+        _FLANGE["moved"] = True
+
+
+# -- release check: no gripper link within 5 mm of the upper flange, the gasket or a counted bolt ------------------
 # In the simulator an on_step hook measures, every step, each part's distance to both grippers. A part that has not
 # been measured yet (no step since the reset) is not credited: the check fails closed. Offline (near_misses.py sets
 # OFFLINE_FLAG; no simulator, no robot) each case stands for a state with the grippers away.
@@ -173,6 +225,7 @@ _SPECS = {o.name: o for o in OBJECTS}
 @parts.on_reset
 def _clear(sim):
     _GAP.clear()
+    _FLANGE["moved"] = False
 
 
 @parts.on_step
@@ -182,6 +235,7 @@ def _record_gaps(sim):
     base = sim.env.unwrapped
     origin = base.scene.env_origins[0].cpu().numpy()
     states = sim.states()
+    track_flange(states["upper_flange"])
     hands = []
     for arm in ("left_robot", "right_robot"):
         rob = base.scene[arm]
@@ -195,7 +249,7 @@ def _record_gaps(sim):
                 t[:3, 3] = poses[i, :3] - origin
                 links[n] = t
         hands += analysis.world_hulls(links)
-    for name in ("gasket", *BOLT_NAMES):
+    for name in ("upper_flange", "gasket", *BOLT_NAMES):
         st = states[name]
         boxes = _SPECS[name].world_boxes({"base": (np.asarray(st.pos, float), _rot(st.quat_xyzw))})
         _GAP[name] = min(float(analysis.hulls_to_box(hands, c, r, sz)[0]) for _, c, r, sz in boxes)
@@ -214,11 +268,14 @@ def _released(name) -> bool:
 
 
 def _ring_in(objects) -> bool:
-    """Between the flanges: lying flat on the lower flange, centred on the pipe axis, still and let go."""
+    """Between the flanges: the upper flange in place over the lower one (and never moved off it this trial), the
+    gasket lying flat on the lower flange, centred on the pipe axis, still and let go."""
     g = objects["gasket"]
     p = np.asarray(g.pos, float)
     return bool(
-        abs(p[2] - (TOP + LOW_TOP)) <= SEAT_TOL_Z + 1e-6
+        not _FLANGE["moved"]
+        and _flange_over(objects["upper_flange"])
+        and abs(p[2] - (TOP + LOW_TOP)) <= SEAT_TOL_Z + 1e-6
         and _tilt(g) < FLAT_TOL
         and math.hypot(p[0] - CX, p[1] - CY) <= CENTRE_TOL + 1e-6
         and g.resting()
@@ -227,17 +284,29 @@ def _ring_in(objects) -> bool:
 
 
 def _bolt_in(st, upper, hole) -> bool:
-    """Upright, head on the upper flange's top and centred over one of its holes, still. Measured in the upper
-    flange's own frame, wherever it is (it is loose on its spacers)."""
+    """Upright, its head on the upper flange's top, and its shank through the matching hole of both flanges: where
+    the shank's centre line crosses each flange's mid-thickness it is inside that hole (shank radius plus 1 mm of
+    contact give), and the shank's end is below the lower flange. The upper hole is measured in the upper flange's
+    own frame, the lower hole in the fixed lower flange's."""
     hx, hy = HOLES[hole]
     ru, pu = _rot(upper.quat_xyzw), np.asarray(upper.pos, float)
     rb, p = _rot(st.quat_xyzw), np.asarray(st.pos, float)
-    under = ru.T @ (p + rb @ np.array([0.0, 0.0, SHANK_L]) - pu)  # centre of the head's underside
-    head = ru.T @ (p + rb @ np.array([0.0, 0.0, SHANK_L + HEAD_H / 2]) - pu)  # centre of the head
+    axis = rb @ np.array([0.0, 0.0, 1.0])
+    if axis[2] <= 0.0:
+        return False
+    under = ru.T @ (p + axis * SHANK_L - pu)  # centre of the head's underside, upper flange frame
+
+    def crossing(z):  # where the shank's centre line meets the world plane at height z
+        return p + axis * (z - p[2]) / axis[2]
+
+    up = ru.T @ (crossing(pu[2] + UP_H / 2) - pu)  # at the upper flange's mid-thickness, its frame
+    low = crossing(TOP + LOW_Z0 + LOW_H / 2) - np.array([CX, CY, 0.0])  # at the lower flange's mid-thickness
     return bool(
         _tilt(st) <= UPRIGHT_TOL + 1e-6
         and abs(under[2] - UP_H) <= HEAD_TOL + 1e-6
-        and math.hypot(head[0] - hx, head[1] - hy) <= IN_HOLE + 1e-6
+        and max(abs(up[0] - hx), abs(up[1] - hy)) <= IN_UP + 1e-6
+        and max(abs(low[0] - hx), abs(low[1] - hy)) <= IN_LOW + 1e-6
+        and p[2] < TOP + LOW_Z0
         and st.resting()
     )
 
@@ -247,13 +316,13 @@ def _filled(objects, hole) -> bool:
 
 
 def success(objects):
-    """The gasket is centred between the flanges and all four bolts are in."""
+    """The upper flange in place, the gasket centred between the flanges and all four bolts through both."""
     return bool(_ring_in(objects) and all(_filled(objects, h) for h in HOLES))
 
 
 def score(objects):
-    """With the gasket centred: 0.2, plus 0.2 for each hole with a bolt in, in any order (1.0 with all four).
-    Without it: 0."""
+    """With the upper flange in place and the gasket centred between the flanges: 0.2, plus 0.2 for each hole with
+    a bolt through both flanges, in any order (1.0 with all four). Otherwise 0."""
     if not _ring_in(objects):
         return 0.0
     return (1 + sum(_filled(objects, h) for h in HOLES)) / 5

@@ -10,7 +10,8 @@ import math
 import os
 
 import task
-from task import BOLTS, CX, CY, GAP, HOLES, LOW_TOP, RING, RING_START_X, SEATED_Z, SPACERS, TOP, UP_Z0, UPPER
+from task import (BOLTS, CX, CY, GAP, HOLES, LOW_TOP, RING, RING_START_X, SEATED_Z, SHANK_L, SPACERS, TOP, UP_TOP,
+                  UP_Z0, UPPER)
 
 os.environ[task.OFFLINE_FLAG] = "1"  # the task credits these offline cases as let go
 
@@ -45,8 +46,23 @@ def near_only(**kw):
     return {"bolt_2": bolt(1, "near_left"), "bolt_4": bolt(3, "near_right"), **kw}
 
 
-def upper(dx=0.0, dz=0.0):
-    return UPPER.state(pos=(CX + dx, CY, TOP + UP_Z0 + dz))
+def upper(dx=0.0, dy=0.0, dz=0.0, tilt=0.0, turn=0.0):
+    if turn:
+        a = math.radians(turn) / 2
+        q = (0.0, 0.0, math.sin(a), math.cos(a))
+    else:
+        q = tilt_q(tilt)
+    return UPPER.state(pos=(CX + dx, CY + dy, TOP + UP_Z0 + dz), quat_xyzw=q)
+
+
+def bolt_from_head(i, hole, dx=0.0, tilt=0.0):
+    """A bolt whose head's underside sits on the upper flange's top, dx from the hole's centre, leaning tilt degrees
+    about that point (about the x axis)."""
+    hx, hy = HOLES[hole]
+    t = math.radians(tilt)
+    axis = (0.0, -math.sin(t), math.cos(t))
+    head = (CX + hx + dx, CY + hy, TOP + UP_TOP)
+    return BOLTS[i].state(pos=tuple(h - a * SHANK_L for h, a in zip(head, axis)), quat_xyzw=tilt_q(tilt))
 
 
 def four_shifted(dx, **kw):
@@ -89,33 +105,81 @@ CASES = [
     ("gasket pushed too far, 10 mm past the axis, four bolts in", four(gasket=ring(dx=0.010)), 0.0, False),
     # The loose upper flange: bolts are judged in its holes, wherever it is.
     ("upper flange slid 2 mm on its spacers, bolts in its holes", four_shifted(0.002, gasket=ring()), 1.0, True),
-    ("upper flange slid 4 mm, bolts left 4 mm off its holes", {**four(gasket=ring()), "upper_flange": upper(dx=0.004)},
-     0.2, False),
+    ("upper flange slid 3 mm on its spacers, bolts in its holes", four_shifted(0.003, gasket=ring()), 1.0, True),
+    # The reviewer's cases: the upper flange removed or shifted, and bolts through the upper flange only.
+    ("upper flange lifted away and set on the table, gasket centred on the lower flange",
+     {"gasket": ring(), "upper_flange": UPPER.state(pos=(0.20, 0.0, TOP))}, 0.0, False),
+    ("upper flange lifted away, gasket centred, four bolts through the lower flange only",
+     {**four(gasket=ring()), "upper_flange": UPPER.state(pos=(0.20, 0.0, TOP))}, 0.0, False),
+    ("upper flange shifted 3.5 mm with its bolts: not over the gasket", four_shifted(0.0035, gasket=ring()), 0.0,
+     False),
+    ("upper flange shifted 10 mm, bolts left in the lower holes", {**four(gasket=ring()), "upper_flange": upper(dx=0.010)},
+     0.0, False),
+    ("upper flange turned 2.5 deg about the pipe", {**four(gasket=ring()), "upper_flange": upper(turn=2.5)}, 0.0, False),
+    ("upper flange tipped 3.5 deg", {"gasket": ring(), "upper_flange": upper(tilt=3.5)}, 0.0, False),
+    ("upper flange held 2 mm above its spacers (18 mm gap)", {"gasket": ring(), "upper_flange": upper(dz=0.002)}, 0.0,
+     False),
+    ("upper flange still sliding", {"gasket": ring(), "upper_flange": UPPER.state(
+        pos=(CX, CY, TOP + UP_Z0), lin_vel=(0.02, 0.0, 0.0))}, 0.0, False),
+    ("bolt through the upper flange only, head seated, shank 4.5 mm off the lower hole (flange 3 mm over)",
+     {**four_shifted(0.003, gasket=ring()), "bolt_2": bolt(1, "near_left", dx=0.0045)}, 0.8, False),
+    ("bolt through the upper flange only, head seated, shank leaning 8 deg past the lower hole",
+     four(gasket=ring(), bolt_2=bolt_from_head(1, "near_left", tilt=8.0)), 0.8, False),
+    ("bolt in the upper hole, its end resting on the lower flange beside the hole",
+     four(gasket=ring(), bolt_2=BOLTS[1].state(pos=(CX + HOLES["near_left"][0] + 0.0045, CY + HOLES["near_left"][1],
+                                                     TOP + LOW_TOP))), 0.8, False),
     ("spacers out, joint closed onto the centred gasket, four bolts in", {**CLOSED, "gasket": ring()}, 1.0, True),
     # Bolt limits.
-    ("a bolt leaning 3 deg in its hole (head 2.6 mm off centre)",
+    ("a bolt leaning 3 deg in its holes (shank 2.1 mm off the upper hole's centre)",
      four(gasket=ring(), bolt_2=bolt(1, "near_left", tilt=3.0)), 1.0, True),
     ("a near bolt tilted 9 deg: not in", four(gasket=ring(), bolt_2=bolt(1, "near_left", tilt=9.0)), 0.8, False),
     ("a bolt head 2 mm above the flange", four(gasket=ring(), bolt_4=bolt(3, "near_right", dz=0.002)), 1.0, True),
     ("a near bolt head 2.5 mm up: not in",
      four(gasket=ring(), bolt_4=bolt(3, "near_right", dz=0.0025)), 0.8, False),
-    ("a bolt 3 mm off its hole centre", four(gasket=ring(), bolt_1=bolt(0, "far_left", dx=0.003)), 1.0, True),
-    ("a bolt 3.5 mm off its hole centre: not in", four(gasket=ring(), bolt_1=bolt(0, "far_left", dx=0.0035)), 0.8,
+    ("a bolt 2.5 mm off its hole centres", four(gasket=ring(), bolt_1=bolt(0, "far_left", dx=0.0025)), 1.0, True),
+    ("a bolt 2.6 mm off its hole centres: not in", four(gasket=ring(), bolt_1=bolt(0, "far_left", dx=0.0026)), 0.8,
      False),
     ("gasket left where it starts, nothing done", {"gasket": RING.state(pos=(CX + RING_START_X, CY, TOP + LOW_TOP))},
      0.0, False),
 ]
 
 
+def _history_cases(start) -> int:
+    """The whole-trial rule: the upper flange moved off during the trial and put back exactly still scores 0."""
+    bad = 0
+    full = {**start, **four(gasket=ring())}
+    checks = [
+        ("upper flange lifted 30 mm off during the trial, gasket and bolts in, flange put back", upper(dz=0.030), 0.0),
+        ("upper flange slid 12 mm aside during the trial, then put back", upper(dx=-0.012), 0.0),
+        ("upper flange tipped 6 deg during the trial, then settled back", upper(tilt=6.0), 0.0),
+        ("upper flange lifted 4 mm during the trial (under 5 mm), then settled back", upper(dz=0.004), 1.0),
+        ("spacers out during the trial, joint closed onto the gasket (lowered, not lifted)", upper(dz=CLOSE), 1.0),
+    ]
+    for label, during, want in checks:
+        task._FLANGE["moved"] = False
+        task.track_flange(start["upper_flange"])
+        task.track_flange(during)
+        got = 1.0 if task.success(full) else float(task.score(full))
+        flag = "ok  " if got == want else "FAIL"
+        bad += flag == "FAIL"
+        print(f"{flag} {got:4.2f}  {label}")
+    task._FLANGE["moved"] = False
+    return bad
+
+
 def _release_cases(start) -> int:
     """The release rule, which check.py cannot reach offline: a gripper within 5 mm, or no measurement yet."""
     bad = 0
     full = {**start, **four(gasket=ring())}
-    names = ["gasket", *task.BOLT_NAMES]
+    names = ["upper_flange", "gasket", *task.BOLT_NAMES]
     checks = [
         ("gripper 4.9 mm from a near bolt: that bolt not counted", {n: 0.05 for n in names} | {"bolt_4": 0.0049}, 0.8),
         ("gripper 5.0 mm from a near bolt: counted", {n: 0.05 for n in names} | {"bolt_4": 0.005}, 1.0),
         ("gripper still on the gasket: nothing counted", {n: 0.05 for n in names} | {"gasket": 0.0}, 0.0),
+        ("upper flange held in place by a gripper: nothing counted", {n: 0.05 for n in names} | {"upper_flange": 0.0},
+         0.0),
+        ("gripper 4.9 mm from the upper flange: nothing counted", {n: 0.05 for n in names} | {"upper_flange": 0.0049},
+         0.0),
     ]
     for label, gaps, want in checks:
         task._GAP.clear()
@@ -144,7 +208,7 @@ def _run() -> int:
         flag = "ok  " if (got, ok) == (want, want_success) else "FAIL"
         bad += flag == "FAIL"
         print(f"{flag} {got:4.2f}  {label}")
-    return bad + _release_cases(start)
+    return bad + _history_cases(start) + _release_cases(start)
 
 
 if __name__ == "__main__":

@@ -562,7 +562,7 @@ class _Loader(importlib.abc.Loader):
 
 
 class _Finder(importlib.abc.MetaPathFinder):
-    """Finds the yam_arena modules we patch with the other finders, then patches them once they have run."""
+    """Finds the yam_arena modules patched here with the other finders, then patches them once they have run."""
 
     def find_spec(self, fullname, path, target=None):
         if fullname not in _PATCHES:
