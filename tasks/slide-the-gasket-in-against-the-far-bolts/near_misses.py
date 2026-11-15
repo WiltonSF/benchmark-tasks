@@ -21,8 +21,8 @@ def tilt_q(deg):
     return (math.sin(a), 0.0, 0.0, math.cos(a))
 
 
-def ring(dx=0.0, dy=0.0, dz=0.0, tilt=0.0, vel=None):
-    return RING.state(pos=(CX + dx, CY + dy, TOP + LOW_TOP + dz), quat_xyzw=tilt_q(tilt), lin_vel=vel)
+def ring(dx=0.0, dy=0.0, dz=0.0, tilt=0.0):
+    return RING.state(pos=(CX + dx, CY + dy, TOP + LOW_TOP + dz), quat_xyzw=tilt_q(tilt))
 
 
 RING_OUT_FRONT = RING.state()  # never moved: still on the block in front
@@ -87,7 +87,6 @@ CASES = [
     ("gasket 2 mm up", four(gasket=ring(dz=0.002)), 0.0, False),
     ("gasket tilted 2.9 deg", four(gasket=ring(tilt=2.9)), 1.0, True),
     ("gasket tilted 3.1 deg", four(gasket=ring(tilt=3.1)), 0.0, False),
-    ("gasket still moving", four(gasket=ring(vel=(0.02, 0.0, 0.0))), 0.0, False),
     # Partial credit: 0.2 for the centred gasket, 0.2 more per bolt, in any order.
     ("gasket centred, no bolts", {"gasket": ring()}, 0.2, False),
     ("gasket centred against the two far bolts, near holes empty", far_only(gasket=ring(dx=0.001)), 0.6, False),
@@ -119,8 +118,6 @@ CASES = [
     ("upper flange tipped 3.5 deg", {"gasket": ring(), "upper_flange": upper(tilt=3.5)}, 0.0, False),
     ("upper flange held 2 mm above its spacers (18 mm gap)", {"gasket": ring(), "upper_flange": upper(dz=0.002)}, 0.0,
      False),
-    ("upper flange still sliding", {"gasket": ring(), "upper_flange": UPPER.state(
-        pos=(CX, CY, TOP + UP_Z0), lin_vel=(0.02, 0.0, 0.0))}, 0.0, False),
     ("bolt through the upper flange only, head seated, shank 4.5 mm off the lower hole (flange 3 mm over)",
      {**four_shifted(0.003, gasket=ring()), "bolt_2": bolt(1, "near_left", dx=0.0045)}, 0.8, False),
     ("bolt through the upper flange only, head seated, shank leaning 8 deg past the lower hole",
@@ -144,6 +141,54 @@ CASES = [
 ]
 
 
+def _window_cases(start) -> int:
+    """The stillness rule: each scored part's last 10 poses (0.5 s) must stay within 1 mm and 0.5 degrees of its
+    current pose, and a part with fewer than 10 poses recorded is not still. Each case fills the windows by hand: every
+    part at rest for 10 steps, then one part's window changed."""
+    final = {**start, **four(gasket=ring())}
+    parts_ = task._STILL_PARTS
+
+    def run(label, moving=None, poses=None, short=None, want=1.0):
+        task._WIN.clear()
+        for name in parts_:
+            k = task.STILL_STEPS - 1 if name == short else task.STILL_STEPS
+            for i in range(k):
+                st = final[name]
+                if name == moving:  # earlier poses of the moving part, ending at its final pose
+                    st = poses(i, st)
+                task.track_pose(name, st)
+        got = 1.0 if task.success(final) else float(task.score(final))
+        task._WIN.clear()
+        flag = "ok  " if got == want else "FAIL"
+        print(f"{flag} {got:4.2f}  {label}")
+        return flag == "FAIL"
+
+    def slid(dx):  # pose i of 10 is (9 - i) / 9 of dx short of the final pose, along x
+        def f(i, st):
+            p = list(st.pos)
+            p[0] -= dx * (task.STILL_STEPS - 1 - i) / (task.STILL_STEPS - 1)
+            return type(st)(**{**st.__dict__, "pos": tuple(p)})
+        return f
+
+    def turned(deg):  # turned deg about z at the window's start, back to the final pose at its end
+        def f(i, st):
+            a = math.radians(deg) * (task.STILL_STEPS - 1 - i) / (task.STILL_STEPS - 1) / 2
+            return type(st)(**{**st.__dict__, "quat_xyzw": (0.0, 0.0, math.sin(a), math.cos(a))})
+        return f
+
+    bad = 0
+    bad += run("every part at rest for 0.5 s: in", want=1.0)
+    bad += run("gasket slid 2 mm within the last 0.5 s: not still, so 0", "gasket", slid(0.002), want=0.0)
+    bad += run("upper flange still sliding: 2 mm within the last 0.5 s, so 0", "upper_flange", slid(0.002), want=0.0)
+    bad += run("upper flange crept 0.9 mm within the last 0.5 s: still", "upper_flange", slid(0.0009), want=1.0)
+    bad += run("a bolt slid 2 mm within the last 0.5 s: not counted", "bolt_4", slid(0.002), want=0.8)
+    bad += run("a bolt turned 0.6 deg within the last 0.5 s: not counted", "bolt_2", turned(0.6), want=0.8)
+    bad += run("a bolt turned 0.4 deg within the last 0.5 s: counted", "bolt_2", turned(0.4), want=1.0)
+    bad += run("upper flange window not full yet (9 of 10 steps): 0", short="upper_flange", want=0.0)
+    bad += run("a bolt's window not full yet: not counted", short="bolt_1", want=0.8)
+    return bad
+
+
 def _history_cases(start) -> int:
     """The whole-trial rule: the upper flange moved off during the trial and put back exactly still scores 0."""
     bad = 0
@@ -164,6 +209,40 @@ def _history_cases(start) -> int:
         bad += flag == "FAIL"
         print(f"{flag} {got:4.2f}  {label}")
     task._FLANGE["moved"] = False
+    return bad
+
+
+def _closure_check() -> int:
+    """The joint can close onto the gasket: with the gasket centred and the spacers out, every part of the gasket under
+    the flange faces (ring and tab alike) is 4 mm thick, so the lowered upper flange's face rests on the gasket's top,
+    and nothing else stands between the faces."""
+    half = task.HALF
+    tops = []
+    for s in RING.shapes:  # the ring is centred on the axis, unturned, its underside on the lower flange
+        x, y, z = s.at
+        hx, hy, hz = s.half
+        if abs(x) - hx < half and abs(y) - hy < half:  # any part of the shape inside the flange faces
+            tops.append(LOW_TOP + z + hz)
+    tallest = max(tops)
+    face = UP_Z0 + CLOSE  # the upper flange's underside with the spacers out, the joint closed
+    bad = 0
+    for label, ok in [
+        (f"tallest gasket part between the faces {1000 * (tallest - LOW_TOP):.1f} mm (the ring is 4.0 mm)",
+         abs((tallest - LOW_TOP) - task.RING_T) < 1e-9),
+        (f"closed flange face {1000 * (face - tallest):+.1f} mm from the gasket's top (within 0.5 mm)",
+         abs(face - tallest) <= 0.0005),
+        ("tab reaches past the flange's near edge: end 64.5 mm outside it",
+         abs((task.RING_OUT + task.TAB_LEN) - half - 0.0645) < 1e-6),
+    ]:
+        flag = "ok  " if ok else "FAIL"
+        bad += flag == "FAIL"
+        print(f"{flag}       closure: {label}")
+    # Every other loose part inside the flange faces is a bolt, which passes through the holes; the spacers come out.
+    others = [o.name for o in task.OBJECTS if o.mass is not None and o.name not in ("gasket", "upper_flange")
+              and not o.name.startswith(("bolt_", "spacer_"))]
+    flag = "ok  " if not others else "FAIL"
+    bad += flag == "FAIL"
+    print(f"{flag}       closure: nothing else between the faces {others or ''}")
     return bad
 
 
@@ -208,7 +287,7 @@ def _run() -> int:
         flag = "ok  " if (got, ok) == (want, want_success) else "FAIL"
         bad += flag == "FAIL"
         print(f"{flag} {got:4.2f}  {label}")
-    return bad + _history_cases(start) + _release_cases(start)
+    return bad + _closure_check() + _window_cases(start) + _history_cases(start) + _release_cases(start)
 
 
 if __name__ == "__main__":

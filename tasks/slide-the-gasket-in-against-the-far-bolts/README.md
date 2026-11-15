@@ -2,11 +2,12 @@
 
 A short flanged pipe joint is held open for a new gasket. The lower pipe stands on the table with its flange 20 mm
 up. The upper flange, on its own length of pipe, rests on two loose spacer blocks (the spreader) that hold it 16 mm
-above the lower one. A ring gasket that just fits inside the bolt circle waits on a block in front of the gap, and
+above the lower one. A ring gasket that just fits inside the bolt circle, with a flat handle tab as thick as the
+ring, waits on a block in front of the gap, and
 four M10 x 45 size bolts stand on the table. The gasket has to end centred on the pipe, under the upper flange still
 in place over the lower one, with all four bolts through both flanges. With the two near bolts in, it can't pass
-between them. Bolts put through both flanges end 4 mm below the lower flange;
-with the spacers out and the joint closed onto the gasket, 16 mm stands below it for a nut.
+between them. Bolts put through both flanges end 4 mm below the lower flange; with the spacers out and the joint
+closed onto the gasket, 16 mm stands below it for a nut.
 
 The task is `task.py` for the `yam_arena` embodiment of yam-isaac-lab-arena (the program's YAM embodiment for Isaac
 Lab-Arena), on the `station` scene. `parts.py` next to it builds the lower pipe and flange with the gasket's support
@@ -36,8 +37,8 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
 The run prints `task_score`. Scoring is `score()` and `success()` in `task.py`, and `task.json` states it in words.
 
 - **Runtime per trial:** at most 70 s of simulated time (1,400 steps at 20 Hz). The trial ends at 1.0 once
-  success has held for 3 s (`SUCCESS_HOLD_S`), so the video ends with the arms parked clear of the joint. The demo
-  lets go of the last bolt at about 54 s and reaches 1.0 at about 57 s.
+  success has held for 5 s (`SUCCESS_HOLD_S`), so the video ends with both arms parked clear of the joint for
+  about the last 3.5 s, showing the gasket's tab on the midline and all four bolt heads on the upper flange.
 - **Seeds:** none. Run with `-E object_jitter=0`, so the layout is the same every trial.
 
 ## Scoring in the simulator
@@ -46,8 +47,11 @@ The run prints `task_score`. Scoring is `score()` and `success()` in `task.py`, 
   gasket not in, 0. The gasket is in only while the upper flange is in place over it, so every tier, 0.2 included,
   needs the upper flange in place. Gasket in with both near bolts and one far bolt scores 0.8, the same as both
   far bolts and one near bolt.
-- **Still:** a part is still when it moves under 1 cm/s and turns under 0.5 rad/s (`resting()`), judged at each
-  step.
+- **Still (`_still`, a settle window):** the `on_step` hook keeps the last 10 poses (0.5 s) of the upper flange, the
+  gasket and each bolt. A part is still when, across that window, its origin stayed within 1 mm of where it is now
+  and it turned less than 0.5 degrees. Until a part's window is full (0.5 s after a reset) it is not still, so the
+  check fails closed. A window, not an instantaneous speed, so that contact chatter in a seated joint does not count
+  as moving.
 - **Positions:** each part's `pos` is its origin: the centre of the gasket's underside, the end of a bolt's shank, the
   centre of the upper flange's underside. A seated bolt's origin is 16 mm above the table, with its head resting on
   the upper flange.
@@ -90,8 +94,18 @@ The run prints `task_score`. Scoring is `score()` and `success()` in `task.py`, 
 - **Spacers clear the gasket:** their inner faces are 66 mm from the axis, 6.5 mm outside the gasket's edge.
 - **Lower flange holes:** these are 16 mm clearance holes, so the upper flange's 13 mm holes locate the bolts; a
   seated bolt's shank runs through both, its end 4 mm below the lower flange.
-- **Closing the joint:** with the spacers out, the upper flange would rest on the 4 mm gasket, 12 mm lower than now;
-  the bolts' ends would then stand 16 mm below the lower flange and 4 mm above the table.
+- **Handling tab:** flat, 20 mm wide and 4 mm thick like the ring, reaching 85 mm out of the ring's edge. With the
+  gasket centred its outer 64.5 mm stand outside the flange's near edge, where it is gripped; under the flange it
+  is no thicker than the ring, so it does not hold the joint open. Nothing else stands between the flange faces
+  once the spacers are out (`near_misses.py` checks this from the shapes).
+- **Closing the joint:** with the spacers out, the upper flange rests on the 4 mm gasket, 12 mm lower than on its
+  spacers; the bolts' ends then stand 16 mm below the lower flange and 4 mm above the table.
+- **Closure checked on the GPU:** a separate test scene (not part of the task) with the spacers out, the gasket
+  centred and the upper flange and four bolts released 2 mm above their closed positions, both arms parked. Under
+  gravity the flange settled onto the gasket within the first 0.25 s: its underside ended 0.2 mm below the gasket's
+  top (contact give), level within 0.1 degrees and centred within 0.1 mm. Scored by this task's `score()`, the closed joint read 1.0
+  at every logged step from step 10 (when the 0.5 s settle window filled) and the trial ended at 1.0 at step 105,
+  once success had held for 5 s.
 
 ## Habits that must not pass
 
@@ -117,14 +131,16 @@ For each bolt the arm grips the head (fingers 5 mm past its faces) and carries i
 until the shank end is 2 mm above the upper flange and settles there. Then it lowers the bolt in until the head is
 3 mm above its seat, and lets go. The demo never touches the spacers or the upper flange.
 
-In demo-20261114T225641 (GPU run under the revised scorer, 1,146 steps), every bolt went in without aim offsets and
-the trial ended at 1.0, so the upper flange stayed in place for the whole trial and all four bolts ended through both
-flanges. In an earlier GPU trace of the same scene and demo the gasket ended 2.3 mm from the axis, and the upper
-flange and spacers did not move. The last frame shows the gasket's tab and all four bolt heads with both arms parked.
+In demo-20261115T040504 (GPU run of the final scene and scorer, 1,186 steps), every bolt went in without aim offsets
+and the trial ended at 1.0, so the upper flange stayed in place for the whole trial and all four bolts ended through
+both flanges, let go. The 4 mm tab was gripped 1 mm above its underside and slid the gasket in. From frame 1110 to
+the last frame (1185) both arms are parked clear and the top camera shows the gasket's tab on the midline and all
+four bolt heads on the upper flange. In a GPU trace of the same scene and demo (trace-20261115T034743) the score
+reached 1.0 at step 1090 and held to the end, with the gasket 2.4 mm from the axis.
 
 ## Dream-1
 
-In dream-20261114T231244 (the revised scene and scorer, 1,400 steps, 320 x 176 cameras) Dream-1 scored 0.0. It
+In dream-20261115T043025 (the final scene and scorer, 1,400 steps, 320 x 176 cameras) Dream-1 scored 0.0. It
 raised both arms and held them up for the whole trial, never touching the gasket, the bolts or the flanges.
 
 ## Checks without a simulator
@@ -142,7 +158,7 @@ The cases cover:
   the gasket (1.0);
 - the upper flange removed or shifted (0 in every case, the gasket alone included): lifted away onto the table with
   the gasket centred, with or without bolts in the lower holes; shifted 3.5 and 10 mm; turned 2.5 degrees; tipped
-  3.5 degrees; held 2 mm high; still sliding;
+  3.5 degrees; held 2 mm high;
 - the whole-trial record: the flange lifted 30 mm, slid 12 mm or tipped 6 degrees during the trial and put back (0),
   lifted 4 mm (1.0), and lowered onto the gasket (1.0);
 - bolts through the upper flange only (not counted, 0.8 with the other three): head seated with the shank 4.5 mm off
@@ -152,4 +168,7 @@ The cases cover:
   hole centres;
 - the release rule: a gripper 4.9 and 5.0 mm from a bolt, a gripper on the gasket, a gripper holding the upper
   flange in place or 4.9 mm from it (0), and no measurement yet;
-- a moving gasket, and doing nothing.
+- the settle window: all parts at rest for 0.5 s (1.0); the gasket or the upper flange slid 2 mm within the window
+  (0); the flange crept 0.9 mm (1.0); a bolt slid 2 mm or turned 0.6 degrees (not counted) or turned 0.4 degrees
+  (counted); a window not yet full for the flange (0) or a bolt (not counted);
+- doing nothing.

@@ -20,7 +20,8 @@ from yam_arena.demo import Waypoint  # noqa: E402
 from yam_arena.task_file import TABLE_TOP  # noqa: E402
 
 SCENE = "station"
-SUCCESS_HOLD_S = 3.0  # the trial ends at 1.0 once success() has held this long: the arms are clear by then
+SUCCESS_HOLD_S = 5.0  # the trial ends at 1.0 once success() has held this long: the video ends with both arms
+# parked clear of the joint for about 3.5 s
 TOP = TABLE_TOP[SCENE]
 
 STEEL, DARK, RUBBER, BLOCK_C, BOLT_C = (0.55, 0.57, 0.60), (0.35, 0.36, 0.38), (0.08, 0.08, 0.09), \
@@ -56,12 +57,13 @@ SHANK_R, SHANK_L, HEAD_R, HEAD_H = 0.005, 0.045, 0.010, 0.010
 BOLT_MASS = 0.052  # steel
 SEATED_Z = UP_TOP - SHANK_L  # bolt origin (bottom of the shank) when seated, relative to the table
 
-# Ring gasket: an octagonal band whose flats face the bolts, 4 mm thick, with a handle tab toward the robot.
+# Ring gasket: a flat round band of 48 overlapping discs, 4 mm thick, with a handle tab toward the robot.
 RING_OUT = BOLT_CIRCLE - SHANK_R - 0.0005  # outer radius: 0.5 mm inside the bolts' inner edges
-RING_IN = 0.042
 RING_T = 0.004
-TAB_LEN, TAB_W, TAB_H = 0.085, 0.020, 0.010
-RING_MASS = 0.050  # rubber, about 41 cm3
+# The handling tab is flat and as thick as the ring, so the joint closes onto both; it reaches 64.5 mm past the
+# flange's outer edge when the ring is centred, so it is gripped outside the joint.
+TAB_LEN, TAB_W, TAB_H = 0.085, 0.020, RING_T
+RING_MASS = 0.045  # rubber, about 31 cm3
 
 
 def _plate(z0, h, color, hole):
@@ -187,7 +189,7 @@ def _flange_over(u) -> bool:
         and _turn(u) <= UP_TURN + 1e-6
         and _tilt(u) <= UP_LEVEL + 1e-6
         and GAP_MIN - 1e-6 <= gap <= GAP_MAX + 1e-6
-        and u.resting()
+        and _still("upper_flange")
         and _released("upper_flange")
     )
 
@@ -222,9 +224,43 @@ _HAND_LINKS = ("gripper", "tip_left", "tip_right")
 _SPECS = {o.name: o for o in OBJECTS}
 
 
+# -- stillness: a settle window, not an instantaneous velocity (contact chatter in a closed joint trips that) ----
+# The on_step hook keeps each scored part's last STILL_STEPS poses. A part is still when, across that window, its
+# origin moved under STILL_MOVE and it turned under STILL_TURN. Until the window is full (0.5 s after a reset) it is
+# not still: the check fails closed. Offline (near_misses.py) a part with no window stands for a part at rest, and
+# near_misses.py fills windows by hand to test the rule.
+STILL_STEPS = 10  # 0.5 s at 20 Hz
+STILL_MOVE = 0.001  # m
+STILL_TURN = 0.5  # degrees
+_WIN: dict[str, list] = {}  # part -> its last STILL_STEPS (pos, rotation matrix), newest last
+_STILL_PARTS = ("upper_flange", "gasket", *BOLT_NAMES)
+
+
+def track_pose(name, st) -> None:
+    """Called every step for each scored part (on_step below; near_misses.py calls it with hand-made states)."""
+    w = _WIN.setdefault(name, [])
+    w.append((np.asarray(st.pos, float), _rot(st.quat_xyzw)))
+    del w[:-STILL_STEPS]
+
+
+def _turn_between(ra, rb) -> float:
+    return math.degrees(math.acos(float(np.clip((np.trace(ra.T @ rb) - 1.0) / 2.0, -1.0, 1.0))))
+
+
+def _still(name) -> bool:
+    w = _WIN.get(name)
+    if w is None:
+        return _offline()
+    if len(w) < STILL_STEPS:
+        return False
+    p0, r0 = w[-1]
+    return all(np.linalg.norm(p - p0) < STILL_MOVE and _turn_between(r, r0) < STILL_TURN for p, r in w)
+
+
 @parts.on_reset
 def _clear(sim):
     _GAP.clear()
+    _WIN.clear()
     _FLANGE["moved"] = False
 
 
@@ -236,6 +272,8 @@ def _record_gaps(sim):
     origin = base.scene.env_origins[0].cpu().numpy()
     states = sim.states()
     track_flange(states["upper_flange"])
+    for name in _STILL_PARTS:
+        track_pose(name, states[name])
     hands = []
     for arm in ("left_robot", "right_robot"):
         rob = base.scene[arm]
@@ -278,12 +316,12 @@ def _ring_in(objects) -> bool:
         and abs(p[2] - (TOP + LOW_TOP)) <= SEAT_TOL_Z + 1e-6
         and _tilt(g) < FLAT_TOL
         and math.hypot(p[0] - CX, p[1] - CY) <= CENTRE_TOL + 1e-6
-        and g.resting()
+        and _still("gasket")
         and _released("gasket")
     )
 
 
-def _bolt_in(st, upper, hole) -> bool:
+def _bolt_in(name, st, upper, hole) -> bool:
     """Upright, its head on the upper flange's top, and its shank through the matching hole of both flanges: where
     the shank's centre line crosses each flange's mid-thickness it is inside that hole (shank radius plus 1 mm of
     contact give), and the shank's end is below the lower flange. The upper hole is measured in the upper flange's
@@ -307,12 +345,12 @@ def _bolt_in(st, upper, hole) -> bool:
         and max(abs(up[0] - hx), abs(up[1] - hy)) <= IN_UP + 1e-6
         and max(abs(low[0] - hx), abs(low[1] - hy)) <= IN_LOW + 1e-6
         and p[2] < TOP + LOW_Z0
-        and st.resting()
+        and _still(name)
     )
 
 
 def _filled(objects, hole) -> bool:
-    return any(_bolt_in(objects[n], objects["upper_flange"], hole) and _released(n) for n in BOLT_NAMES)
+    return any(_bolt_in(n, objects[n], objects["upper_flange"], hole) and _released(n) for n in BOLT_NAMES)
 
 
 def success(objects):
@@ -386,7 +424,7 @@ def demo():
     right += _bolt_moves(BOLT_SPOTS[2], "far_right")
     # Grip the tab 20 mm from its end and slide the gasket in to 3 mm past touching the far bolts, let go, back out.
     grip_off = RING_OUT + TAB_LEN - 0.020  # grip point from the ring centre
-    tz = TOP + LOW_TOP + 0.002 + TIP_PAST_TCP  # finger tips 2 mm above the tab's underside
+    tz = TOP + LOW_TOP + 0.001 + TIP_PAST_TCP  # finger tips 1 mm above the tab's underside (it is 4 mm thick)
     x0 = CX + RING_START_X - grip_off
     contact = math.sqrt(2) * (BOLT_CIRCLE - SHANK_R - RING_OUT)  # ring centre past the axis when it touches
     x1 = CX + contact + 0.003 - grip_off
@@ -406,6 +444,6 @@ def demo():
     _wait(right, _t(left) - 1.0, PARK_R)
     right += _bolt_moves(BOLT_SPOTS[3], "near_right")
     right.append(Waypoint(1.0, PARK_R, FINGER_NEAR, "park"))
-    right.append(Waypoint(3.0, PARK_R, FINGER_NEAR, "stay clear while the joint is judged"))
+    right.append(Waypoint(5.0, PARK_R, FINGER_NEAR, "stay clear while the joint is judged"))
     _wait(left, _t(right), PARK_L)
     return {"left": left, "right": right}
