@@ -1,20 +1,23 @@
 # Reconnect a bathroom-sink pop-up stopper to its pivot rod
 
-A bathroom-sink pop-up drain body stands upright in a bench stand with its pivot port pointing at the robot. The
-pop-up stopper sits closed in it. At the bottom of the stopper's stem is an eye, a ring with a 9 mm hole, and the pivot
+A bathroom vanity stands on the table: a stone countertop with an undermount basin, over a cabinet whose door opening
+faces the robot. A pop-up drain is installed in the basin's bottom, and its pivot port, under the basin inside the
+cabinet, points at the robot through the door opening. The pop-up stopper sits closed in the drain. At the bottom of the stopper's stem is an eye, a ring with a 9 mm hole, and the pivot
 rod has to pass through that eye. The eye is inside the drain, 26 mm below the port and turned a quarter turn away from
-it, hidden by the drain body. The rod lies on two rests on the bench. The robot is asked to reconnect the stopper
-to the rod.
+it, hidden by the drain body. The rod lies on two rests on the table, its inner half inside the cabinet under the basin and its outer
+end out through the door opening. The robot is asked to reconnect the stopper to the rod.
 
 When the stopper rests closed, no rod pushed through the port can reach the eye. The stopper has to be lifted about
-26 mm by its head and turned a quarter turn, and held there while the rod is pushed in through the port and the eye
-until its pivot ball reaches the seat washer. That takes both arms. A rod pushed straight in hits the stem. A rod pushed
+26 mm by its head, from inside the basin, and turned a quarter turn, and held there while the rod is pushed in through the port and the eye,
+under the basin, until its pivot ball reaches the seat washer. That takes both arms. A rod pushed straight in hits the stem. A rod pushed
 in under a stopper lifted too far seats its ball and looks finished, but it has not caught the stopper.
 
 The task is `task.py` for the `yam_arena` embodiment of yam-isaac-lab-arena (the program's YAM embodiment for Isaac
-Lab-Arena), on the `station` scene. It needs `parts.py` (multi-shape parts), which sits in this folder and imports
-only NumPy and `yam_arena`. At import it patches `yam_arena`'s scene spawning, step and reset in the task's own
-process only, and changes nothing on disk. `near_misses.py` holds near-successes and wrong outcomes, each with the
+Lab-Arena), on the `station` scene. It needs `parts.py` (multi-shape parts) and `tilt.py` (tilted grips for the scripted
+demo), which sit in this folder and import only NumPy and `yam_arena`. At import `parts.py` patches `yam_arena`'s
+scene spawning, step and reset, and `tilt.py` wraps `yam_arena.demo.grip_rotation` so a demo waypoint can lean the
+hand; both act in the task's own process only and change nothing on disk. `tilt.py` affects only the scripted demo,
+never Dream-1 or the scoring. `near_misses.py` holds near-successes and wrong outcomes, each with the
 score it must get. They are plain-Python checks of `score()` and `success()` and need no simulator.
 
 ## Run a trial
@@ -42,6 +45,20 @@ The run prints `task_score`. Scoring is `score()` and `success()` in `task.py`, 
 - **Seeds:** none needed. The layout is fixed. Run with `-E object_jitter=0`.
 
 ## Geometry
+
+The vanity is built at real size. The countertop is a 30 mm stone slab, 635 mm wide and 560 mm deep (a 25 x 22 inch
+top), its top 236 mm above the table and its front edge 200 mm in front of the drain's axis. The basin is a rectangular
+undermount basin of white china, 300 mm front to back and 380 mm side to side inside, hung under the countertop's
+cut-out, with straight 10 mm walls and a flat 10 mm bottom 130 mm below the countertop's top. The drain body passes
+through a hole in the basin's bottom (46 mm square in the model, hidden under the 60 mm flange), its flange resting on
+the bottom and a 52 mm brass locknut, 10 mm tall, under it. Below the port, the drain tube runs on down as the
+tailpiece to the table top. The cabinet is 610 mm wide and 533 mm deep (a 24 x 21 inch vanity), with 16 mm sides and
+back and a 19 mm face frame: two 38 mm stiles and a 50 mm top rail round a door opening 534 mm wide, whose top is
+156 mm above the table. The doors are open and not modelled. The vanity stands on the robot's table, so the cabinet
+stops at the table top: a real one goes on down about 0.6 m more to the floor, and its countertop would be 0.81 to
+0.91 m above the floor, against about 1.0 m here. The basin's bottom is 42 mm above the port's axis, as on a real
+pop-up drain, so the drain fixes the vanity's height above the table. In most vanities the pivot port points at the
+back wall; here it points at the door opening, so the rod can be reached from the front.
 
 The holes are round. The kit has only solid boxes and cylinders, so each round hole is a ring of overlapping
 cylinders ("lobes") whose inner faces form the bore: 14 lobes for the eye and the seat washer, 16 for the spout. The
@@ -98,22 +115,51 @@ Everything scored can be checked at a real sink from outside the drain. The eye 
 
 ## Scripted demo
 
-The demo runs open loop from the published start layout and reads nothing from the simulator. It uses only the stock
-straight-down grips.
+The demo runs open loop from the published start layout and reads nothing from the simulator. The left arm grips
+straight down; the right arm leans its hand with `tilt.py`.
 
-- **Left arm:** opens to 54 mm, pinches the stopper's head just above the flange, lifts it 26 mm and turns it a
+- **Left arm:** keeps the forward lean of the arm's starting pose (55.5 degrees) while it moves over the basin, so the
+  hand clears the countertop, then turns straight down as it goes down into the basin. It opens to 54 mm, pinches the
+  stopper's head just above the flange, lifts it 26 mm and turns it a
   quarter turn. It holds the stopper there while the rod goes in, then opens, slides off sideways with its pads clear
   of the head, and moves away.
-- **Right arm:** grips the rod from above 100 mm out from the ball, which is close to the rod's balance point, so the
-  rod does not droop in the pads. It lifts the rod to the port's height, lines it up with the port 6 mm short of the
-  spout, and pushes it straight in to 2 mm past the seat. Then it opens, rises straight up and moves away.
+- **Right arm:** moves above the countertop, still leaning as at the start, to in front of the cabinet, and leans its
+  fingertips 60 degrees toward the drain, so the hand reaches under the countertop and the basin through the door
+  opening while the wrist and forearm stay in front of them. It keeps that lean from the grip to the release, since
+  turning the hand turns the rod in the pads. It grips the rod 115 mm out from the ball, lifts it to the port's height,
+  lines it up with the port 6 mm short of the spout, and pushes it straight in to 2 mm past the seat. It holds the rod
+  there while the left arm lets go of the stopper, then opens, backs out 110 mm along the rod until its fingertips are
+  past the rod's outer end, rises in front of the cabinet and moves away.
 - **Both arms** then wait clear of the parts while the scorer runs its movement test.
 - **Tuning:** the waypoint heights carry offsets measured in traces for how far each arm sags under its load: 2.5 mm
-  for the left arm, 2.3 mm up and 0.8 mm sideways for the right.
+  for the left arm; for the right, 2.3 mm up and 0.8 mm sideways while lining up, and 3 mm more up and 4 mm more to the
+  left at the end of the push, as the arm reaches in.
+- **Checked offline** (IK and the arms' collision hulls, no physics): both arms track every waypoint within 0.1 mm,
+  no arm link enters the countertop, basin, cabinet, drain body or rests, nothing goes below the table top, and the two
+  arms stay at least 70 mm apart. A straight-down grip cannot do the right arm's job here: with the hand straight down
+  over the rod, the wrist and forearm reach 60 to 75 mm past the TCP toward the drain, into the countertop and the
+  basin. The arms' straight-down reach also tops out about 0.21 m above the table, below the countertop, which is why
+  both arms keep their starting forward lean while they move above it. At 60 degrees the hand's palm stays 16 mm above
+  the rod's outer half and 10 mm in front of the basin's front wall; at 70 degrees the palm met the rod, and at
+  45 degrees the hand hit the basin's underside.
 
 ## Measured in simulation
 
-Traces on the GPU ran with the final geometry and demo.
+Vanity scene, final demo (`demo-20261115T222420`, 1.0):
+
+- The rod's tip entered the spout within 1 mm of the port's axis and went through the eye; the ball reached its seat.
+- Movement test: the stopper dropped 11.4 mm when the rod's end was lifted, rose back 8.8 mm once the push had eased
+  off, and rose 8.6 mm under the 1 N pull before the rod caught it. The rod's outer end was 197.2 mm from the spout.
+  The test passed at 19.95 s and the trial ended in success.
+- Traces that failed on the way, on this scene: a 45-degree hand gripping 165 mm out let the rod turn in the pads and
+  drag along the table (0); turning the hand from 45 to 70 degrees after the grip tilted the rod 27 degrees (0); at
+  70 degrees the palm landed on the rod (0); with no extra push offset the tip met the seat washer 3 mm off its hole
+  (0); with the right hand letting go before the left, the left hand's slide-off drew the ball 4 mm out, so the test
+  passed with the outer end at 200.1 mm (0.5). Holding the rod until the stopper is let go fixed that.
+
+The traces below ran on an earlier layout, where the same drain body, stopper and rod stood in a bench stand with no
+vanity and the right arm gripped the rod straight down, 100 mm out from the ball. They tested the scorer's movement
+test and the wrong outcomes, which do not depend on the vanity.
 
 - The held stopper's eye sat within 0.3 mm of the port's height, and the rod's inner end entered it 1.3 mm off centre
   and went home.
@@ -154,6 +200,7 @@ Traces on the GPU ran with the final geometry and demo.
   - a rod short of the eye;
   - a stopper not turned, or turned only 60 degrees;
   - a stopper lifted more than 40 mm, out of its guide, or tilted more than 6 degrees;
+  - a stopper taken out of the drain and left in the basin or on the countertop;
   - a part still held or still moving.
 
 `near_misses.py` covers these limits:
@@ -162,6 +209,7 @@ Traces on the GPU ran with the final geometry and demo.
   197, 199 and 199.5 mm from the spout and with the ball 9 mm out (0.5); the rod beside the eye with the stopper
   closed or lifted but unturned, under it, over its ring and short of it; the stopper turned 60 degrees; the rod
   crossing the spout's face 6 mm off axis; 3.9 and 4.1 mm off centre, 5.5 and 6.5 degrees of tilt, and lifted 41 mm;
+  the stopper taken out and laid on the basin's bottom or on the countertop with the rod home;
   a rod rolling about its own axis (still) and one swinging (not still);
 - test readings: the final demo's (1.0), a rod beside the eye (nothing moves, 0), a stopper on a rod under its eye
   (lifts off, 0), a drop of 2.9 and 3.0 mm, a rise back of 2.9 mm, a pull rise of 10.0 and 10.1 mm, and no test yet;
@@ -172,5 +220,6 @@ Traces on the GPU ran with the final geometry and demo.
 
 ## Recorded runs
 
-- Scripted demo: 1.0 (movement test passed at 17.5 s, success held 1 s after it).
-- Dream-1, 1,200 steps, revised scorer: 0.0. The arms moved but never reached the rod or the stopper.
+- Scripted demo: 1.0 (movement test passed at 19.95 s: drop 11.4 mm, back 8.8 mm, pull rise 8.6 mm; outer end
+  197.2 mm from the spout).
+- Dream-1, 1,200 steps: 0.0. The arms folded back near their bases and never reached the stopper or the rod.

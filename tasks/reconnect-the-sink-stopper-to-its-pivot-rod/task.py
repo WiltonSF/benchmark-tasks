@@ -1,8 +1,9 @@
-"""On the station table, a little to the left of the middle: a chrome bathroom-sink pop-up drain body standing upright
-in a grey bench stand, its round flange on top and its pivot port, a short round spout with a white seat washer,
-pointing at the robot. The pop-up stopper sits closed in the drain, its chrome head on the flange. Nearer the robot
-and to the right, the steel pivot rod with its white pivot ball lies front to back in two notched rests, its inner
-end toward the drain.
+"""On the station table, a little to the left of the middle: a bathroom vanity, a stone countertop with a white
+rectangular basin set into it over a wooden cabinet whose open door opening faces the robot. A chrome pop-up drain is
+installed in the basin's bottom, and its stopper sits closed in it, the chrome head on the drain's flange. Under the
+basin, inside the cabinet, the drain body's pivot port, a short round spout with a white seat washer, points at the
+robot through the door opening. The steel pivot rod with its white pivot ball lies front to back in two notched rests
+on the table, its inner end toward the drain, inside the cabinet, and its outer end out through the door opening.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ import numpy as np
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import parts  # noqa: E402
+import tilt  # noqa: E402
 from yam_arena.demo import FINGER_CLOSED, Waypoint  # noqa: E402
 from yam_arena.task_file import TABLE_TOP  # noqa: E402
 
@@ -50,7 +52,6 @@ U = np.array([math.cos(PORT_DIR), math.sin(PORT_DIR), 0.0])  # outward along the
 RD = np.array([[math.cos(YAW_D), -math.sin(YAW_D), 0.0], [math.sin(YAW_D), math.cos(YAW_D), 0.0], [0.0, 0.0, 1.0]])
 C0 = np.array([BX, BY, 0.0])
 R_IN, R_OUT = 0.016, 0.020  # 32 mm bore, 40 mm outside
-BASE_T = 0.008  # stand's base plate
 HP = TOP + 0.054  # pivot port axis height
 HF = TOP + 0.110  # flange top: the stopper's head rests here when closed
 FLANGE_T, FLANGE_R = 0.004, 0.030
@@ -60,6 +61,25 @@ SEAT_IN, SEAT_OUT = R_OUT, R_OUT + 0.003  # seat plate (washer) from 20 to 23 mm
 SEAT_HOLE = 0.0045  # 9 mm round hole through the seat
 BORE = 0.008  # port bore 16 mm round
 PORT_END = 0.040  # the port spout ends 40 mm from the drain axis
+NUT_R, NUT_T = 0.026, 0.010  # locknut under the basin
+
+# -- bathroom vanity (fixed), world-aligned and centred side to side on the drain: a 30 mm stone countertop with an
+# undermount rectangular basin whose drain hole takes the drain body, over a cabinet with an open door opening facing
+# the robot. The cabinet's lower part (and the floor) would be below the table top and is not modelled.
+CTR_T = 0.030  # countertop slab
+BOWL_D = 0.130  # countertop top to the basin's bottom (its inside, where the flange sits)
+BOWL_BOTTOM = HF - FLANGE_T  # the basin's bottom (inside), the flange resting on it
+BOWL_WALL = 0.010
+BOWL_UNDER = BOWL_BOTTOM - BOWL_WALL
+CTR_TOP = BOWL_BOTTOM + BOWL_D  # 236 mm above the table
+CTR_UNDER = CTR_TOP - CTR_T
+CTR_FRONT, CTR_DEPTH, CTR_W = BX - 0.200, 0.560, 0.635  # front edge 200 mm in front of the drain; 22 x 25 in top
+BOWL_X, BOWL_Y = 0.300, 0.380  # basin inside: 300 mm front to back, 380 mm side to side
+HOLE_HALF = 0.023  # 46 mm square cut through the bottom for the 40 mm drain tube, under the flange
+CAB_FACE, CAB_DEPTH, CAB_W = CTR_FRONT + 0.020, 0.533, 0.610  # 21 x 24 in cabinet, the top overhanging 20 mm
+FRAME_T, STILE_W, RAIL_H, SIDE_T = 0.019, 0.038, 0.050, 0.016  # face frame, side panels
+OPEN_TOP = CTR_UNDER - RAIL_H  # top of the door opening
+WOOD, STONE, CHINA = (0.52, 0.38, 0.25), (0.82, 0.81, 0.78), (0.95, 0.95, 0.94)
 
 
 def _ring(rm, rc, n, yc, length, color, z=None):
@@ -71,7 +91,7 @@ def _ring(rm, rc, n, yc, length, color, z=None):
 
 def _body_shapes():
     s = []
-    z0, z1 = TOP + BASE_T, HF - FLANGE_T
+    z0, z1 = TOP, HF - FLANGE_T  # the tube runs on down as the tailpiece, cut off at the table top
     w = 2 * R_OUT * math.tan(math.pi / STAVES)
     rc = (R_IN + R_OUT) / 2
     for i in range(STAVES):
@@ -94,18 +114,62 @@ def _body_shapes():
     s += _ring(SEAT_HOLE + 0.002, 0.002, 14, yc, SEAT_OUT - SEAT_IN, WHITE)
     # Port spout: a 16 mm round bore from the seat out to 40 mm off the axis.
     s += _ring(BORE + 0.0022, 0.0022, 16, -(SEAT_OUT + PORT_END) / 2, PORT_END - SEAT_OUT, CHROME)
-    # bench stand: base plate and a square clamp collar round the lower tube
-    s.append(parts.box((0.10, 0.10, BASE_T), at=(0.0, 0.0, TOP + BASE_T / 2), color=DARK))
-    ch, co = 0.022, 0.028
-    zc = TOP + BASE_T + ch / 2
-    s.append(parts.box((2 * co, co - R_OUT, ch), at=(0.0, 0.0 + (co + R_OUT) / 2, zc), color=GREY))
-    s.append(parts.box((2 * co, co - R_OUT, ch), at=(0.0, 0.0 - (co + R_OUT) / 2, zc), color=GREY))
-    s.append(parts.box((co - R_OUT, 2 * R_OUT, ch), at=(0.0 + (co + R_OUT) / 2, 0.0, zc), color=GREY))
-    s.append(parts.box((co - R_OUT, 2 * R_OUT, ch), at=(0.0 - (co + R_OUT) / 2, 0.0, zc), color=GREY))
+    # locknut under the basin's bottom: a ring 52 mm across and 10 mm tall round the tube, which clamps the drain to
+    # the basin (the tube's bore stays clear for the stopper's fins)
+    nw = 2 * NUT_R * math.tan(math.pi / 12)
+    for i in range(12):
+        a = i * 2 * math.pi / 12
+        rc_n = (R_OUT + NUT_R) / 2
+        s.append(parts.box((NUT_R - R_OUT, nw, NUT_T), at=(rc_n * math.cos(a), rc_n * math.sin(a),
+                                                          BOWL_UNDER - NUT_T / 2), color=BRASS_DARK, quat=_qz(a)))
     return s
 
 
 DRAIN = parts.Part("drain_body", pos=(BX, BY, 0.0), yaw=YAW_D, shapes=_body_shapes())
+
+
+def _vanity_shapes():
+    """Built world-aligned (x away from the robot, y to its left), the part's origin on the drain's axis."""
+    s = []
+
+    def b(x0, x1, y0, y1, z0, z1, color):
+        s.append(parts.box((x1 - x0, y1 - y0, z1 - z0), at=((x0 + x1) / 2 - BX, (y0 + y1) / 2 - BY, (z0 + z1) / 2),
+                           color=color))
+
+    fx, bk = CTR_FRONT, CTR_FRONT + CTR_DEPTH
+    ly, ry = BY - CTR_W / 2, BY + CTR_W / 2
+    ix0, ix1 = BX - BOWL_X / 2, BX + BOWL_X / 2  # the basin's inside, which is also the countertop's cut-out
+    iy0, iy1 = BY - BOWL_Y / 2, BY + BOWL_Y / 2
+    # countertop round the cut-out
+    b(fx, ix0, ly, ry, CTR_UNDER, CTR_TOP, STONE)
+    b(ix1, bk, ly, ry, CTR_UNDER, CTR_TOP, STONE)
+    b(ix0, ix1, ly, iy0, CTR_UNDER, CTR_TOP, STONE)
+    b(ix0, ix1, iy1, ry, CTR_UNDER, CTR_TOP, STONE)
+    # basin: four walls hung under the countertop, and a bottom with a square cut for the drain tube
+    w = BOWL_WALL
+    b(ix0 - w, ix0, iy0 - w, iy1 + w, BOWL_UNDER, CTR_UNDER, CHINA)
+    b(ix1, ix1 + w, iy0 - w, iy1 + w, BOWL_UNDER, CTR_UNDER, CHINA)
+    b(ix0, ix1, iy0 - w, iy0, BOWL_UNDER, CTR_UNDER, CHINA)
+    b(ix0, ix1, iy1, iy1 + w, BOWL_UNDER, CTR_UNDER, CHINA)
+    h = HOLE_HALF
+    b(ix0, BX - h, iy0, iy1, BOWL_UNDER, BOWL_BOTTOM, CHINA)
+    b(BX + h, ix1, iy0, iy1, BOWL_UNDER, BOWL_BOTTOM, CHINA)
+    b(BX - h, BX + h, iy0, BY - h, BOWL_UNDER, BOWL_BOTTOM, CHINA)
+    b(BX - h, BX + h, BY + h, iy1, BOWL_UNDER, BOWL_BOTTOM, CHINA)
+    # cabinet, from the table top up to the countertop: a face frame (two stiles and a top rail round the door
+    # opening), two sides and a back
+    cf, cb = CAB_FACE, CAB_FACE + CAB_DEPTH
+    cl, cr = BY - CAB_W / 2, BY + CAB_W / 2
+    b(cf, cf + FRAME_T, cl, cl + STILE_W, TOP, CTR_UNDER, WOOD)
+    b(cf, cf + FRAME_T, cr - STILE_W, cr, TOP, CTR_UNDER, WOOD)
+    b(cf, cf + FRAME_T, cl + STILE_W, cr - STILE_W, OPEN_TOP, CTR_UNDER, WOOD)
+    b(cf + FRAME_T, cb, cl, cl + SIDE_T, TOP, CTR_UNDER, WOOD)
+    b(cf + FRAME_T, cb, cr - SIDE_T, cr, TOP, CTR_UNDER, WOOD)
+    b(cb - SIDE_T, cb, cl + SIDE_T, cr - SIDE_T, TOP, CTR_UNDER, WOOD)
+    return s
+
+
+VANITY = parts.Part("vanity", pos=(BX, BY, 0.0), shapes=_vanity_shapes())
 
 # -- pop-up stopper (loose). Part frame: origin at the centre of the head's underside, z up. In the frame the eye's
 # hole runs along y; the stopper starts turned a quarter turn from facing the port, so the hole runs left to right.
@@ -153,7 +217,7 @@ ROD = parts.Part(
 
 # -- rod rests (fixed): two notched blocks, the notch 6 mm wide
 REST_TOP = ROD_START[2] - ROD_R
-REST_YS = (TIP - 0.012, -0.180)  # along the rod from the ball's centre
+REST_YS = (TIP - 0.012, -0.198)  # along the rod from the ball's centre
 
 
 def _rest_shapes():
@@ -168,7 +232,7 @@ def _rest_shapes():
 
 RESTS = parts.Part("rod_rests", pos=ROD_START, yaw=YAW_D, shapes=_rest_shapes())
 
-OBJECTS = [DRAIN, STOPPER, ROD, RESTS]
+OBJECTS = [VANITY, DRAIN, STOPPER, ROD, RESTS]
 
 # -- scoring ---------------------------------------------------------------------------------------------------
 # Everything scored is checked from outside the drain, the way a person would check the repair at a real sink, once
@@ -456,21 +520,29 @@ L_DZ = 0.0025  # carry compensation, set from traces
 R_DZ = 0.0023
 R_DY = -0.0008
 R_DX = 0.0
-GRIP_OUT = 0.100  # the right arm grips the rod 100 mm out from the ball's centre
-R_PINCH = 0.009  # TCP above the rod's axis
+PUSH_DY, PUSH_DZ = 0.004, 0.003  # more as the arm reaches in with the rod (traces)
+GRIP_OUT = 0.115  # the right arm grips the rod 115 mm out from the ball's centre, near its balance point
+R_PINCH = 0.009  # the rod's axis this far along the fingers from the TCP
 R_OPEN = -0.012
+READY_TILT = 55.5  # degrees: the hand's forward lean in the arm's starting pose
+R_TILT = 60.0  # degrees: the right hand leans its fingertips forward, under the countertop and the basin
 TURN = -math.pi / 2
 R_YAW = math.pi / 2 - (math.pi / 2 - PORT_DIR) % math.pi  # fingers close across the rod, in (-90, 90] deg
 
 
 def demo():
-    """Left arm: pinch the stopper's head, lift it 26 mm and turn it a quarter turn, hold it there, then let go once
-    the rod is in. Right arm: pick the rod up from its rests, line it up with the port and push it straight in until
-    the ball reaches its seat, let go and move away. Both then wait clear of the parts while the scorer runs its
-    movement test. Open loop, from the published start layout."""
+    """Left arm: reach into the basin, pinch the stopper's head, lift it 26 mm and turn it a quarter turn, hold it
+    there, then let go once the rod is in. Right arm: lean its fingertips forward, pick the rod up from its rests
+    through the cabinet's door opening, line it up with the port under the basin and push it straight in until the
+    ball reaches its seat, let go and back out. Both then wait clear of the parts while the scorer runs its movement
+    test. Open loop, from the published start layout."""
     hz = L_GRIP_Z
+    # From the start the hand keeps the arm's starting forward lean, so that it clears the countertop, until it is
+    # over the basin; it turns straight down as it goes down into it.
+    ready = dict(tilt=READY_TILT, heading=0.0)
     left = [
-        Waypoint(1.5, (BX, BY, hz + 0.03), L_OPEN, "over the stopper"),
+        tilt.Waypoint(1.5, (BX, BY, TOP + 0.27), L_OPEN, "over the basin, still leaning", **ready),
+        Waypoint(2.0, (BX, BY, hz + 0.03), L_OPEN, "down into the basin over the stopper"),
         Waypoint(1.5, (BX, BY, hz), L_OPEN, "down round the head"),
         Waypoint(0.8, (BX, BY, hz), L_CLOSE, "pinch the head"),
         Waypoint(1.2, (BX, BY, hz + LIFT + L_DZ), L_CLOSE, "lift to the port"),
@@ -481,31 +553,41 @@ def demo():
         Waypoint(1.5, (BX - 0.08, BY + 0.10, hz + 0.03), L_OPEN, "away", TURN),
         Waypoint(14.0, (BX - 0.08, BY + 0.10, hz + 0.03), L_OPEN, "wait while the scorer tests the repair", TURN),
     ]
+    out = U[:2]  # outward along the port, toward the robot
+
+    def w(dt, xy, z, f, label, lean=R_TILT):
+        """A waypoint putting the rod's axis at (xy, z), R_PINCH along the fingers from the TCP, the fingertips
+        leaning `lean` degrees toward the port."""
+        t = math.radians(lean)
+        x, y = np.asarray(xy, float) + out * R_PINCH * math.sin(t)
+        return tilt.Waypoint(dt, (float(x), float(y), z + R_PINCH * math.cos(t)), f, label, R_YAW, tilt=lean,
+                             heading=PORT_DIR + math.pi)
+
     sz = ROD_START[2]
-    out = U[:2]  # outward along the port
     g0 = np.array(ROD_START[:2]) + out * GRIP_OUT  # grip point on the rod at its start
-    zr = HP + R_PINCH + R_DZ
+    zr = HP + R_DZ
     fix = np.array([R_DX, R_DY])
     pre = SEATED[:2] + out * (0.062 + GRIP_OUT) + fix  # tip 6 mm short of the spout
-    home = SEATED[:2] + out * (GRIP_OUT - 0.002) + fix  # pushed 2 mm past the seat
-    back = home + out * 0.03
-    away = home + out * 0.06 + np.array([-0.06, -0.06])
-
-    def w(t, xy, z, f, label):
-        return Waypoint(t, (float(xy[0]), float(xy[1]), z), f, label, R_YAW)
+    home = SEATED[:2] + out * (GRIP_OUT - 0.002) + fix + np.array([0.0, PUSH_DY])  # pushed 2 mm past the seat
+    zh = zr + PUSH_DZ
+    back = home + out * 0.11  # fingertips past the rod's outer end before the hand rises
+    away = home + out * 0.12 + np.array([0.0, -0.08])
 
     right = [
+        tilt.Waypoint(1.2, (0.21, -0.18, TOP + 0.27), R_OPEN, "in, above the countertop", **ready),
+        tilt.Waypoint(1.0, (0.11, -0.06, TOP + 0.255), R_OPEN, "back, in front of the countertop", **ready),
         w(1.5, g0, sz + 0.06, R_OPEN, "over the rod"),
-        w(1.2, g0, sz + R_PINCH, R_OPEN, "down"),
-        w(0.8, g0, sz + R_PINCH, FINGER_CLOSED, "grip the rod"),
-        w(1.2, g0, zr + 0.02, FINGER_CLOSED, "lift"),
+        w(1.2, g0, sz, R_OPEN, "down"),
+        w(0.8, g0, sz, FINGER_CLOSED, "grip the rod"),
+        w(1.2, g0, zr + 0.01, FINGER_CLOSED, "lift"),
         w(2.0, pre, zr, FINGER_CLOSED, "line up with the port"),
         w(0.5, pre, zr, FINGER_CLOSED, "wait for the stopper"),
-        w(3.0, home, zr, FINGER_CLOSED, "push in to the seat"),
-        w(0.6, home, zr, R_OPEN, "let go"),
-        w(0.8, home, zr + 0.03, R_OPEN, "straight up"),
-        w(1.0, back, zr + 0.05, R_OPEN, "back off"),
-        w(5.0, away, zr + 0.06, R_OPEN, "away"),
-        w(12.0, away, zr + 0.06, R_OPEN, "wait while the scorer tests the repair"),
+        w(3.0, home, zh, FINGER_CLOSED, "push in to the seat"),
+        w(2.5, home, zh, FINGER_CLOSED, "hold the rod home while the stopper is let go"),
+        w(0.6, home, zh, R_OPEN, "let go"),
+        w(1.5, back, zh, R_OPEN, "back out along the rod, past its end"),
+        w(1.0, back, zh + 0.05, R_OPEN, "up, in front of the cabinet"),
+        w(4.0, away, zr + 0.08, R_OPEN, "away", 30.0),
+        w(10.0, away, zr + 0.08, R_OPEN, "wait while the scorer tests the repair", 30.0),
     ]
     return {"left": left, "right": right}

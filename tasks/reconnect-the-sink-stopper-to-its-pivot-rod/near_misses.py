@@ -104,6 +104,12 @@ CASES = [
     ("stopper tilted 5.5 deg in the bore", {**stopper(tilt=math.radians(5.5)), **rod()}, 1.0, True),
     ("stopper head 3.9 mm off centre, toward the port", {**stopper(dy=-0.0039), **rod()}, 1.0, True),
     ("stopper head 4.1 mm off centre", {**stopper(dx=0.0041), **rod()}, 0.0, False),
+    ("stopper taken out and laid on the basin's bottom beside the drain, rod home",
+     {"stopper": STOPPER.state(pos=(BX + 0.07, BY, task.BOWL_BOTTOM + task.HEAD_R), quat_xyzw=qx(math.pi / 2)),
+      **rod()}, 0.0, False),
+    ("stopper taken out and laid on the countertop, rod home",
+     {"stopper": STOPPER.state(pos=(task.CTR_FRONT + 0.03, BY, task.CTR_TOP + task.HEAD_R), quat_xyzw=qx(math.pi / 2)),
+      **rod()}, 0.0, False),
 ]
 
 # Movement-test cases, all with the parts posed as SEATED_CASE: the test's readings (mm) decide.
