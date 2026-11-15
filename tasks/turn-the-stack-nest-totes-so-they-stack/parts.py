@@ -19,6 +19,12 @@ run in the simulator after every control step / reset with a :class:`Sim` handle
 Importing this file is pure Python (NumPy and ``yam_arena.task_file``), so the task still loads offline. Isaac is
 imported only once the embodiment builds its scene: an import hook then patches ``yam_arena.scene`` (spawning and
 state reading) and the ``yam_arena`` embodiment's step and reset. Nothing in yam_arena is modified on disk.
+
+This copy adds to the stock kit two options this task uses: shapes turned about their own centre
+(``box(..., quat=...)``, for the totes' tapered walls) and a per-part collider contact offset (``contact_offset=``). It
+also carries options this task does not use: colliders that are not drawn (``box(..., visible=False)``), an explicit
+centre of mass and principal moments on a loose Part without joints (``com=``, ``inertia=``), and jointed-chain options
+(``parent=``, ``Closure``).
 """
 
 from __future__ import annotations
@@ -87,24 +93,41 @@ class Shape:
     at: tuple[float, float, float]  # centre in the part frame, at joint position 0 (m)
     color: tuple[float, float, float] = GREY  # sRGB 0..1
     axis: str = "z"  # cylinder axis in the part frame: "x", "y" or "z"
+    quat: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 1.0)  # shape turned about its centre (xyzw)
+    visible: bool = True  # False: a collider that is not drawn
 
     @property
-    def half(self) -> np.ndarray:
-        """Half edge lengths of the shape's own box (a cylinder's bounding box) in the part frame."""
+    def own_half(self) -> np.ndarray:
+        """Half edge lengths of the shape's own box, in the shape's own (turned) frame."""
         if self.kind == "box":
             return np.asarray(self.size, float) / 2
         r, h = self.size[0], self.size[1]
         return np.array([h / 2 if self.axis == a else r for a in "xyz"])
 
+    @property
+    def turn(self) -> np.ndarray:
+        return _quat_to_matrix(self.quat)
 
-def box(size, at=(0.0, 0.0, 0.0), color=GREY) -> Shape:
-    return Shape("box", tuple(float(s) for s in size), tuple(float(a) for a in at), tuple(color))
+    @property
+    def half(self) -> np.ndarray:
+        """Half edge lengths of the box around the shape, aligned with the part frame."""
+        return np.abs(self.turn) @ self.own_half
 
 
-def cylinder(radius, height, at=(0.0, 0.0, 0.0), color=GREY, axis="z") -> Shape:
+def _q(quat):
+    return (0.0, 0.0, 0.0, 1.0) if quat is None else tuple(float(v) for v in quat)
+
+
+def box(size, at=(0.0, 0.0, 0.0), color=GREY, quat=None, visible=True) -> Shape:
+    return Shape("box", tuple(float(s) for s in size), tuple(float(a) for a in at), tuple(color), "z", _q(quat),
+                 bool(visible))
+
+
+def cylinder(radius, height, at=(0.0, 0.0, 0.0), color=GREY, axis="z", quat=None) -> Shape:
     if axis not in ("x", "y", "z"):
         raise ValueError(f"cylinder axis must be 'x', 'y' or 'z', got {axis!r}")
-    return Shape("cylinder", (float(radius), float(height), 0.0), tuple(float(a) for a in at), tuple(color), axis)
+    return Shape("cylinder", (float(radius), float(height), 0.0), tuple(float(a) for a in at), tuple(color), axis,
+                 _q(quat))
 
 
 @dataclass(frozen=True)
@@ -123,6 +146,7 @@ class Hinge:
     spring: float = 0.0
     damping: float = 0.01
     max_effort: float = 50.0  # N m the spring/drive may exert
+    parent: str = "base"  # the link this one is jointed to (a chain of hinges, e.g. a roller chain)
 
     @property
     def origin(self) -> np.ndarray:
@@ -146,6 +170,7 @@ class Slider:
     spring: float = 0.0
     damping: float = 1.0
     max_effort: float = 200.0  # N
+    parent: str = "base"
 
     @property
     def lower(self) -> float:
@@ -168,6 +193,19 @@ Joint = Hinge | Slider
 
 
 @dataclass(frozen=True)
+class Closure:
+    """A pin joint outside the articulation tree that closes a loop (e.g. the last link of a roller chain back to the
+    first): links ``body0`` and ``body1`` turn about ``axis`` (part frame) through ``pivot`` (part frame, at joint
+    position 0). It is a plain PhysX joint, not an articulation joint, and has no position reading."""
+
+    name: str
+    body0: str
+    body1: str
+    pivot: tuple[float, float, float]
+    axis: tuple[float, float, float]
+
+
+@dataclass(frozen=True)
 class PartState(ObjectState):
     """A part after a control step (world frame). ``pos`` is the body origin, not the bounding-box centre."""
 
@@ -184,10 +222,15 @@ class Part(task_file.Box):
     shapes: tuple[Shape, ...] = ()
     joints: tuple[Joint, ...] = ()
     friction: tuple[float, float] = FRICTION
+    closures: tuple[Closure, ...] = ()
+    com: tuple[float, float, float] | None = None  # loose part without joints: centre of mass, part frame (m)
+    inertia: tuple[float, float, float] | None = None  # and its principal moments about the com (kg m^2), part axes
+    contact_offset: float | None = None  # this part's collider contact offset (m); None: CONTACT_OFFSET
 
     def __post_init__(self):
         object.__setattr__(self, "shapes", tuple(self.shapes))
         object.__setattr__(self, "joints", tuple(self.joints))
+        object.__setattr__(self, "closures", tuple(self.closures))
         if self.shapes:
             object.__setattr__(self, "color", self.shapes[0].color)
         lo, hi = self._local_box()
@@ -205,6 +248,14 @@ class Part(task_file.Box):
                 raise ValueError(f"{self.name}.{j.name}: needs shapes, a positive mass and limits around 0")
             if j.spring < 0 or j.damping < 0 or not np.linalg.norm(j.axis) > 0:
                 raise ValueError(f"{self.name}.{j.name}: spring and damping must be >= 0 and the axis non-zero")
+        seen = {"base"}
+        for j in self.joints:  # a parent must be declared before its child
+            if j.parent not in seen:
+                raise ValueError(f"{self.name}.{j.name}: parent {j.parent!r} must be 'base' or an earlier joint")
+            seen.add(j.name)
+        for c in self.closures:
+            if c.body0 not in seen or c.body1 not in seen or c.body0 == c.body1:
+                raise ValueError(f"{self.name}.{c.name}: closure bodies must be two different links")
         for s in self.shapes + tuple(s for j in self.joints for s in j.shapes):
             if any(not 0.0 <= c <= 1.0 for c in s.color) or any(v <= 0 for v in s.half):
                 raise ValueError(f"{self.name}: shape {s} needs positive sizes and an sRGB colour in 0..1")
@@ -232,7 +283,7 @@ class Part(task_file.Box):
                 continue
             p, r = link_poses[name]
             for s in shapes:
-                out.append((name, p + r @ (np.asarray(s.at) - origin), r, 2 * s.half))
+                out.append((name, p + r @ (np.asarray(s.at) - origin), r @ s.turn, 2 * s.own_half))
         return out
 
     def make_state(self, link_poses, joints, lin_vel=None, ang_vel=None) -> PartState:
@@ -261,9 +312,11 @@ class Part(task_file.Box):
         p = np.asarray(self.pos if pos is None else pos, float)
         r = self.rotation if quat_xyzw is None else _quat_to_matrix(quat_xyzw)
         poses = {"base": (p, r)}
-        for j in self.joints:
+        origins = {name: o for name, o, _ in self.links}
+        for j in self.joints:  # forward kinematics down each chain: parent pose, then this joint's motion
+            pp, pr = poses[j.parent]
             jr, jo = j.motion(q[j.name])
-            poses[j.name] = (p + r @ jo, r @ jr)
+            poses[j.name] = (pp + pr @ (jo - origins[j.parent]), pr @ jr)
         return self.make_state(poses, q, lin_vel)
 
 
@@ -338,13 +391,19 @@ def _author(part: Part, root_path: str, translation, orientation):
             cfg.func(looks[color], cfg)
         return looks[color]
 
-    def body(path: str, mass: float | None):
+    def body(path: str, mass: float | None, com=None, inertia=None):
         prim = stage.GetPrimAtPath(path)
         if mass is None:
             return
         UsdPhysics.RigidBodyAPI.Apply(prim)
         PhysxSchema.PhysxRigidBodyAPI.Apply(prim).CreateMaxDepenetrationVelocityAttr(MAX_DEPENETRATION)
-        UsdPhysics.MassAPI.Apply(prim).CreateMassAttr(float(mass))
+        mapi = UsdPhysics.MassAPI.Apply(prim)
+        mapi.CreateMassAttr(float(mass))
+        if com is not None:  # a body whose mass is not spread evenly over its shapes (a heavy insert)
+            mapi.CreateCenterOfMassAttr(Gf.Vec3f(*(float(v) for v in com)))
+        if inertia is not None:
+            mapi.CreateDiagonalInertiaAttr(Gf.Vec3f(*(float(v) for v in inertia)))
+            mapi.CreatePrincipalAxesAttr(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
 
     def colliders(path: str, origin, shapes):
         for i, s in enumerate(shapes):
@@ -353,6 +412,7 @@ def _author(part: Part, root_path: str, translation, orientation):
                 geom = UsdGeom.Cube.Define(stage, sp)
                 geom.CreateSizeAttr(1.0)
                 geom.AddTranslateOp().Set(Gf.Vec3d(*(np.asarray(s.at) - origin)))
+                geom.AddOrientOp().Set(Gf.Quatf(s.quat[3], s.quat[0], s.quat[1], s.quat[2]))
                 geom.AddScaleOp().Set(Gf.Vec3f(*s.size))
             else:
                 geom = UsdGeom.Cylinder.Define(stage, sp)
@@ -360,15 +420,18 @@ def _author(part: Part, root_path: str, translation, orientation):
                 geom.CreateHeightAttr(s.size[1])
                 geom.CreateAxisAttr(s.axis.upper())
                 geom.AddTranslateOp().Set(Gf.Vec3d(*(np.asarray(s.at) - origin)))
+                geom.AddOrientOp().Set(Gf.Quatf(s.quat[3], s.quat[0], s.quat[1], s.quat[2]))
+            if not s.visible:  # still collides; just not rendered
+                geom.CreateVisibilityAttr(UsdGeom.Tokens.invisible)
             UsdPhysics.CollisionAPI.Apply(geom.GetPrim())
             col = PhysxSchema.PhysxCollisionAPI.Apply(geom.GetPrim())
-            col.CreateContactOffsetAttr(CONTACT_OFFSET)
+            col.CreateContactOffsetAttr(CONTACT_OFFSET if part.contact_offset is None else float(part.contact_offset))
             col.CreateRestOffsetAttr(REST_OFFSET)
             bind_visual_material(sp, look(s.color), stage=stage)
             bind_physics_material(sp, friction, stage=stage)
 
     if not part.joints:  # one rigid body (loose) or a static collider (fixed) at the root
-        body(root_path, part.mass)
+        body(root_path, part.mass, part.com, part.inertia)
         colliders(root_path, np.zeros(3), part.shapes)
         return root
 
@@ -383,6 +446,18 @@ def _author(part: Part, root_path: str, translation, orientation):
         body(f"{root_path}/{name}", j.mass if j else (part.mass or 1.0))
         colliders(f"{root_path}/{name}", origin, shapes)
     UsdGeom.Scope.Define(stage, f"{root_path}/joints")
+    origins = {name: np.asarray(o, float) for name, o, _ in part.links}
+    for c in part.closures:  # loop-closing pins: plain PhysX joints, left out of the articulation tree
+        cj = UsdPhysics.RevoluteJoint.Define(stage, f"{root_path}/joints/{c.name}")
+        frame = _usd_quat(_x_to(c.axis))
+        cj.CreateAxisAttr("X")
+        cj.CreateExcludeFromArticulationAttr(True)
+        cj.CreateBody0Rel().SetTargets([Sdf.Path(f"{root_path}/{c.body0}")])
+        cj.CreateBody1Rel().SetTargets([Sdf.Path(f"{root_path}/{c.body1}")])
+        cj.CreateLocalPos0Attr().Set(Gf.Vec3f(*(np.asarray(c.pivot, float) - origins[c.body0])))
+        cj.CreateLocalRot0Attr().Set(frame)
+        cj.CreateLocalPos1Attr().Set(Gf.Vec3f(*(np.asarray(c.pivot, float) - origins[c.body1])))
+        cj.CreateLocalRot1Attr().Set(frame)
     if part.mass is None:  # fixed: the body is welded to the world where it was spawned
         weld = UsdPhysics.FixedJoint.Define(stage, f"{root_path}/joints/world")
         pose = UsdGeom.XformCache().GetLocalToWorldTransform(stage.GetPrimAtPath(f"{root_path}/base")).RemoveScaleShear()
@@ -397,9 +472,9 @@ def _author(part: Part, root_path: str, translation, orientation):
         joint = kind.Define(stage, f"{root_path}/joints/{j.name}")
         frame = _usd_quat(_x_to(j.axis))
         joint.CreateAxisAttr("X")
-        joint.CreateBody0Rel().SetTargets([Sdf.Path(f"{root_path}/base")])
+        joint.CreateBody0Rel().SetTargets([Sdf.Path(f"{root_path}/{j.parent}")])
         joint.CreateBody1Rel().SetTargets([Sdf.Path(f"{root_path}/{j.name}")])
-        joint.CreateLocalPos0Attr().Set(Gf.Vec3f(*j.origin))
+        joint.CreateLocalPos0Attr().Set(Gf.Vec3f(*(j.origin - origins[j.parent])))
         joint.CreateLocalRot0Attr().Set(frame)
         joint.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0))
         joint.CreateLocalRot1Attr().Set(frame)
