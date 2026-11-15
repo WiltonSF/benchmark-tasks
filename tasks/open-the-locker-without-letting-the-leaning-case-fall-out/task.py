@@ -1,7 +1,10 @@
-"""On the station table, in front of the arms: a small grey locker with a roof, standing on a 1 cm floor plate.
-Its pale yellow door is hinged on its right edge (seen from the robot) and swings toward the robot; a magnetic
-catch holds it shut; past the catch it swings freely. A black bar handle stands off the door near the hinge.
-Inside, a thin blue case. A green mat lies on the table in front of the locker.
+"""On the station table, in front of the arms: a row of three small grey steel valuables lockers, of the kind
+found at gyms, pools, schools and workplaces. Each compartment has its own pale yellow door with vent slots, a number
+plate and a key lock. The robot's compartment is the right-hand one. Its door is hinged on its right edge (seen from
+the robot) and swings toward the robot; a magnetic catch holds it shut, and past the catch it swings freely. Its lock
+is open, and a black bar pull stands off the door near the hinge. The other two doors are locked. Inside the
+right-hand compartment: a slim blue gift box holding a glass bottle of perfume. A green rubber mat lies on the table
+in front of the lockers.
 """
 
 import math
@@ -20,19 +23,20 @@ SCENE = "station"
 TOP = TABLE_TOP[SCENE]
 
 # World frame: x away from the arm bases, y to the robot's left, z up (m).
-XD = 0.36  # the locker's front opening (inner face of the shut door)
+XD = 0.36  # the compartment's front opening (inner face of the shut door)
 HY = -0.10  # its right inside wall, where the door is hinged
-W, D = 0.24, 0.10  # inside width (y) and depth (x)
-P = 0.010  # floor plate: the locker floor is 10 mm above the table
-H = 0.165  # inside height, floor to roof
+W, D = 0.24, 0.35  # inside width (y) and depth (x) of each compartment
+P = 0.010  # floor plate: the compartment floor is 10 mm above the table
+H = 0.165  # inside height of each compartment, floor to shelf
+COLS, ROWS = 3, 1  # the bank: a row of three compartments; the robot's is the right-hand one (column 0)
 WALL = 0.010
 DOOR_T = 0.008
 HANDLE_R, HANDLE_FROM_HINGE, HANDLE_OFF, HANDLE_Z = 0.006, 0.04, 0.040, P + 0.09  # bar handle on the door
 CATCH = 0.05  # rad: the magnetic catch holds the door shut until it is pulled this far open
 CATCH_PRELOAD = 0.15  # rad past shut: the catch's hold (0.3 N m/rad x 0.15 rad = 0.045 N m)
 
-# The case: 25 mm thick (x), 110 mm wide (y), 160 mm tall, 150 g. Its base's front edge is 35 mm behind the door,
-# and its near (right) side 40 mm from the hinge.
+# The gift box (a glass bottle of perfume inside): 25 mm thick (x), 110 mm wide (y), 160 mm tall, 150 g. Its
+# base's front edge is 35 mm behind the door, and its near (right) side 40 mm from the hinge.
 CASE = (0.025, 0.110, 0.160)
 CASE_MASS = 0.15
 CASE_GAP = 0.035
@@ -48,6 +52,21 @@ MAT_TOP = TOP + MAT[2]
 
 GREY, DOOR_YELLOW, BLACK = (0.62, 0.63, 0.65), (0.90, 0.82, 0.55), (0.06, 0.06, 0.06)
 CASE_BLUE, GREEN = (0.10, 0.25, 0.85), (0.15, 0.60, 0.25)
+SLOT, PLATE, CHROME = (0.25, 0.25, 0.27), (0.95, 0.95, 0.92), (0.80, 0.80, 0.82)
+PITCH_Y, PITCH_Z = W + WALL, H + WALL  # compartment spacing across and up the bank
+
+
+def _door_face(y0: float, z0: float):
+    """Vent slots, number plate and key lock on the outer face of a door whose compartment starts at (y0, z0)
+    (part frame: the right inside wall's y, the compartment floor's z). They stand 0.6 to 5 mm proud of the face."""
+    yc, x_face = y0 + W / 2, -DOOR_T
+    out = [parts.box((0.0006, 0.080, 0.004), at=(x_face - 0.0003, yc + 0.02, z0 + H - 0.022 - 0.010 * k), color=SLOT)
+           for k in range(4)]
+    out.append(parts.box((0.0006, 0.032, 0.016), at=(x_face - 0.0003, yc + 0.02, z0 + H - 0.075), color=PLATE))
+    lock_y = y0 + W - 0.002 - 0.030  # 30 mm in from the door's free edge
+    out.append(parts.cylinder(0.009, 0.005, at=(x_face - 0.0025, lock_y, z0 + H / 2), color=CHROME, axis="x"))
+    return out
+
 
 _door = parts.Hinge(
     "door",
@@ -59,6 +78,7 @@ _door = parts.Hinge(
                   color=BLACK),
         parts.box((HANDLE_OFF, 0.008, 0.008), at=(-DOOR_T - HANDLE_OFF / 2, HANDLE_FROM_HINGE, HANDLE_Z - 0.026),
                   color=BLACK),
+        *_door_face(0.0, P),
     ],
     pivot=(-DOOR_T / 2, 0.0, P + H / 2),
     axis=(0.0, 0.0, 1.0),  # positive opens: the free (left) edge swings toward the robot
@@ -69,20 +89,33 @@ _door = parts.Hinge(
     damping=0.30,
 )
 _sx = (D + WALL + DOOR_T) / 2 - DOOR_T  # centre x of the full-depth walls (they run from the door's face to the back)
+_BW = COLS * PITCH_Y + WALL  # the bank's outer width (y), from the right outer wall's outer face
+_BH = P + ROWS * PITCH_Z  # its height above the table
+_bank = [
+    parts.box((D + WALL, _BW, P), at=((D + WALL) / 2, _BW / 2 - WALL, P / 2), color=GREY),  # floor plate
+    parts.box((WALL, _BW, _BH), at=(D + WALL / 2, _BW / 2 - WALL, _BH / 2), color=GREY),  # back
+]
+for c in range(COLS + 1):  # upright walls between and beside the columns
+    _bank.append(parts.box((D + WALL + DOOR_T, WALL, _BH), at=(_sx, c * PITCH_Y - WALL / 2, _BH / 2), color=GREY))
+for r in range(ROWS):  # the shelf over each row (the top one is the bank's roof)
+    _bank.append(parts.box((D + WALL + DOOR_T, _BW, WALL), at=(_sx, _BW / 2 - WALL, P + H + r * PITCH_Z + WALL / 2),
+                           color=GREY))
+for c in range(COLS):  # the other doors are locked shut: fixed in place
+    for r in range(ROWS):
+        if (c, r) == (0, 0):
+            continue
+        y0, z0 = c * PITCH_Y, P + r * PITCH_Z
+        _bank.append(parts.box((DOOR_T, W - 0.004, H - 0.004), at=(-DOOR_T / 2, y0 + W / 2, z0 + H / 2),
+                               color=DOOR_YELLOW))
+        _bank += _door_face(y0, z0)
 LOCKER = parts.Part(
     "locker",
     pos=(XD, HY, TOP),
-    shapes=[
-        parts.box((D + WALL, W + 2 * WALL, P), at=((D + WALL) / 2, W / 2, P / 2), color=GREY),
-        parts.box((WALL, W + 2 * WALL, P + H), at=(D + WALL / 2, W / 2, (P + H) / 2), color=GREY),
-        parts.box((D + WALL + DOOR_T, WALL, P + H), at=(_sx, -WALL / 2, (P + H) / 2), color=GREY),
-        parts.box((D + WALL + DOOR_T, WALL, P + H), at=(_sx, W + WALL / 2, (P + H) / 2), color=GREY),
-        parts.box((D + WALL + DOOR_T, W + 2 * WALL, WALL), at=(_sx, W / 2, P + H + WALL / 2), color=GREY),
-    ],
+    shapes=_bank,
     joints=[_door],
 )
 # Listed upright here; at every reset it is tipped forward onto the door (see _new_episode).
-CASE_BOX = Box("blue_case", pos=(XD + CASE_GAP + CASE[0] / 2, CASE_Y, TOP + P + CASE[2] / 2), size=CASE,
+CASE_BOX = Box("blue_box", pos=(XD + CASE_GAP + CASE[0] / 2, CASE_Y, TOP + P + CASE[2] / 2), size=CASE,
                mass=CASE_MASS, color=CASE_BLUE)
 MAT_BOX = Box("green_mat", pos=(*MAT_XY, TOP + MAT[2] / 2), size=MAT, color=GREEN)
 
@@ -90,7 +123,7 @@ OBJECTS = [LOCKER, CASE_BOX, MAT_BOX]
 
 
 def _lean_pose(lean: float):
-    """Centre and quaternion (x, y, z, w) of the case tipped ``lean`` rad forward about its base's front edge."""
+    """Centre and quaternion (x, y, z, w) of the box tipped ``lean`` rad forward about its base's front edge."""
     c, s = math.cos(lean), math.sin(lean)
     centre = CASE_EDGE + np.array([c * CASE[0] / 2 - s * CASE[2] / 2, 0.0, s * CASE[0] / 2 + c * CASE[2] / 2 + 0.0005])
     return centre, np.array([0.0, -math.sin(lean / 2), 0.0, math.cos(lean / 2)])
@@ -99,10 +132,10 @@ def _lean_pose(lean: float):
 # -- scoring ---------------------------------------------------------------------------------------------------
 
 EPS = 1e-6
-TIPPED_DEG = 45.0  # the case tipped: it leaned more than 45 degrees at any time (it is marked this way up)
+TIPPED_DEG = 45.0  # the box tipped: it leaned more than 45 degrees at any time (it is printed this way up)
 UPRIGHT_DEG = 5.0  # standing: its long axis within 5 degrees of vertical
 ON_TOL = 0.0015  # standing on a surface: its lowest corner within 1.5 mm of it (the demo lets go 5 mm up)
-DROP_SPEED = 0.45  # m/s: dropped if the case ever moves downward faster than this (a free fall of about 1 cm)
+DROP_SPEED = 0.45  # m/s: dropped if the box ever moves downward faster than this (a free fall of about 1 cm)
 _H = {}  # trial history, cleared at every reset
 
 
@@ -115,19 +148,19 @@ _clear()
 
 
 def _update(objects) -> None:
-    case = objects["blue_case"]
+    case = objects["blue_box"]
     if tilt.tilt_of(case.quat_xyzw) > TIPPED_DEG:
         _H["tipped"] = True
     if float(case.lin_vel[2]) < -DROP_SPEED - EPS:
         _H["dropped"] = True
 
 
-# -- release check: no gripper link within 5 mm of the case ------------------------------------------------------
-# In the simulator an on_step hook measures, every step, the case's distance to both arms' grippers and finger tips.
+# -- release check: no gripper link within 5 mm of the box ------------------------------------------------------
+# In the simulator an on_step hook measures, every step, the box's distance to both arms' grippers and finger tips.
 # Before the first measurement after a reset the check fails closed (no credit). Offline (near_misses.py sets
-# OFFLINE_FLAG; no simulator, no robot) each case stands for a state with the grippers away.
-RELEASE_GAP = 0.005  # m: let go, every gripper link at least 5 mm from the case
-_GAP: dict[str, float] = {}  # "blue_case" -> closest gripper distance at the last step (m)
+# OFFLINE_FLAG; no simulator, no robot) each near-miss case stands for a state with the grippers away.
+RELEASE_GAP = 0.005  # m: let go, every gripper link at least 5 mm from the box
+_GAP: dict[str, float] = {}  # "blue_box" -> closest gripper distance at the last step (m)
 OFFLINE_FLAG = "LOCKER_CASE_TASK_OFFLINE_CHECK"
 _HAND_LINKS = ("gripper", "tip_left", "tip_right")
 
@@ -150,9 +183,9 @@ def _record_gap(sim):
                 t[:3, 3] = poses[i, :3] - origin
                 links[n] = t
         hands += analysis.world_hulls(links)
-    case = sim.states()["blue_case"]
+    case = sim.states()["blue_box"]
     rot = parts._quat_to_matrix(case.quat_xyzw)
-    _GAP["blue_case"] = float(analysis.hulls_to_box(hands, np.asarray(case.pos, float), rot, np.asarray(CASE))[0])
+    _GAP["blue_box"] = float(analysis.hulls_to_box(hands, np.asarray(case.pos, float), rot, np.asarray(CASE))[0])
 
 
 def _offline() -> bool:
@@ -162,10 +195,10 @@ def _offline() -> bool:
 
 
 def _released() -> bool:
-    """Let go: every gripper link at least 5 mm from the case. No measurement yet: no credit (fails closed)."""
-    if "blue_case" not in _GAP:
+    """Let go: every gripper link at least 5 mm from the box. No measurement yet: no credit (fails closed)."""
+    if "blue_box" not in _GAP:
         return _offline()
-    return _GAP["blue_case"] >= RELEASE_GAP - EPS
+    return _GAP["blue_box"] >= RELEASE_GAP - EPS
 
 
 def _spoiled() -> bool:
@@ -190,9 +223,9 @@ def _on_mat(case) -> bool:
 
 
 def success(objects):
-    """The case stands upright and still, entirely on the green mat, and was never tipped past 45 degrees or dropped."""
+    """The box stands upright and still, entirely on the green mat, and was never tipped past 45 degrees or dropped."""
     _update(objects)
-    case = objects["blue_case"]
+    case = objects["blue_box"]
     return bool(not _spoiled() and _standing(case, MAT_TOP) and _on_mat(case))
 
 
@@ -204,7 +237,7 @@ def score(objects):
         return 1.0
     if _spoiled():
         return 0.0
-    case = objects["blue_case"]
+    case = objects["blue_box"]
     out = case.high[0] <= XD - DOOR_T + EPS
     if out and (_standing(case, TOP) or _standing(case, MAT_TOP)):
         return 0.5
@@ -212,13 +245,13 @@ def score(objects):
 
 
 def distance(objects):
-    c = objects["blue_case"].pos
+    c = objects["blue_box"].pos
     return float(np.hypot(c[0] - MAT_XY[0], c[1] - MAT_XY[1]))
 
 
 @parts.on_reset
 def _new_episode(sim):
-    """A new episode: clear the tipping and drop record and the gripper measurement, set the catch, and tip the case
+    """A new episode: clear the tipping and drop record and the gripper measurement, set the catch, and tip the box
     forward onto the shut door."""
     import torch
 
@@ -226,7 +259,7 @@ def _new_episode(sim):
     _GAP.clear()
     sim.set_target("locker", "door", -CATCH_PRELOAD)
     base = sim.env.unwrapped
-    case = base.scene["blue_case"]
+    case = base.scene["blue_box"]
     origin = base.scene.env_origins[0].detach().cpu().numpy()
     centre, q = _lean_pose(LEAN0)
     pose = torch.tensor([[*(centre + origin), *q]], dtype=torch.float32, device=base.device)
@@ -247,12 +280,12 @@ TIP = 0.013
 HIGH = TOP + 0.16
 CLEAR_AT = 1.50  # rad: swung this far, the door is clear of the opening
 PINCH_YAW = -math.pi / 2
-CATCH_AT = 0.95  # rad: how far the right arm opens the door before the left arm takes the case
-CATCH_LEAN = math.asin((CASE_GAP + CASE_FROM_HINGE * math.tan(CATCH_AT)) / CASE[2])  # the case leans with it
-PINCH_TILT = 30.0  # degrees: the left hand's fingertips lean away from the robot, fingers closing across the case
-PINCH_Y = 0.025  # world y of the pinch, near the case's free (left) end where the door is furthest away
-PINCH_DOWN = 0.010  # TCP this far down the case from its top
-FINGER_AROUND = -0.020  # finger joint for pads 40 mm apart, around the 25 mm case
+CATCH_AT = 0.95  # rad: how far the right arm opens the door before the left arm takes the box
+CATCH_LEAN = math.asin((CASE_GAP + CASE_FROM_HINGE * math.tan(CATCH_AT)) / CASE[2])  # the box leans with it
+PINCH_TILT = 30.0  # degrees: the left hand's fingertips lean away from the robot, fingers closing across the box
+PINCH_Y = 0.025  # world y of the pinch, near the box's free (left) end where the door is furthest away
+PINCH_DOWN = 0.010  # TCP this far down the box from its top
+FINGER_AROUND = -0.020  # finger joint for pads 40 mm apart, around the 25 mm box
 
 
 def _handle(phi: float, z: float):
@@ -264,7 +297,7 @@ def _handle(phi: float, z: float):
 
 
 def _pinch_point(lean: float):
-    """The pinch TCP on the case leaning ``lean`` (rad) about its base's front edge."""
+    """The pinch TCP on the box leaning ``lean`` (rad) about its base's front edge."""
     up = np.array([-math.sin(lean), 0.0, math.cos(lean)])
     centre, _ = _lean_pose(lean)
     p = centre + up * (CASE[2] / 2 - PINCH_DOWN)
@@ -273,9 +306,9 @@ def _pinch_point(lean: float):
 
 def demo():
     """Right arm: grips the handle, pulls the door past the catch and opens it slowly to 54 degrees, holds it there
-    while the left arm takes the case, then swings it on to 86 degrees, clear of the opening, and lets go.
+    while the left arm takes the box, then swings it on to 86 degrees, clear of the opening, and lets go.
     Left arm (tilt.py): fingertips leaning 30 degrees away from the robot and closing front to back, it reaches down
-    into the gap between the door and the locker and pinches the case's top; once the door is clear it lifts the
+    into the gap between the door and the locker and pinches the box's top; once the door is clear it lifts the
     case out, stands it upright, sets it on the mat, lets go and rises straight up clear of it."""
     W_ = tilt.Waypoint
     hz = TOP + HANDLE_Z
@@ -303,13 +336,13 @@ def demo():
     pinch = _pinch_point(lean)
     axis = np.array([math.sin(math.radians(tl)), 0.0, -math.cos(math.radians(tl))])  # approach direction
     above = pinch - axis * 0.07
-    ya = PINCH_YAW  # fingers close along x (front to back across the case)
+    ya = PINCH_YAW  # fingers close along x (front to back across the box)
     lean_kw = dict(yaw=ya, tilt=tl, heading=0.0)
     wait = 3.6 + n * 0.5 - 1.5  # above the gap as the door reaches CATCH_AT
     left = [
         W_(wait, (0.20, 0.25, HIGH), FINGER_OPEN, "wait for the door"),
         W_(1.5, tuple(above), FINGER_AROUND, "above the gap", **lean_kw),
-        W_(1.5, tuple(pinch), FINGER_AROUND, "down onto the case top", **lean_kw),
+        W_(1.5, tuple(pinch), FINGER_AROUND, "down onto the box top", **lean_kw),
         W_(0.8, tuple(pinch), FINGER_CLOSED, "pinch", **lean_kw),
     ]
     left.append(W_(t_clear - sum(w.duration for w in left), tuple(pinch), FINGER_CLOSED,
@@ -318,17 +351,17 @@ def demo():
         W_(1.0, tuple(pinch + [0.0, 0.0, 0.012]), FINGER_CLOSED, "lift off the floor", **lean_kw),
         W_(2.0, tuple(pinch + [-0.11, 0.0, 0.05]), FINGER_CLOSED, "draw it out", **lean_kw),
     ]
-    # Upright: with the grip turned back by the case's lean, the case hangs straight down from the pinch.
-    # The case hangs 16 mm behind and 21 mm to the right of the pinch (trace): aim the pinch off by that much.
+    # Upright: with the grip turned back by the box's lean, the box hangs straight down from the pinch.
+    # The box hangs 16 mm behind and 21 mm to the right of the pinch (trace): aim the pinch off by that much.
     tx, ty = MAT_XY[0] + 0.016, MAT_XY[1] + 0.021
-    hang = CASE[2] - PINCH_DOWN  # TCP above the case's bottom when upright
+    hang = CASE[2] - PINCH_DOWN  # TCP above the box's bottom when upright
     up_kw = dict(yaw=ya, tilt=PINCH_TILT - math.degrees(lean), heading=0.0)
     left += [
         W_(1.5, (tx, ty, MAT_TOP + hang + 0.04), FINGER_CLOSED, "stand it up over the mat", **up_kw),
         W_(1.2, (tx, ty, MAT_TOP + hang + 0.005), FINGER_CLOSED, "lower", **up_kw),
         W_(0.6, (tx, ty, MAT_TOP + hang + 0.005), FINGER_OPEN, "let go", **up_kw),
-        # Finger tips start 23 mm below the case's top; 50 mm up leaves them well clear of the 5 mm release check.
-        W_(1.0, (tx, ty, MAT_TOP + hang + 0.055), FINGER_OPEN, "straight up, clear of the case", **up_kw),
+        # Finger tips start 23 mm below the box's top; 50 mm up leaves them well clear of the 5 mm release check.
+        W_(1.0, (tx, ty, MAT_TOP + hang + 0.055), FINGER_OPEN, "straight up, clear of the box", **up_kw),
         W_(1.0, (tx - 0.05, ty, MAT_TOP + hang + 0.065), FINGER_OPEN, "away", yaw=ya),
     ]
     return {"left": left, "right": right}
