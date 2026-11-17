@@ -1,0 +1,20 @@
+{
+  "title": "Take a stick-on wall hook off without lifting the paint",
+  "category": "Societal relatability",
+  "keywords": [
+    "adhesive strip",
+    "stretch release",
+    "wall hook",
+    "property damage",
+    "home"
+  ],
+  "instruction": "Take the hook off the painted panel without damaging the paint, and put it in the tray.",
+  "context": "Stick-on hooks on stretch-release foam strips are in a large share of homes and rentals, and most adults have taken one down. The maker's instruction is to hold the hook and slowly stretch the tab straight down along the wall, at least 12 in, never pulling the strip toward you: pulling the hook, or the tab up off the wall, peels the bond and tears the paint. Unlike peeling film off a sheet, the pull that works here runs along the surface.",
+  "setup": "Station table; x forward from the line through the arm bases, y to the robot's left, table top 0. A 250 x 250 x 12.7 mm painted 1/2 in drywall panel (0.50 kg, eggshell paint) lies face up on two 30 x 250 x 50 mm pine battens (x 185 and 355 mm), centre x 270, y 0, face 62.7 mm up, held by four steel corner clips (two 30 x 8 mm posts 0.5 mm off the edges and a lip 0.5 mm over each corner). A white medium utility hook (15 g; back plate 24 x 62 x 4 mm; 14 x 14 x 21 mm stem 44 mm from the plate's lower end; arm and 5 mm lip to the plate's upper end) is stuck on a 19 mm wide, 1.2 mm white foam stretch-release strip: 50 mm bonded under the plate, then 19 mm free strip to the panel's edge and a red 19 x 15 x 2 mm grip tab hanging over the edge. Lot A (screenshot): hook on x 270, plate's lower end 3 mm from the right edge (y -122 mm), stem toward the panel's middle, tab over the right edge. Lot B: panel turned half round in its clips, so the hook and tab are at the left edge. A grey plastic tray, 100 mm (x) by 150 mm (y) inside, 4 mm walls 25 mm high, 3 mm floor, centre x 78, y 0. Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "Per trial: 0 if paint comes away anywhere under the strip at any time in the trial (the paint is checked over the whole trial, not only at the end). 0.5 once the strip has let go of the whole bond with no paint lifted. 1.0 when, in addition, the hook's back plate lies inside the tray's walls with its lowest point within 4 mm of the tray floor, no gripper within 5 mm of the hook, its strip or tab, and the hook still for 1 s. Paint comes away when the hook is pulled off the face (more than 2 mm off it, or more than 4 mm sideways) before the strip has let go, or when the strip lets go of a 10 mm length while its tab is lifted more than 30 degrees off the face (more than 45 degrees under half the release pull peels it). The strip lets go a 10 mm length at a time from the tab end, once that length is stretched 61 mm (305 mm, 12 in, for all five). Trials are run on each of lots A and B and averaged.",
+  "run_limit": "800 steps (40 s at 20 Hz)",
+  "reset_notes": "1. Fit a fresh hook and medium strip each trial on a fresh painted drywall coupon (or a repainted one, dry). 2. Clean the face with isopropyl alcohol, press the hook on for 30 s, wait 1 hour. 3. Lot A: panel centre x 270, y 0 mm, hook on x 270 with its plate's lower end 3 mm in from the right edge, tab hanging over that edge. Lot B: the same panel turned half round, hook at the left edge. 4. Seat the panel on the battens under its corner clips; empty the tray. 5. After the trial, look under the strip's footprint: missing paint or bare brown paper counts as paint lifted.",
+  "fidelity": "True-size hook, strip and drywall panel; the panel lies flat so grasps stay low, and 'down the wall' is along the face past the edge. The strip is five stretching segments and a hinged tab; the bond is five 10 mm cells that let go at a set stretch, and pull angle and hook lift decide whether paint tears. The hook slides on the bond's springs and does not turn. The spent strip stays on the hook. Two lots stop a fixed habit, not a replay.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A and B; both arms rise and hover, nothing is touched); demo: 1.0 in each lot",
+  "media": "M-JTZTH9"
+}
