@@ -1,0 +1,25 @@
+{
+  "title": "Whisk a premeasured scoop of thickener into a resident's 200 mL drink without lumps",
+  "category": "Impact on jobs",
+  "keywords": [
+    "nursing assistant",
+    "home health aide",
+    "dysphagia",
+    "IDDSI",
+    "thickened liquids",
+    "powder dispersion",
+    "lumps",
+    "bimanual",
+    "whisk",
+    "powder proxy"
+  ],
+  "instruction": "Thicken the drink with the thickener in the scoop so it has no lumps, then put the whisk back in its cup and the scoop down on the mat.",
+  "context": "Two hands at once: one tips the scoop slowly while the other keeps whisking, then whisks on until even. Nursing assistants (1.3M US) and home health aides thicken drinks for people with dysphagia; lumps or a patchy drink risk choking. Thick-It's label: add slowly, stirring as you pour. Unlike TK-AUSTZF (a lab polymer stock) or BEHAVIOR-1K's make_instant_coffee and make_hot_cocoa, the pour rate decides it.",
+  "setup": "Station table; positions are centres in cm forward from the line between the arm bases (x) and left of their midpoint (y). Lot A: (1) Navy placemat, 45 x 60 cm, 2 mm, at x 30, y 0, fixed. (2) Cork coaster, 9 cm across, 4 mm thick, 6 g, at x 22, y -3. (3) On it a clear polycarbonate 300 mL tumbler, 8.6 cm across (8.0 cm inside), 6.5 cm tall, 5 mm base, 35 g, holding 200 mL of apple juice (4.0 cm deep). (4) White ceramic utensil cup, 5.2 cm across, 3.6 cm bore, 6 cm tall, 200 g, at x 30, y -18. (5) Standing head down in it, a 16 cm mini whisk, 30 g: steel wire head 6 cm long, 2.6 cm across at most; red handle 1.6 cm across, 10 cm long. (6) Red polypropylene flour scoop, 30 g: flat 8 x 6 cm floor, open front, back wall 4.5 cm tall, side walls falling to 2 cm at the front, 2 mm walls; hollow handle (an inverted U, 1.4 x 1.4 cm) 10 cm long, its top level with the back wall's top. It lies flat on the mat with its open front toward the robot, the front edge's middle at x 27, y +10. (7) In the scoop against its back wall, Thick-It Original (starch) thickener: 30 mL, 2 level tablespoons, for IDDSI level 2 (mildly thick) in 200 mL. Lot B is lot A mirrored left to right (tumbler y +3, utensil cup y +18, scoop y -10) with 45 mL (3 tablespoons, level 3). Lot C is lot A with the coaster and tumbler at x 19, y +4 and 45 mL. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Judged over the whole trial, the trial scores 0 once lumps total 0.05 mL (about one 4.6 mm lump; real trials use a 4 mm sieve), any juice spills (the tumbler tips past 25 degrees), or 5% or more of the dose falls outside the tumbler. 1.0 when at least 95% of the dose is wetted (dispersed) in the drink, the drink is even and under 1% of the dose still floats dry, and for 1 s the tumbler stands upright (within 5 degrees) with its centre within 15 mm of where it started, the whisk stands in its utensil cup, the scoop lies on the mat (leaning at most 10 degrees), every finger and gripper is at least 5 mm from the tumbler, the whisk and the scoop, and all are still. 0.75: the same drink without that end state. 0.5: at least 95% dissolved but not even. 0.25: at least half the dose dissolved. 0 otherwise. Where the arms end up is not scored. Real trial: weigh the scoop before and after and sweep up spilled powder; check for lumps with a spoon and a 4 mm sieve; after 1 minute, run the IDDSI flow test (10 mL syringe, 10 s) on a middle and a wall sample: both in the band (level 2: 4 to 8 mL left; level 3: over 8 mL) is even. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "2,400 steps (120 seconds at 20 Hz)",
+  "reset_notes": "1. Pour away the drink; wash and dry the tumbler, whisk and scoop; wipe the mat. 2. Lay the mat at x 30, y 0. Put the coaster and the tumbler on it at the lot's place (A: x 22, y -3; B: x 22, y +3; C: x 19, y +4). 3. Pour in 200 mL of apple juice at room temperature. 4. Stand the utensil cup at x 30, y -18 (A, C) or y +18 (B) and the whisk in it, head down. 5. Level 2 (A) or 3 (B, C) tablespoons of thickener into the scoop and push them to its back wall; lay the scoop flat, open front toward the robot, front edge's middle at x 27, y +10 (A, C) or y -10 (B). 6. Weigh the scoop with the powder.",
+  "fidelity": "Rigid simulator, so powder and juice are tracked volumes with stated rules: the scoop keeps what lies below a 40-degree repose plane through its lowest rim point, the rest falls plumb; the drink is 7 regions; only the whisk's own measured stroke wets powder, at most 5 mL/s per region; over 1.5 mL dry in a region, or 3 s unstirred, becomes lumps that never break up. Rates are chosen, not measured. The juice is part of the tumbler's mass.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B and C; it raised one arm and hovered the other by the whisk's cup, touching nothing); demo: 1.0 in each of lots A, B and C",
+  "media": "M-STSLJV"
+}
