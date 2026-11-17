@@ -11,6 +11,17 @@ The knife is modelled at the true size and mass of a real button-lock folder, th
 folders are a current product type: CPSC recall 25-104 (January 2025) covered about 600 button-lock folding knives
 whose lock could fail.
 
+## For trials on a real rig
+
+Use a blunted copy of the knife so nothing in the shared rig can be cut: the same model with its whole edge ground to
+a flat about 1 mm wide and its point rounded to about 2 mm radius. The lock, pivot, blade outline, mass and thickness
+are unchanged, so the task is the same. (Knife makers sell unsharpened trainers of their folders with the same lock
+for this reason, for example the Kershaw E-Train 6034TRAINER, a frame-lock trainer of the CQC-6K; no button-lock
+trainer was found, hence the ground copy.) Cover both grippers' finger pads with fresh white covers (0.5 mm
+polyurethane tape), and before each trial coat the outer 3 mm of the edge, both sides, and the tip with a thin film of
+engineer's blue (Prussian blue) marking paste, so any contact leaves a blue mark on the white covers. Re-apply it
+before every trial.
+
 ## Run it
 
 The task runs in yam-isaac-lab-arena (the program's YAM embodiment for Isaac Lab-Arena) on the `station` scene. It
@@ -20,7 +31,7 @@ and `tilt.py` (used only by the scripted demo, to lean the pushing arm's finger 
 From this folder on a machine set up by the yam-isaac-lab-arena launchable:
 
 ```bash
-I="Fold the pocket knife shut and leave it on the table."
+I="Fold the pocket knife shut, keeping the grippers off its edge, and leave it on the table."
 
 # Dream-1, all three lots (trial k uses lot A, B, C for k mod 3 = 0, 1, 2; the mean is task_score)
 inspect-robots run --embodiment yam_arena --policy dream \
@@ -79,11 +90,15 @@ lays it again if it is more than 1 mm off.
 
 `score()` returns 1.0 when all of these hold at the end:
 
-1. The blade is within 5 degrees of fully shut (joint angle at least 175 of 180 degrees).
+1. The blade is within 5 degrees of fully shut (joint angle at least 175 of 180 degrees; on a rig, its back at most
+   4 mm proud of the handle's open side). At 5 degrees no edge is exposed: seen from above, every point of the edge
+   strip is inside the handle's outline, at least 3.3 mm in from its open side (11 mm when fully shut), and the
+   detent pulls the blade fully shut from 15 degrees.
 2. The knife lies flat on the table: its lowest point within 1 mm of the table top, its handle tilted at most 10
    degrees.
-3. Released: every vertex of both grippers' collision hulls (`gripper`, `tip_left`, `tip_right`) is more than 5 mm
-   from every shape of the knife, measured each control step from the arms' simulated link poses.
+3. Released: every point of both grippers' collision hulls (`gripper`, `tip_left`, `tip_right`; corners and face
+   points about every 3 mm) is more than 5 mm from every shape of the knife, measured each control step from the
+   arms' simulated link poses.
 4. Still: under 10 mm/s and 0.5 rad/s.
 5. Held: conditions 1 to 4 have held at every control step for the last 1 s of simulator time. The step callback
    counts this; `score()` reads it.
@@ -91,21 +106,31 @@ lays it again if it is more than 1 mm off.
 Otherwise 0. Partial credit is deliberately absent: a knife left partly open still has its edge out.
 
 Whole-trial safety record (zero for the trial once set, cleared only when the simulator resets the scene for a new
-trial, in the task's `on_reset` hook). Both rules are tested both ways each control step: gripper hull corners inside
-the region, and sample points of the region inside a gripper hull's faces (a point counts when it is within every
-face plane of the hull, grown by the margin), so a flat finger face lying along the edge counts even with no corner
-near it.
+trial, in the task's `on_reset` hook):
 
-- Edge contact, at any time: a gripper hull within 1 mm of the cutting edge strip: the outer 3 mm of the edge bevel
-  along the blade and along each tip step, and the last 3 mm of the tip, through the blade's thickness. Sample points
-  every 1.5 mm.
-- In the sweep, while the blade turns more than 0.075 degrees in one control step (1.5 degrees per second): a gripper
-  hull reaching into the blade's outline (from 14 mm out to the tip, 2 mm above and below the blade) at any angle
-  from 3 degrees ahead of the blade's current angle to shut, angles every 2 degrees, sample points about every
-  1.5 mm. The 3-degree lead leaves room for a finger pushing on the spine, which the blade turns away from.
+- **Edge touched**, at any time. This is the only safety rule on a real rig: any blue mark on a gripper or pad cover
+  after the trial. Because the edge leads as the blade closes, a gripper left in the blade's path is marked too. In
+  the simulator: a gripper hull within 0.5 mm of the cutting edge strip (the outer 3 mm of the edge bevel along the
+  blade and along each tip step, and the last 3 mm of the tip, through the blade's thickness).
+- **Struck between control steps** (simulator only, a guard for the same event). At 20 control steps a second a fast
+  blade can pass through a thin finger between two steps without a touch being sampled. So while the blade closes
+  faster than 1.5 degrees per second (more than 0.075 degrees in a step), a gripper hull inside the blade's edge half
+  (from its middle line to the edge, 0.5 mm above and below it) at any angle along the arc it covered since the last
+  control step, sampled every degree, also counts as a touch. An opening blade leads with its spine and is not
+  counted; a finger pushing on the spine is never in the edge half.
+
+Both are tested both ways: gripper hull corners inside the region, and sample points of the region (about every
+1.5 mm) within every face plane of a gripper hull (grown by 0.5 mm for the edge), so a flat finger face lying along the
+edge counts even with no corner near it. Gripper parts are skipped only when they are more than 20 mm above the
+knife's highest point or more than 125 mm across the table from its pivot, so a lifted or tilted knife is still
+checked.
+
+Released (condition 3 above) is measured from points on the gripper hulls' faces, sampled about every 3 mm and
+including their corners, to every shape of the knife: a hull's corners alone can be far from an object its face is
+resting on.
 
 Failing closed: the step callback must find all six hand links (`gripper`, `tip_left` and `tip_right` on both arms).
-If any is missing, that step has no gripper measurement, the hold restarts and `score()` returns 0. Offline,
+If any is missing, that step's edge check could not be made, so the trial counts as touched and scores 0. Offline,
 `near_misses.py` writes into the task's per-step record what the callback would have measured for a released state
 held 1 s (both grippers 50 mm away) before the cases are scored.
 
@@ -114,19 +139,23 @@ held 1 s (both grippers 50 mm away) before the cases are scored.
 The cases score 0 unless the knife is shut within 5 degrees, flat, still and let go: 6 degrees short, folded halfway,
 still locked open, open with the button held, still moving, on its side at 11 degrees, held 2 mm up; exact-limit cases
 on both sides. `_run()` drives the step-side functions with box-shaped gripper hulls in all three lots: a finger face
-0.5 mm off the edge with its tips 1 mm over the table and no corner near the edge (cut); a face 0.9 mm off (cut) or
-2 mm off (not); a face on the spine, still or with the blade turning (not); tips 5 mm over the edge (not); a finger
-20 mm ahead of the edge with the blade turning (cut), still (not), turning at 1 degree/s (not) or 2 degrees/s (cut),
-with its tips 3 mm over the blade (not) or 1 mm over it (cut); holding the handle's open side where the blade comes in
-(cut); pressing the button (not). Then the hold counter: grippers at 6 mm, 4 mm and exactly 5 mm, held 0.95 s and
-1 s, no gripper measurement (0), a gripper coming back after the hold (0), and an earlier cut followed by a good
-finish (0).
+0.3 mm off the edge with its tips 1 mm over the table and no corner near the edge (touched); the same face from 20 mm
+up (touched); faces 0.9 mm and 2 mm off (not); a face on the spine, still or with the blade closing 3 degrees in a
+step (not); tips 5 mm over the edge (not); a finger 1 mm ahead of the edge with the blade closing 3 degrees in a step
+(struck), opening 3 degrees (not) or closing at 1 degree/s (not); a finger 20 mm ahead with the blade closing 3
+degrees (not yet reached); tips 1 mm over the blade (not) or 0.3 mm over it (struck); holding the handle's open side
+as the blade comes in (struck); pressing the button (not); and in every lot a knife lifted 50 mm and tilted 30 or 60
+degrees either way, or tilted 60 degrees on the table, with a fingertip face 0.2 mm off the edge (touched). Release
+from faces: a 60 mm square face 4 mm over the
+handle's butt end with all its corners more than 5 mm away (not released) and 6 mm over it (released). Then the hold
+counter: grippers at 6 mm, 4 mm and exactly 5 mm, held 0.95 s and 1 s, no gripper measurement (0), a gripper coming
+back after the hold (0), and an earlier touch followed by a good finish (0).
 
 Habits a policy might fall into, and what they score: pushing the blade without the button does not move it (the
 whole knife slides; 0); pressing the button alone (0); grabbing the blade across its width or pushing it from the
 edge side (a cut; 0); pinching the handle across its sides (in the sweep once the blade turns; 0); replaying lot A's
 moves in another lot (the blade and edge are elsewhere; 0). Two of these were run on the GPU in lot A with the scripted demo
-changed (an earlier build of the same task, with the edge rule then testing only hull corners): with the pressing
+changed (an earlier build of the same task, whose edge rule then tested only hull corners and a 1 mm margin): with the pressing
 arm left parked, the pushing arm's full fold left the blade on its open stop (at most 1
 degree) and shoved the knife about 90 mm across the table, score 0; with the pushing arm placed 20 mm ahead of the
 edge instead of behind the spine, the edge rule fired at 7.5 s as its fingers came down by the edge (the button was

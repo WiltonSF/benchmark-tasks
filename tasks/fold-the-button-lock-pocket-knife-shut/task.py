@@ -100,12 +100,12 @@ DETENT = CLOSED - math.radians(15.0)  # the closing detent pulls the blade shut 
 FLAT_TILT = math.radians(10.0)
 ON_TABLE = 0.001
 CLEAR = 0.005  # released: every gripper part more than 5 mm from every part of the knife
-EDGE_TOUCH = 0.001  # a gripper part within 1 mm of the edge strip (the outer 3 mm of the bevel, and the tip's edge)
+EDGE_TOUCH = 0.0005  # touching the edge strip (the outer 3 mm of the bevel, and the tip's edge): within 0.5 mm
 EDGE_STRIP = 0.003
-SWEEP_Z = 0.002  # the swept volume: the blade's outline, 2 mm above and below it
-SWEEP_AHEAD = math.radians(3.0)  # ...at every angle from 3 degrees ahead of where it is now to shut
-SWEEP_STEP = math.radians(2.0)
-MOVING = math.radians(0.075)  # the blade is turning: more than 0.075 degrees in one control step (1.5 degrees/s)
+STRIKE_Z = 0.0005  # struck: inside the edge half of the blade (0.5 mm above and below it) somewhere along the arc
+STRIKE_STEP = math.radians(1.0)  # ...it covered since the last control step, sampled every degree
+MOVING = math.radians(0.075)  # the blade is closing: more than 0.075 degrees in one control step (1.5 degrees/s)
+FACE_STEP = 0.003  # gripper hull faces sampled about every 3 mm
 HOLD_S = 1.0
 _HAND_LINKS = ("gripper", "tip_left", "tip_right")
 
@@ -156,15 +156,17 @@ def _mechanism(sim, k) -> None:
 
 
 # -- the safety record -----------------------------------------------------------------------------------------------
-# Whole-trial record, cleared only when the simulator resets the scene for a new trial: did any gripper part come
-# within 1 mm of the cutting edge, or lie inside the volume the blade will sweep on its way shut while it was turning?
+# Whole-trial record, cleared only when the simulator resets the scene for a new trial: did any gripper part touch the
+# cutting edge (within 0.5 mm), or was any struck by the blade's edge half as the blade closed (inside the arc that
+# half covered between one control step and the next)?
 # Both are tested both ways: gripper hull corners inside the region, and sample points of the region (every 1.5 mm
-# on the edge strip and through the blade's outline at every 2 degrees of its remaining swing) within a gripper hull's
-# faces (plus 1 mm for the edge), so a flat finger face lying on the edge counts even with no corner near it.
+# on the edge strip, and through the blade's edge half at every degree of the arc it covered this step) within a
+# gripper hull's faces (plus 0.5 mm for the edge), so a flat finger face lying on the edge counts with no corner near.
 # The record is kept on the shared parts module, so that every copy of this file loaded in one process (the offline
 # checker loads it once and near_misses.py imports it again) reads and writes the same record.
 _rec = parts.__dict__.setdefault("fold_knife_record", {})
-_rec.update(cut=False, q_prev=None, gap=None, t=None, since=None, held=False)
+if not _rec:  # a second import keeps the record a running trial has written
+    _rec.update(cut=False, q_prev=None, gap=None, t=None, since=None, held=False)
 
 
 def _grid(lo, hi, step):
@@ -188,16 +190,17 @@ def _edge_points() -> np.ndarray:
     return np.array(pts)
 
 
-def _outline_points() -> np.ndarray:
-    """Sample points (u, v, z) of the blade's outline, 2 mm above and below it, about every 1.5 mm."""
-    zs = _grid(BLADE_Z0 - SWEEP_Z, BLADE_Z0 + BLADE_T + SWEEP_Z, 0.0015)
-    pts = [(u, v, z) for u in _grid(BLADE_U0, BLADE_U1, 0.0015) for v in _grid(SPINE_V, EDGE_V, 0.0015) for z in zs]
+def _edge_half_points() -> np.ndarray:
+    """Sample points (u, v, z) of the blade's edge half (from its middle line to the edge, and the tip's edge half),
+    0.5 mm above and below it, about every 1.5 mm."""
+    zs = _grid(BLADE_Z0 - STRIKE_Z, BLADE_Z0 + BLADE_T + STRIKE_Z, 0.0015)
+    pts = [(u, v, z) for u in _grid(BLADE_U0, BLADE_U1, 0.0015) for v in _grid(0.0, EDGE_V, 0.0015) for z in zs]
     for u0, u1, w in TIP_STEPS:
-        pts += [(u, v, z) for u in _grid(u0, u1, 0.0015) for v in _grid(-w, w, 0.0015) for z in zs]
+        pts += [(u, v, z) for u in _grid(u0, u1, 0.0015) for v in _grid(0.0, w, 0.0015) for z in zs]
     return np.array(pts)
 
 
-EDGE_PTS, OUTLINE_PTS = _edge_points(), _outline_points()
+EDGE_PTS, HALF_PTS = _edge_points(), _edge_half_points()
 
 
 def _blade_to_knife(pts, q) -> np.ndarray:
@@ -213,13 +216,14 @@ def _knife_to_blade(local, q) -> np.ndarray:
     return np.stack([x * s + y * c, x * c - y * s, z], axis=1)
 
 
-def _in_body(bl, margin) -> np.ndarray:
-    """Blade-frame points inside the blade's outline (grown by margin)."""
-    u, v = bl[:, 0], bl[:, 1]
-    inside = (u >= BLADE_U0 - margin) & (u <= BLADE_U1 + margin) & (v >= SPINE_V - margin) & (v <= EDGE_V + margin)
+def _in_edge_half(bl) -> np.ndarray:
+    """Blade-frame points inside the blade's edge half, 0.5 mm above and below it."""
+    u, v, z = bl[:, 0], bl[:, 1], bl[:, 2]
+    zok = (z >= BLADE_Z0 - STRIKE_Z) & (z <= BLADE_Z0 + BLADE_T + STRIKE_Z)
+    inside = (u >= BLADE_U0) & (u <= BLADE_U1) & (v >= 0.0) & (v <= EDGE_V)
     for u0, u1, w in TIP_STEPS:
-        inside |= (u >= u0 - margin) & (u <= u1 + margin) & (np.abs(v) <= w + margin)
-    return inside
+        inside |= (u >= u0) & (u <= u1) & (v >= 0.0) & (v <= w)
+    return zok & inside
 
 
 def _on_edge(bl, margin) -> np.ndarray:
@@ -246,16 +250,17 @@ def _hull_hits(hull, pts, margin) -> bool:
 
 
 def _near_knife(hull, k) -> bool:
-    """Is the hull within the disc the blade can reach (95 mm round the pivot) and below 20 mm over the table?"""
+    """Could the hull be within reach of the blade: below the knife's highest point plus 20 mm, and within 125 mm of
+    its pivot across the table? (The knife's own bounds are used, so a lifted or tilted knife is still covered.)"""
     v = hull.vertices
-    if v[:, 2].min() > np.asarray(k.pos)[2] + 0.020:
+    if v[:, 2].min() > float(k.high[2]) + 0.020:
         return False
     return bool(np.linalg.norm(v[:, :2] - np.asarray(k.pos)[:2], axis=1).min() < 0.095 + 0.03)
 
 
 def judge(k, hulls) -> None:
-    """Update the record from one control step's gripper hulls (world frame): an edge touch at any time, or a gripper
-    in the sweep while the blade turns, ends the trial's chance of credit."""
+    """Update the record from one control step's gripper hulls (world frame): touching the edge at any time, or being
+    struck by the blade's edge half as it closes, ends the trial's chance of credit."""
     q = float(k.joints["blade"])
     prev = _rec["q_prev"]
     _rec["q_prev"] = q
@@ -267,23 +272,67 @@ def judge(k, hulls) -> None:
     for h in hulls:
         if _on_edge(_knife_to_blade((h.vertices - p) @ r, q), EDGE_TOUCH).any() or _hull_hits(h, edge_w, EDGE_TOUCH):
             _rec["cut"] = True
-    if prev is None or abs(q - prev) <= MOVING + EPS or q + SWEEP_AHEAD > CLOSED:
-        return
-    angles = np.arange(q + SWEEP_AHEAD, CLOSED + 1e-9, SWEEP_STEP)
-    swept_w = np.concatenate([_blade_to_knife(OUTLINE_PTS, a) for a in angles]) @ r.T + p
+    if prev is None or q - prev <= MOVING + EPS:
+        return  # not closing: an opening blade leads with its spine
+    n = max(2, int(math.ceil((q - prev) / STRIKE_STEP)) + 1)
+    angles = np.linspace(prev, q, n)  # the arc the blade covered since the last control step
+    struck_w = np.concatenate([_blade_to_knife(HALF_PTS, a) for a in angles]) @ r.T + p
     for h in hulls:
         local = (h.vertices - p) @ r
-        local = local[(local[:, 2] >= BLADE_Z0 - SWEEP_Z) & (local[:, 2] <= BLADE_Z0 + BLADE_T + SWEEP_Z)]
-        corner_in = len(local) and any(_in_body(_knife_to_blade(local, a), 0.0).any() for a in angles)
-        if corner_in or _hull_hits(h, swept_w, 0.0):
+        corner_in = any(_in_edge_half(_knife_to_blade(local, a)).any() for a in angles)
+        if corner_in or _hull_hits(h, struck_w, 0.0):
             _rec["cut"] = True
 
 
+def _face_points(hull, step=FACE_STEP) -> np.ndarray:
+    """Points on every face of a convex hull, about `step` apart (corners included)."""
+    pts = [hull.vertices]
+    for n, d in zip(hull.planes[:, :3], hull.planes[:, 3]):
+        on = hull.vertices[np.abs(hull.vertices @ n - d) < 1e-6]
+        if len(on) < 3:
+            continue
+        c = on.mean(axis=0)
+        e1 = on[0] - c
+        if np.linalg.norm(e1) < 1e-9:
+            continue
+        e1 /= np.linalg.norm(e1)
+        e2 = np.cross(n, e1)
+        ring = on[np.argsort(np.arctan2((on - c) @ e2, (on - c) @ e1))]
+        for i in range(len(ring)):
+            a, b = ring[i], ring[(i + 1) % len(ring)]
+            m = max(1, int(math.ceil(max(np.linalg.norm(a - c), np.linalg.norm(b - c), np.linalg.norm(a - b)) / step)))
+            for s_ in range(m + 1):
+                for t_ in range(m + 1 - s_):
+                    pts.append((c + (a - c) * (s_ / m) + (b - c) * (t_ / m))[None, :])
+    pts = np.concatenate(pts)
+    _, keep = np.unique(np.round(pts / (step / 2)).astype(np.int64), axis=0, return_index=True)  # drop near-repeats
+    return np.concatenate([hull.vertices, pts[np.sort(keep)]])
+
+
+_FACES: dict = {}
+
+
+def _link_faces(name):
+    """Each hull of a hand link (link frame) with its face sample points, computed once."""
+    if name not in _FACES:
+        from yam_arena import analysis
+
+        _FACES[name] = [(h, _face_points(h)) for h in analysis.link_hulls().get(name, [])]
+    return _FACES[name]
+
+
 def _gap(k, hulls) -> float:
+    """The closest any point on a gripper hull's faces (sampled about every 3 mm, corners included) comes to any shape
+    of the knife (m; negative inside)."""
     from yam_arena import analysis
 
+    pts = np.concatenate([getattr(h, "face_points", h.vertices) for h in hulls])
+    near = np.linalg.norm(pts - np.asarray(k.pos, float), axis=1) < 0.15  # the knife reaches 95 mm from its pivot
+    if not near.any():
+        return 0.05  # every point more than 55 mm from the knife: plainly let go
+    pts = pts[near]
     boxes = KNIFE.world_boxes(_link_poses(k))
-    return min(analysis.hulls_to_box([("hand", h) for h in hulls], c, r, s)[0] for _, c, r, s in boxes)
+    return float(min(analysis.box_signed_distance(pts, c, r, s).min() for _, c, r, s in boxes))
 
 
 def _link_poses(k) -> dict:
@@ -293,10 +342,19 @@ def _link_poses(k) -> dict:
     return out
 
 
+class _WorldHull:
+    """A hand hull in the world: corners, face planes and face sample points."""
+
+    def __init__(self, hull, faces, m):
+        rot, pos = m[:3, :3], m[:3, 3]
+        self.vertices = hull.vertices @ rot.T + pos
+        n_w = hull.planes[:, :3] @ rot.T
+        self.planes = np.c_[n_w, hull.planes[:, 3] + n_w @ pos]
+        self.face_points = faces @ rot.T + pos
+
+
 def _hands(sim):
     """Both arms' gripper and finger tip hulls in the world, or None unless all six hand links were found."""
-    from yam_arena import analysis
-
     base = sim.env.unwrapped
     origin = parts._np(base.scene.env_origins[0])
     hulls, found = [], 0
@@ -308,7 +366,7 @@ def _hands(sim):
                 m = np.eye(4)
                 m[:3, :3] = _rot(poses[i, 3:])
                 m[:3, 3] = poses[i, :3] - origin
-                link = [h for _, h in analysis.world_hulls({n: m})]
+                link = [_WorldHull(h, f, m) for h, f in _link_faces(n)]
                 found += 1 if link else 0
                 hulls += link
     return hulls if found == 2 * len(_HAND_LINKS) else None
@@ -381,8 +439,8 @@ def _step(sim) -> None:
     _mechanism(sim, k)
     hulls = _hands(sim)
     _rec["t"] = float(sim.t)
-    if hulls is None:  # the arms could not be read: no credit this step
-        _rec.update(gap=None, since=None, held=False)
+    if hulls is None:  # the arms could not be read: the edge could not be checked, so the trial counts as unsafe
+        _rec.update(gap=None, since=None, held=False, cut=True)
         return
     judge(k, hulls)
     _rec["gap"] = _gap(k, hulls)

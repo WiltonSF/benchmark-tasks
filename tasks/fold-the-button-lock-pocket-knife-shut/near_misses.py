@@ -82,6 +82,40 @@ def box_hull(center, half, yaw=0.0):
     return Hull(vertices=verts, planes=np.array(planes))
 
 
+def axes_hull(center, axes, half):
+    """A box hull with its own axes (columns of a rotation matrix), centre and half sizes, world frame."""
+    axes, half, center = np.asarray(axes, float), np.asarray(half, float), np.asarray(center, float)
+    corners = np.array([[sx, sy, sz] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)]) * half
+    verts = corners @ axes.T + center
+    planes = [[*(sg * axes[:, i]), float(sg * axes[:, i] @ center + half[i])] for i in range(3) for sg in (-1.0, 1.0)]
+    return Hull(vertices=verts, planes=np.array(planes))
+
+
+def _tilted_cases(bad):
+    """A knife lifted and tilted (30 and 60 degrees either way about the handle's long axis, 50 mm up; and 60
+    degrees resting on the table), the blade at 40 degrees, a fingertip (16 x 4 x 10 mm) with a face 0.2 mm off its
+    edge: still a touch. (A filter on height above the knife's base point used to skip these.)"""
+    for lot in ("A", "B", "C"):
+        lots.use(lot)
+        yaw = lots.current().yaw_of("knife")
+        px, py, pz = lots.current().pos("knife")
+        for tilt_deg, lift in ((30.0, 0.05), (60.0, 0.05), (-30.0, 0.05), (-60.0, 0.05), (0.0, 0.05), (-60.0, 0.0)):
+            qk = qmul(quat((0, 0, 1), math.degrees(yaw)), quat((0, 1, 0), tilt_deg))
+            q0 = DEG(40.0)
+            k = KNIFE.state(joints={"blade": q0}, pos=(px, py, pz + lift), quat_xyzw=qk)
+            r = task._rot(qk)
+            s_, c_ = math.sin(q0), math.cos(q0)
+            d, e = np.array([s_, c_, 0.0]), np.array([c_, -s_, 0.0])  # along the blade, across toward the edge
+            centre = task._blade_to_knife(np.array([[0.07, task.EDGE_V + 0.0002 + 0.002, task.BLADE_ZC]]), q0)[0]
+            finger = axes_hull(r @ centre + np.asarray(k.pos), r @ np.c_[d, e, [0.0, 0.0, 1.0]], (0.008, 0.002, 0.005))
+            task._rec.update(cut=False, q_prev=None)
+            task.judge(k, [finger])
+            if not task._rec["cut"]:
+                bad.append(f"lot {lot}: knife tilted {tilt_deg:.0f} deg, {lift * 1000:.0f} mm up: finger 0.2 mm off the "
+                           f"edge was not a touch")
+    lots.use(None)
+
+
 def _run():
     bad = []
 
@@ -118,32 +152,34 @@ def _run():
             return box_hull(c, (0.008, 0.002, (z1 - z0) / 2), across + math.pi / 2)
 
         edge = task.EDGE_V
-        for label, hull, moving, want in [
-            ("finger face 0.5 mm off the edge, tips 1 mm over the table (no corner near the edge)",
-             slab(edge + 0.0005, 0.001, 0.051), 0.0, True),
-            ("finger face 0.9 mm off the edge, from 20 mm up down to the table",
-             slab(edge + 0.0009, 0.000, 0.020), 0.0, True),
+        for label, hull, step_deg, want in [
+            ("finger face 0.3 mm off the edge, tips 1 mm over the table (no corner near the edge)",
+             slab(edge + 0.0003, 0.001, 0.051), 0.0, True),
+            ("finger face 0.3 mm off the edge, from 20 mm up down to the table",
+             slab(edge + 0.0003, 0.000, 0.020), 0.0, True),
+            ("finger face 0.9 mm off the edge, blade still", slab(edge + 0.0009, 0.001, 0.051), 0.0, False),
             ("finger face 2 mm off the edge", slab(edge + 0.002, 0.001, 0.051), 0.0, False),
             ("finger face on the spine", slab(task.SPINE_V - 0.0002, 0.001, 0.051, side=-1), 0.0, False),
-            ("finger face on the spine, blade turning", slab(task.SPINE_V - 0.0002, 0.001, 0.051, side=-1), 1.0,
-             False),
+            ("finger face on the spine, blade closing 3 degrees in a step",
+             slab(task.SPINE_V - 0.0002, 0.001, 0.051, side=-1), 3.0, False),
             ("finger tips 5 mm over the blade, above the edge",
              box_hull(world(lot, q0, 0.05, edge, task.BLADE_Z0 + task.BLADE_T + 0.005 + 0.025),
                       (0.008, 0.004, 0.025), h), 0.0, False),
-            ("finger 20 mm ahead of the edge, blade turning (in the sweep)",
-             slab(edge + 0.020, 0.001, 0.051), 1.0, True),
-            ("finger 20 mm ahead of the edge, blade still", slab(edge + 0.020, 0.001, 0.051), 0.0, False),
-            ("finger 20 mm ahead, blade turning at 1 degree/s (0.05 per step)",
-             slab(edge + 0.020, 0.001, 0.051), 0.05, False),
-            ("finger 20 mm ahead, blade turning at 2 degrees/s (0.1 per step)",
-             slab(edge + 0.020, 0.001, 0.051), 0.1, True),
-            ("finger 20 mm ahead with its tips 3 mm over the blade, turning",
-             slab(edge + 0.020, task.BLADE_Z0 + task.BLADE_T + 0.003, 0.051), 1.0, False),
-            ("finger 20 mm ahead with its tips 1 mm over the blade, turning",
-             slab(edge + 0.020, task.BLADE_Z0 + task.BLADE_T + 0.001, 0.051), 1.0, True),
+            ("finger 1 mm ahead of the edge, blade closing 3 degrees in a step (struck)",
+             slab(edge + 0.001, 0.001, 0.051), 3.0, True),
+            ("finger 1 mm ahead of the edge, blade opening 3 degrees in a step", slab(edge + 0.001, 0.001, 0.051),
+             -3.0, False),
+            ("finger 1 mm ahead of the edge, blade closing 0.05 degrees in a step (1 degree/s)",
+             slab(edge + 0.001, 0.001, 0.051), 0.05, False),
+            ("finger 20 mm ahead of the edge, blade closing 3 degrees (not reached yet)",
+             slab(edge + 0.020, 0.001, 0.051), 3.0, False),
+            ("finger 1 mm ahead with its tips 1 mm over the blade, closing 3 degrees",
+             slab(edge + 0.001, task.BLADE_Z0 + task.BLADE_T + 0.001, 0.051), 3.0, False),
+            ("finger 1 mm ahead with its tips 0.3 mm over the blade, closing 3 degrees",
+             slab(edge + 0.001, task.BLADE_Z0 + task.BLADE_T + 0.0003, 0.051), 3.0, True),
         ]:
             fresh()
-            k0, k1 = at(lot, q0 - DEG(moving)), at(lot, q0)
+            k0, k1 = at(lot, q0), at(lot, q0 + DEG(step_deg))
             task.judge(k0, [hull])
             task.judge(k1, [hull])
             if task._rec["cut"] != want:
@@ -151,12 +187,12 @@ def _run():
         # Holding the handle across its open side, where the blade comes in, while it turns.
         fresh()
         lots.use(lot)
-        hx, hy = task._world(lots.current(), (task.HANDLE_W / 2 + 0.004, -0.05))
+        hx, hy = task._world(lots.current(), (0.019, -0.05))
         side = box_hull((hx, hy, TOP + 0.026), (0.002, 0.008, 0.025), lots.current().yaw_of("knife"))
-        task.judge(at(lot, q0 - DEG(1.0)), [side])
-        task.judge(at(lot, q0), [side])
+        task.judge(at(lot, DEG(148.0)), [side])
+        task.judge(at(lot, DEG(151.0)), [side])
         if not task._rec["cut"]:
-            bad.append(f"lot {lot}: pinching the handle's open side while the blade turns was not a cut")
+            bad.append(f"lot {lot}: pinching the handle's open side as the blade comes in was not a cut")
         # Pressing the button on the upper scale while the blade turns.
         fresh()
         bx, by = task._world(lots.current(), task.BUTTON_XY)
@@ -186,6 +222,22 @@ def _run():
         s = task.score({"knife": shut})
         if abs(s - want) > 1e-9:
             bad.append(f"{label}: {s}, expected {want}")
+    # Release is measured from points on the gripper hulls' faces: a 60 x 60 mm face lying 4 mm above the handle's butt end,
+    # with every corner more than 5 mm from the knife, is not released; 6 mm above, it is.
+    for lot in ("A", "B", "C"):
+        k = at(lot, CLOSED)
+        lots.use(lot)
+        pz = lots.current().pos("knife")[2]
+        cx, cy = task._world(lots.current(), (0.0, -0.065))  # over the handle, clear of the button and pivot screw
+        for dz, want in ((0.004, False), (0.006, True)):
+            plate = box_hull((cx, cy, pz + task.HANDLE_T + dz + 0.002), (0.030, 0.030, 0.002),
+                             lots.current().yaw_of("knife"))
+            wh = task._WorldHull(plate, task._face_points(plate), np.eye(4))
+            g_faces, g_corners = task._gap(k, [wh]), task._gap(k, [plate])
+            if (g_faces > task.CLEAR) != want or g_corners <= task.CLEAR:
+                bad.append(f"lot {lot}: face {dz * 1000:.0f} mm over the handle: gap {g_faces * 1000:.1f} mm from faces, "
+                           f"{g_corners * 1000:.1f} mm from corners")
+    lots.use(None)
     # Held 1 s, then a gripper comes back to 4 mm: no credit at that step.
     fresh()
     for t, gap in ((0.0, 0.05), (1.0, 0.05), (1.05, 0.004)):
@@ -201,6 +253,7 @@ def _run():
         task._hold(shut, t)
     if task.score({"knife": shut}) != 0.0:
         bad.append("edge touched earlier, then shut and let go: scored")
+    _tilted_cases(bad)
     away()
     if bad:
         raise AssertionError("; ".join(bad))
