@@ -24,7 +24,8 @@ This copy adds to the stock kit (for a threaded fastener): a joint may hang from
 (``parent=``); a :class:`Slider` may be tied to a :class:`Hinge` by a screw thread (``thread=(hinge, lead)``: the
 slider travels ``lead`` metres per turn of that hinge, authored as a PhysX mimic joint); shapes may be turned about
 the part's z axis (``yaw=``) or left without a collider (``collide=False``); and a Part may set its contact offset,
-turn link-to-link collisions off, and use a compliant (springy) contact material.
+turn link-to-link collisions off, use a compliant (springy) contact material, tilt a box any way (``rot=``), and start turned by any rotation
+(``quat=``, xyzw), not only a yaw; ``on_pre_reset`` callbacks run just before a reset.
 """
 
 from __future__ import annotations
@@ -96,6 +97,7 @@ class Shape:
     axis: str = "z"  # cylinder axis in the part frame: "x", "y" or "z"
     yaw: float = 0.0  # rad about the part frame's z axis
     collide: bool = True
+    rot: tuple[float, float, float, float] | None = None  # xyzw: any rotation in the part frame (replaces yaw)
 
     @property
     def own_half(self) -> np.ndarray:
@@ -107,6 +109,8 @@ class Shape:
 
     @property
     def turn(self) -> np.ndarray:
+        if self.rot is not None:
+            return _quat_to_matrix(self.rot)
         return _rot((0, 0, 1), self.yaw)
 
     @property
@@ -115,9 +119,13 @@ class Shape:
         return np.abs(self.turn) @ self.own_half
 
 
-def box(size, at=(0.0, 0.0, 0.0), color=GREY, yaw=0.0, collide=True) -> Shape:
+def box(size, at=(0.0, 0.0, 0.0), color=GREY, yaw=0.0, collide=True, rot=None) -> Shape:
+    """A box; ``rot`` (a 3x3 matrix or an xyzw quaternion, part frame) tilts it any way, in place of ``yaw``."""
+    if rot is not None:
+        rot = np.asarray(rot, float)
+        rot = tuple(float(v) for v in (_matrix_to_quat(rot) if rot.shape == (3, 3) else rot / np.linalg.norm(rot)))
     return Shape("box", tuple(float(s) for s in size), tuple(float(a) for a in at), tuple(color), "z", float(yaw),
-                 bool(collide))
+                 bool(collide), rot)
 
 
 def cylinder(radius, height, at=(0.0, 0.0, 0.0), color=GREY, axis="z", collide=True) -> Shape:
@@ -211,6 +219,7 @@ class Part(task_file.Box):
     contact_offset: float = CONTACT_OFFSET
     self_collision: bool = True
     compliance: tuple[float, float] | None = None  # (N/m, N s/m): a springy contact material, None for rigid
+    quat: tuple[float, float, float, float] | None = None  # xyzw: the part's full starting rotation (overrides yaw)
 
     def __post_init__(self):
         object.__setattr__(self, "shapes", tuple(self.shapes))
@@ -244,6 +253,8 @@ class Part(task_file.Box):
 
     @property
     def rotation(self) -> np.ndarray:
+        if self.quat is not None:
+            return _quat_to_matrix(self.quat)
         return _rot((0, 0, 1), self.yaw)
 
     @property
@@ -313,6 +324,7 @@ class Part(task_file.Box):
 
 _ON_STEP: list[Callable] = []
 _ON_RESET: list[Callable] = []
+_ON_PRE_RESET: list[Callable] = []
 
 
 def on_step(fn: Callable) -> Callable:
@@ -324,6 +336,13 @@ def on_step(fn: Callable) -> Callable:
 def on_reset(fn: Callable) -> Callable:
     """Decorator: ``fn(sim)`` runs after every reset (after the embodiment's settle steps)."""
     _ON_RESET.append(fn)
+    return fn
+
+
+def on_pre_reset(fn: Callable) -> Callable:
+    """Decorator: ``fn(sim)`` runs just before the second and later resets (e.g. to restore joint limits that a
+    callback moved during the trial, so the reset can put the joints back to 0)."""
+    _ON_PRE_RESET.append(fn)
     return fn
 
 
@@ -399,7 +418,10 @@ def _author(part: Part, root_path: str, translation, orientation):
                 geom = UsdGeom.Cube.Define(stage, sp)
                 geom.CreateSizeAttr(1.0)
                 geom.AddTranslateOp().Set(Gf.Vec3d(*(np.asarray(s.at) - origin)))
-                if s.yaw:
+                if s.rot is not None:
+                    x, y, z, w = s.rot
+                    geom.AddOrientOp().Set(Gf.Quatf(float(w), float(x), float(y), float(z)))
+                elif s.yaw:
                     geom.AddRotateZOp().Set(float(math.degrees(s.yaw)))
                 geom.AddScaleOp().Set(Gf.Vec3f(*s.size))
             else:
@@ -513,11 +535,13 @@ def _arena_object(part: Part):
     else:
         kind = ObjectType.BASE if part.mass is None else ObjectType.RIGID
     yaw = part.yaw
+    quat = (0.0, 0.0, math.sin(yaw / 2), math.cos(yaw / 2)) if part.quat is None else part.quat
     return PartObject(
         name=part.name,
         object_type=kind,
         spawner_cfg=SpawnerCfg(func=spawn),
-        initial_pose=Pose(position_xyz=tuple(part.pos), rotation_xyzw=(0.0, 0.0, math.sin(yaw / 2), math.cos(yaw / 2))),
+        initial_pose=Pose(position_xyz=tuple(float(v) for v in part.pos),
+                          rotation_xyzw=tuple(float(v) for v in quat)),
     )
 
 
@@ -596,6 +620,8 @@ def _patch_embodiment(module) -> None:
     def patched_reset(self, scene, *, seed=None):
         if self._env is not None:
             _reset_targets(self._base)
+            for fn in _ON_PRE_RESET:
+                fn(Sim(self))
         obs = reset(self, scene, seed=seed)
         for fn in _ON_RESET:
             fn(Sim(self))
