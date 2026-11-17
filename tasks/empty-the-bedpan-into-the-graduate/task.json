@@ -1,0 +1,23 @@
+{
+  "title": "Empty a bedpan into a measuring graduate without spilling",
+  "category": "Impact on jobs",
+  "keywords": [
+    "nursing assistant",
+    "intake and output",
+    "pouring",
+    "pour edge",
+    "narrow mouth",
+    "slosh",
+    "bimanual",
+    "liquid proxy"
+  ],
+  "instruction": "Empty the bedpan into the measuring graduate without spilling, then leave the graduate standing on the table and the bedpan on its pad.",
+  "context": "Nursing assistants (about 1.3 million US workers) empty bedpans into a graduate to measure urine output, a scored nurse aide exam skill: pour without spilling or splashing, graduate on a flat surface. A wide spoutless pan tipped over a side throws a sheet wider than the graduate's mouth, and a fast tip slops over; the pour edge and the rate decide it.",
+  "setup": "Station table; distances forward from the line between the arm bases, sideways from the midpoint (left +). (1) Blue absorbent underpad, 39 x 50 x 0.2 cm, centred 40.5 cm forward on the centre line, fixed. (2) Adult bedpan, cream polypropylene, 145 g, loose, centred on the pad, square to the table: 27.9 cm front to back, 35.6 cm side to side, 10.2 cm tall. Its 6 mm walls lean out 30 degrees (5.5 cm over their height) from a 16.9 x 24.6 cm floor; corners rounded 6.5 cm. A handle block (7 x 9 x 2.4 cm) sticks 6 cm out of the middle of one end at rim height, and a 3 mm seat plate covers the rim over that half; the other half (the open end) is open. (3) Urine, yellow: 250 mL in lot A. (4) Graduate, stainless steel 1 quart measure, 310 g, loose, 13.1 cm tall, 11.7 cm across the top inside, 9.9 cm across the base, 3 mm wall, centred 15 cm forward on the centre line, its handle toward the robot. Lot A: handle at the robot's left, 250 mL. Lot B: pan turned round (handle at the right), 150 mL. Lot C: handle at the right, 400 mL. Trials are run on lots A, B and C and averaged; the screenshot shows lot A.",
+  "scoring": "Volumes are measured by weighing the graduate and the pan (1 g = 1 mL); spilled urine is the start volume minus what is in both. 0 for the trial once 2% or more of the start volume has been spilled (judged over the whole trial). 1.0 when at least 95% of the start volume is in the graduate, under 2% was spilled, and at the end the graduate stands upright (leaning at most 5 degrees) on the table, the pan sits flat (at most 5 degrees) on its pad, its centre within 4 cm of where it started and square to the pad within 15 degrees (either end left), no finger or gripper is within 5 mm of the pan or the graduate, and everything has been still for 1 s. 0.5 for the same transfer (at least 95% in, under 2% spilled) without that end state, for example the pan still held. 0.25 for at least 50% in the graduate with under 2% spilled. 0 otherwise. Trials are run on each of lots A, B and C and averaged.",
+  "run_limit": "1,800 steps (90 seconds at 20 Hz)",
+  "reset_notes": "1. Empty and dry the graduate and the pan; wipe the pad and the table. 2. Stand the graduate on the table, centred 15 cm forward on the centre line, handle toward the robot. 3. Lay the pad centred 40.5 cm forward. 4. Set the pan flat in the middle of the pad, square to the table, handle to the robot's left (lot A) or right (lots B and C). 5. Pour in tap water tinted yellow: 250 mL (A), 150 mL (B) or 400 mL (C). 6. Weigh the empty graduate before and after each trial.",
+  "fidelity": "Rigid simulator, so the urine is a tracked volume: a flat surface in the pan whose tilt follows the pan through a damped first slosh mode, outflow over every rim point the surface stands above (weir rule), each stream thrown outward from the rim and landing in the graduate's mouth or counted as spilled; drawn as yellow layers, a stream and puddles. Its weight presses on the pan. Rounded corners are 4 flat facets each.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A, B, C); demo: 1.0 in each lot (mean 1.0)",
+  "media": "M-UKJV2E"
+}
