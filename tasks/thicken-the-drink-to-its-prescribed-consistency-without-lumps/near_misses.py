@@ -190,169 +190,202 @@ def finish(st=None, s=1.5, clear=True):
 
 RESULTS = []
 
-
 def case(label, run, want):
     st = run()
     got = task.score(st if st is not None else world())
-    if want is None:  # report only
-        want = got
     RESULTS.append((label, got, want))
-    L = task._L
-    print(f"{'ok  ' if abs(got - want) < 1e-9 else 'FAIL'} {label}: {got} (want {want}) [lot {lots.current().name} "
-          f"wetted {task.hydrated_share():.3f} dry {L['dry'].sum():.2f} lumps {L['lumps'].sum():.3f} spill "
-          f"{L['spill']:.2f} scoop {L['scoop']:.2f} uniform {task.uniform()}]")
+    print(f"{'ok  ' if abs(got-want)<1e-9 else 'FAIL'} {label}: {got} (want {want})", flush=True)
 
 
-def made(share=1.0, even=True):
-    """A history in which the drink was made: `share` of the dose wetted, even or all in one region."""
+def made(share=1.0, clear=True):
+    lots.use("A")
     task.reset_state()
-    task._L["known"] = True
-    dose = task._L["dose"]
-    if even:
-        task._L["hyd"][:] = share * dose / task.N_REG
-    else:
-        task._L["hyd"][3] = share * dose
-    task._L["scoop"] = dose * (1 - share)
+    dose=task._L["dose"]
+    task._L["hyd"][:]=share*dose/task.N_REG
+    task._L["scoop"]=dose*(1-share)
+    task._L["known"]=True
+    task._L["clear"]=clear
 
 
-if True:
-    case("demo, lot A", lambda: play(), 1.0)
-    case("demo, lot B (45 mL, mirrored)", lambda: play(lot="B"), 1.0)
-    case("demo, lot C (45 mL, tumbler moved)", lambda: play(lot="C"), 1.0)
-    case("demo with the arm reaching 60% of its stirring amplitude", lambda: play(stir_amp=0.6), 1.0)
-    case("demo with the arm reaching half its stirring amplitude", lambda: play(stir_amp=0.5), 1.0)
-    case("demo with the arm reaching 40% of its stirring amplitude", lambda: play(stir_amp=0.4), 1.0)
-    case("demo with the arm reaching 30% of its stirring amplitude", lambda: play(stir_amp=0.3), 0.0)
-    case("scoop jumped to 42 degrees in one step under a 1 cm, 2 Hz whisk (a dump)",
-         lambda: scripted(40.0, circle(0.010, 2.0), lambda t: 0.0 if t < 5.0 else 42.0), 0.0)
-    case("scoop tipped from 18 to 42 degrees in 1 s under a 1 cm, 2 Hz whisk",
-         lambda: scripted(40.0, circle(0.010, 2.0), ramp(5.0, 6.0, 18.0, 42.0)), 0.0)
-    case("whisked hard, held still through a dump, restarted 3 s later",
-         lambda: scripted(40.0, lambda t: circle(0.010, 2.0)(t) if (t < 5.0 or t > 8.0) else (0.010, 0.0, TIP_Z),
-                          lambda t: 0.0 if t < 5.0 else 42.0), 0.0)
-    case("scoop tipped 18 to 42 degrees over 58 s under a 1.2 cm, 1 Hz whisk (scripted control, still held)",
-         lambda: scripted(85.0, circle(0.012, 1.0, cx=0.006), ramp(5.0, 63.0, 18.0, 42.0)), 0.75)
-    case("scoop tipped over 44 s while the whisk only trembles +-1 mm every step",
-         lambda: scripted(75.0, lambda t: (0.006 + 0.001 * (-1) ** round(t / DT), 0.0, TIP_Z), ramp(5.0, 49.0, 18.0, 42.0)),
-         0.0)
-    case("scoop tipped over 44 s, whisk swung in a 1.2 cm circle at 4 Hz (credited at 0.2 m/s, not its 0.3 m/s)",
-         lambda: scripted(75.0, circle(0.012, 4.0, cx=0.006), ramp(5.0, 49.0, 18.0, 42.0)), None)
-    case("poured slowly, never stirred", lambda: play(no_stir=True), 0.0)
-    case("poured slowly, stirring only begins after the pour", lambda: play(stir_late=45.0), 0.0)
-    case("poured twice as fast while stirring", lambda: play(pour_speed=2.0), 1.0)
-    case("poured three times as fast while stirring", lambda: play(pour_speed=3.0), 0.0)
-    case("poured four times as fast while stirring", lambda: play(pour_speed=4.0), 0.0)
-    case("lot A's demo replayed with lot C's tumbler position", lambda: play(tumbler_shift=(-0.03, 0.07, 0.0)), 0.0)
-    case("demo, but the hands are never seen clear", lambda: play(released=False), 0.75)
-
-    def no_hands():
-        play()
-        task._L["known"] = False
-        return world()
-
-    case("demo, hand state unknown", no_hands, 0.0)
-    case("nothing done", lambda: (task.reset_state(), finish())[1], 0.0)
-    case("drink made, even, all set down", lambda: (made(), finish())[1], 1.0)
-    case("exactly 95% wetted, even", lambda: (made(0.95), finish())[1], 1.0)
-    case("94.9% wetted, even", lambda: (made(0.949), finish())[1], 0.25)
-    case("exactly half wetted", lambda: (made(0.50), finish())[1], 0.25)
-    case("49.9% wetted", lambda: (made(0.499), finish())[1], 0.0)
-    case("all wetted, but in one region (not stirred even)", lambda: (made(1.0, even=False), finish())[1], 0.5)
-
-    def uneven(f):
-        made()
-        task._L["hyd"][2] *= 1 + f
-        task._L["hyd"][5] *= 1 - f
-        return finish()
-
-    case("regions within 10%", lambda: uneven(0.0999), 1.0)
-    case("one region 10.5% over", lambda: uneven(0.105), 0.5)
-
-    def dry_left(ml):
-        made()
-        task._L["dry"][1] = ml
-        return finish()
-
-    case("0.29 mL dry powder still floating (under 1%)", lambda: dry_left(0.29), 1.0)
-    case("0.31 mL dry powder still floating", lambda: dry_left(0.31), 0.5)
-
-    def lumps(ml):
-        made()
-        task._L["lumps"][4] = ml
-        return finish()
-
-    case("0.049 mL of lumps", lambda: lumps(0.049), 1.0)
-    case("0.05 mL of lumps (one lump)", lambda: lumps(0.05), 0.0)
-
-    def spilt(ml):
-        made()
-        task._L["spill"] = ml
-        return finish()
-
-    case("1.49 mL thickener on the mat (under 5%)", lambda: spilt(1.49), 1.0)
-    case("1.5 mL thickener on the mat (5%)", lambda: spilt(1.5), 0.0)
-
-    def tipped(deg):
-        made()
-        th = math.radians(deg)
-        R = P._rot((1, 0, 0), th)
-        st = world(tumbler=(start_pose("tumbler")[0], R))
-        task.record(st, True)
-        return finish()
-
-    case("drink made, tumbler tipped 24 degrees once, set back", lambda: tipped(24.0), 1.0)
-    case("drink made, tumbler tipped 26 degrees once (juice spilt), set back", lambda: tipped(26.0), 0.0)
-    case("drink made, only 0.9 s still", lambda: (made(), finish(s=0.9))[1], 0.75)
-
-    BAD = [r for r in RESULTS if abs(r[1] - r[2]) > 1e-9]
-    if BAD:
-        raise SystemExit(f"near_misses: {len(BAD)} behaviour case(s) failed: {BAD}")
-
-# Hands: a gripper face lying 0.5 mm from the tumbler's wall with no vertex near it must not count as clear.
-_tw = world()["tumbler"]
-_x = float(_tw.pos[0]) - task.T_ROUT - 0.0005
-_face = np.array([[_x, float(_tw.pos[1]) + dy, float(_tw.pos[2]) + 0.03 + dz] for dy in np.linspace(-0.006, 0.006, 5)
-                  for dz in np.linspace(-0.006, 0.006, 5)])
-_verts_far = _face[[0, 4, 20, 24]] + np.array([-0.0, 0.0, 0.0])
-assert not task.points_clear(_face, world()), "a face 0.5 mm from the tumbler counted as clear"
-assert task.points_clear(_face - np.array([0.01, 0.0, 0.0]), world()), "a face 10 mm away counted as touching"
-_hulls = {}
-from yam_arena import analysis  # noqa: E402
-
-# A flat gripper face: the face sampler must put points in its middle, not just at its corners.
-_h = analysis.link_hulls()["gripper"][0]
-_pts = task._face_points(_h)
-assert len(_pts) > 4 * len(_h.vertices), "face sampling added too few points"
-print("ok   hands: a face 0.5 mm away is not clear; 10 mm away is clear; faces sampled "
-      f"({len(_pts)} points on a {len(_h.vertices)}-vertex hull)")
-
-# End states on top of a full, valid history (the drink made and even, 1.5 s set down and clear).
-made()
-finish()
-TP, TR = start_pose("tumbler")
-HP = np.array(lots.current().pos("whisk"))
-SP, SR = start_pose("scoop")
+def material(amount, destination):
+    made()
+    task._L["hyd"]-=amount/task.N_REG
+    if destination=="spill": task._L["spill"]=amount
+    else: task._L[destination][1]=amount
+    return finish()
 
 
-def S(name, p, R, vel=None):
-    return SPEC[name].state(pos=tuple(float(x) for x in p), quat_xyzw=q_of(R),
-                            lin_vel=None if vel is None else tuple(float(x) for x in vel))
+def putaway(whisk=True, scoop=True, seconds=1.5, clear=True):
+    made()
+    poses={}
+    if not whisk:
+        R=P._rot((1,0,0),math.pi/2);p=np.array([.20,.50,task.TOP]);temp=task.WHISK.state(pos=tuple(p),quat_xyzw=q_of(R));p[2]+=task.TOP-float(temp.low[2]);poses["whisk"]=(p,R)
+    if not scoop:
+        p,R=start_pose("scoop");poses["scoop"]=(np.array([p[0],-.40,task.TOP]),R)
+    st=world(**poses)
+    return finish(st,s=seconds,clear=clear)
 
 
-RX = lambda deg: P._rot((1, 0, 0), math.radians(deg))  # noqa: E731
-CASES = [
-    ("everything set down", {}, 1.0, True),
-    ("tumbler 14 mm off its spot", {"tumbler": S("tumbler", TP + [0.014, 0, 0], TR)}, 1.0, True),
-    ("tumbler 16 mm off its spot", {"tumbler": S("tumbler", TP + [0.016, 0, 0], TR)}, 0.75, False),
-    ("tumbler leaning 6 degrees", {"tumbler": S("tumbler", TP, RX(6))}, 0.75, False),
-    ("tumbler held 4 mm up", {"tumbler": S("tumbler", TP + [0, 0, 0.004], TR)}, 0.75, False),
-    ("whisk left standing in the tumbler", {"whisk": S("whisk", TP + [0, 0, task.T_FLOOR], np.eye(3))}, 0.75, False),
-    ("whisk lying on the mat", {"whisk": S("whisk", HP + [0.0, 0.08, 0.0], RX(90))}, 0.75, False),
-    ("whisk in its cup, leaning 9 degrees", {"whisk": S("whisk", HP + [0.004, 0, 0], RX(9))}, 1.0, True),
-    ("whisk in its cup, still moving", {"whisk": S("whisk", HP, np.eye(3), (0.05, 0, 0))}, 0.75, False),
-    ("scoop on the mat 10 cm away", {"scoop": S("scoop", SP + [0.0, 0.10, 0.0], SR)}, 1.0, True),
-    ("scoop held 4 mm up", {"scoop": S("scoop", SP + [0.0, 0.0, 0.004], SR)}, 0.75, False),
-    ("scoop leaning 9 degrees", {"scoop": S("scoop", SP, RX(9) @ SR)}, 1.0, True),
-    ("scoop on its side", {"scoop": S("scoop", SP + [0.0, 0.0, 0.03], RX(90) @ SR)}, 0.75, False),
-    ("scoop still moving", {"scoop": S("scoop", SP, SR, (0.05, 0.0, 0.0))}, 0.75, False),
+case("demo lot A, revised delivery/defect contract",lambda:play(),1.0)
+case("demo lot B",lambda:play(lot="B"),1.0)
+case("demo lot C",lambda:play(lot="C"),1.0)
+case("40 percent stirring amplitude",lambda:play(stir_amp=0.4),1.0)
+case("30 percent stirring amplitude forms defects",lambda:play(stir_amp=0.3),0.0)
+case("dump under a moving whisk",lambda:scripted(40,circle(.010,2),lambda t:0 if t<5 else 42),0.0)
+case("one-second pour under a moving whisk",lambda:scripted(40,circle(.010,2),ramp(5,6,18,42)),0.0)
+case("no whisking",lambda:play(no_stir=True),0.0)
+case("late whisking",lambda:play(stir_late=45),0.0)
+case("twice-speed controlled pour",lambda:play(pour_speed=2),1.0)
+case("three-times-speed pour",lambda:play(pour_speed=3),0.0)
+case("layout-A replay at C cup position",lambda:play(tumbler_shift=(-.03,.07,0)),0.0)
+case("material done but hands never clear",lambda:play(released=False),0.0)
+case("nothing done",lambda:(task.reset_state(),finish())[1],0.0)
+case("delivery exactly 50 percent",lambda:(made(.50),finish())[1],.25)
+case("delivery 49.9 percent",lambda:(made(.499),finish())[1],0.0)
+case("delivery exactly 95 percent and both tools stowed",lambda:(made(.95),finish())[1],1.0)
+case("delivery 94.9 percent",lambda:(made(.949),finish())[1],.25)
+case("no tool stowed",lambda:putaway(False,False),.5)
+case("only whisk stowed",lambda:putaway(True,False),.75)
+case("only scoop stowed",lambda:putaway(False,True),.75)
+case("both tools stowed",lambda:putaway(True,True),1.0)
+case("only 0.9 seconds of release/stillness",lambda:putaway(seconds=.9),0.0)
+case("held tools cannot earn any positive tier",lambda:putaway(clear=False),0.0)
+case("dry marker just below observable boundary",lambda:material(task.DRY_VISIBLE*.999,"dry"),1.0)
+case("dry marker at observable boundary",lambda:material(task.DRY_VISIBLE,"dry"),0.0)
+case("any rendered agglomerate fails",lambda:material(task.LUMP_VISIBLE*2,"lumps"),0.0)
+case("former 0.049 mL allowed lump now fails",lambda:material(.049,"lumps"),0.0)
+case("4.966 percent powder spill",lambda:material(1.49,"spill"),1.0)
+case("exactly 5 percent powder spill",lambda:material(1.5,"spill"),0.0)
+
+
+def unknown():
+    made();finish();task._L["known"]=False;return world()
+case("unknown hands",unknown,0.0)
+
+def created():
+    made();finish();task._L["hyd"][0]+=.01;return world()
+case("created powder inventory",created,0.0)
+
+def negative():
+    made();finish();task._L["hyd"][0]=-1.;return world()
+case("negative powder inventory",negative,0.0)
+
+def nonfinite():
+    made();finish();task._L["hyd"][0]=float("nan");return world()
+case("nonfinite powder inventory",nonfinite,0.0)
+
+def tipped():
+    made();p,R=start_pose("tumbler");st=world(tumbler=(p,P._rot((1,0,0),math.radians(26))))
+    task.record(st,True);return finish()
+case("juice spill cannot be erased",tipped,0.0)
+
+def bad_pose():
+    made();st=world();st["whisk"]=task.WHISK.state(pos=(float("nan"),0,1));task.record(st,True)
+    return finish()
+case("nonfinite physical interval stays invalid",bad_pose,0.0)
+
+def off_mat():
+    made();p,R=start_pose("scoop");st=world(scoop=(np.array([.31,.40,task.TOP]),R))
+    assert not task._scoop_down(st["scoop"])
+    return finish(st)
+case("supported off-mat scoop is not fully stowed",off_mat,.75)
+
+def airborne_holder():
+    made();p,R=start_pose("whisk");h,H=start_pose("holder")
+    st=world(whisk=(p+[0,0,.08],R),holder=(h+[0,0,.08],H))
+    return finish(st)
+case("airborne holder cannot support a credited whisk",airborne_holder,0.0)
+
+def embedded_whisk():
+    made();p,R=start_pose("whisk")
+    return finish(world(whisk=(p+[0,0,-.002],R)))
+case("whisk 2 mm below holder floor cannot earn credit",embedded_whisk,0.0)
+
+def tilted_embedded_whisk():
+    made();p,R=start_pose("whisk")
+    return finish(world(whisk=(p,P._rot((1,0,0),math.radians(10)))))
+case("tilted head penetrating holder floor cannot earn credit",tilted_embedded_whisk,0.0)
+
+def tilted_supported_whisk():
+    made();p,_=start_pose("whisk");R=P._rot((1,0,0),math.radians(10))
+    vertices=np.concatenate([np.asarray(s.points) for s in task.WHISK.shapes if s.collide])
+    p[2]-=float((vertices@R.T)[:,2].min())
+    return finish(world(whisk=(p,R)))
+case("tilted head resting exactly on holder floor earns credit",tilted_supported_whisk,1.0)
+
+def embedded_scoop():
+    made();p,R=start_pose("scoop");p[2]=task.TOP
+    return finish(world(scoop=(p,R)))
+case("scoop embedded in raised mat is not table-supported",embedded_scoop,0.0)
+
+def numerical_contacts(depth):
+    made();poses={}
+    for name in ("tumbler","whisk","scoop"):
+        p,R=start_pose(name);p[2]-=depth;poses[name]=(p,R)
+    return finish(world(**poses))
+case("0.2 mm numerical contact penetration is tolerated",lambda:numerical_contacts(.0002),1.0)
+case("0.5 mm penetration exceeds numerical allowance",lambda:numerical_contacts(.0005),0.0)
+
+def held_half():
+    made(.5);return finish(clear=False)
+case("held half-dose cannot earn partial credit",held_half,0.0)
+
+def wet_scoop():
+    made(.5);st=world();p=np.asarray(st["tumbler"].pos)+[0,0,task.T_FLOOR+.010]
+    st["scoop"]=task.SCOOP.state(pos=tuple(p));task.record(st,True)
+    assert task._L["measurement_invalid"]
+    return finish()
+case("wet scoop residue makes weighing ungradable",wet_scoop,0.0)
+
+def unrecovered_spill():
+    made();task._L["hyd"]-=.01/task.N_REG;task._note_spill(.01,np.array([1.,1.]))
+    assert task._L["measurement_invalid"]
+    return finish()
+case("powder beyond recovery liner invalidates accounting",unrecovered_spill,0.0)
+
+# The union of one arm's links cannot certify both arms.
+from types import SimpleNamespace
+pose=np.tile(np.array([10.,10.,10.,0.,0.,0.,1.]),(1,3,1))
+def asset(names):return SimpleNamespace(body_names=names,data=SimpleNamespace(body_link_pose_w=pose.copy()))
+full=list(task.HAND_LINKS)
+class Scene(dict):
+    env_origins=np.zeros((1,3))
+scene=Scene(left_robot=asset(full),right_robot=asset(full))
+base=SimpleNamespace(scene=scene)
+scene["env_origins"]=np.zeros((1,3))
+sim=SimpleNamespace(env=SimpleNamespace(unwrapped=base))
+np_original=task.parts._np
+try:
+    task.parts._np=lambda x:np.asarray(x)
+    assert task._hands_clear(sim,world()) is True,"complete hands should be measurable"
+    scene["right_robot"]=asset(full[:-1])
+    assert task._hands_clear(sim,world()) is None,"missing right link accepted"
+    del scene["right_robot"]
+    assert task._hands_clear(sim,world()) is None,"missing right arm accepted"
+    scene["right_robot"]=asset(full)
+    scene["right_robot"].data.body_link_pose_w[0,0,0]=np.nan
+    assert task._hands_clear(sim,world()) is None,"nonfinite hand accepted"
+finally:task.parts._np=np_original
+assert not task.points_clear(np.array([[np.nan,0,0]]),world())
+print("ok   complete/missing-arm/missing-link/nonfinite hand checks",flush=True)
+
+_tw=world()["tumbler"]
+_x=float(_tw.pos[0])-task.T_ROUT-.0005
+_face=np.array([[_x,float(_tw.pos[1])+dy,float(_tw.pos[2])+.03+dz] for dy in np.linspace(-.006,.006,5) for dz in np.linspace(-.006,.006,5)])
+assert not task.points_clear(_face,world())
+assert task.points_clear(_face-np.array([.01,0,0]),world())
+print("ok   broad-face release control",flush=True)
+
+bad=[r for r in RESULTS if abs(r[1]-r[2])>1e-9]
+if bad:raise AssertionError(bad)
+made();finish()
+TP,TR=start_pose("tumbler");HP,HR=start_pose("whisk");SP,SR=start_pose("scoop")
+CASES=[
+ ("both tools supported and released",{},1.0,True),
+ ("whisk hovering 4 mm above holder floor",{"whisk":task.WHISK.state(pos=tuple(HP+[0,0,.004]))},0.0,False),
+ ("scoop held 4 mm above mat",{"scoop":task.SCOOP.state(pos=tuple(SP+[0,0,.004]),quat_xyzw=q_of(SR))},0.0,False),
+ ("tumbler 16 mm off its start",{"tumbler":task.TUMBLER.state(pos=tuple(TP+[.016,0,0]))},0.0,False),
+ ("stale state after scoop moves outside mat",{"scoop":task.SCOOP.state(pos=(.31,.40,task.TOP),quat_xyzw=q_of(SR))},0.0,False),
+ ("holder and whisk airborne together",{"holder":task.HOLDER.state(pos=tuple(np.asarray(task.HOLDER.pos)+[0,0,.08])),"whisk":task.WHISK.state(pos=tuple(HP+[0,0,.08]))},0.0,False),
 ]
+print(f"{len(RESULTS)} behaviour cases and hand/release regressions passed",flush=True)

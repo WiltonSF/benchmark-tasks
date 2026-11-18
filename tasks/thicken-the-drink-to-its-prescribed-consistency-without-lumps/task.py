@@ -68,6 +68,7 @@ def _ring_walls(r_in, r_out, z0, z1, n, color):
 # --- placemat (fixed) -------------------------------------------------------------------------------------------
 MAT_XY, MAT_SIZE = (0.30, 0.0), (0.45, 0.60, 0.002)
 MAT_Z = TOP + MAT_SIZE[2]  # the mat's top
+CATCH_SIZE = (0.60, 0.75)  # physical dry recovery liner, centered on MAT_XY
 
 # --- tumbler: 300 mL clear polycarbonate, 8.6 cm across, 6.5 cm tall, 200 mL of apple juice ----------------------
 T_RIN, T_WALL, T_FLOOR, T_H = 0.040, 0.003, 0.005, 0.065
@@ -75,7 +76,7 @@ T_ROUT = T_RIN + T_WALL
 JUICE_ML = 200.0
 DEPTH = JUICE_ML * 1e-6 / (math.pi * T_RIN ** 2)  # 39.8 mm of juice
 SURF = T_FLOOR + DEPTH  # the juice's surface above the tumbler's underside
-T_MASS = 0.035 + JUICE_ML * 1e-3  # the juice is part of the tumbler's mass
+T_MASS = 0.091 + JUICE_ML * 1e-3  # estimated 91 g polycarbonate shell; fixed juice mass
 SPILL_TILT = 25.0  # degrees: the juice reaches the rim (a level surface 20 mm below a rim 40 mm out) at 26.8
 COASTER_R, COASTER_T = 0.045, 0.004
 
@@ -144,7 +145,7 @@ for _i in range(N_REG):
     for _c, _col in enumerate(JUICE):
         T_VIS.append(parts.Visual(f"juice{_i}_{_c}", *_region_mesh(_i, SURF), color=_col))
     _x, _y = _region_centre(_i)
-    T_VIS.append(parts.Visual(f"dry{_i}_0", *_disc(0.004, SURF + 0.0008, _x, _y), color=POWDER))
+    T_VIS.append(parts.Visual(f"dry{_i}_0", *_disc(0.001, SURF + 0.0008, _x, _y), color=POWDER))
     T_VIS.append(parts.Visual(f"dry{_i}_1", *_disc(0.009, SURF + 0.0009, _x, _y), color=POWDER))
     for _k in range(3):
         _ox, _oy = 0.006 * math.cos(2.1 * _k + _i), 0.006 * math.sin(2.1 * _k + _i)
@@ -303,22 +304,22 @@ SCOOP = parts.Part("scoop", pos=_sp, yaw=_syaw, mass=S_MASS, shapes=_scoop_shape
 OBJECTS = [PLACEMAT, COASTER, TUMBLER, HOLDER, WHISK, SCOOP]
 
 
-def _lot(name, d, e, holder, lip, dose, level):
+def _lot(name, d, e, holder, lip, dose):
     sp, syaw = _scoop_pose(lip, e)
-    return lots.Lot(name, dose=dose, level=level, d=d, e=e,
+    return lots.Lot(name, dose=dose, d=d, e=e,
                     place={"coaster": (*d, MAT_Z), "tumbler": (*d, MAT_Z + COASTER_T), "holder": (*holder, MAT_Z),
                            "whisk": (*holder, MAT_Z + H_FLOOR), "scoop": sp},
                     yaw={"scoop": syaw})
 
 
-# Doses: Thick-It Original's chart for water, scaled from 4 fl oz to 200 mL. Level 2 (mildly thick): 2 level
-# tablespoons, 30 mL. Level 3 (moderately thick): 3 level tablespoons, 45 mL.
+# Benchmark doses: two/three level 15 mL tablespoons, 30/45 mL.
+# No clinical consistency is inferred from the dose or internal region state.
 D_C = (0.190, 0.040)
 LOTS = lots.declare(
     OBJECTS,
-    _lot("A", D_A, E_A, HOLDER_A, LIP_A, 30.0, 2),
-    _lot("B", (D_A[0], -D_A[1]), E_A, (HOLDER_A[0], -HOLDER_A[1]), (LIP_A[0], -LIP_A[1]), 45.0, 3),
-    _lot("C", D_C, E_A, HOLDER_A, LIP_A, 45.0, 3),
+    _lot("A", D_A, E_A, HOLDER_A, LIP_A, 30.0),
+    _lot("B", (D_A[0], -D_A[1]), E_A, (HOLDER_A[0], -HOLDER_A[1]), (LIP_A[0], -LIP_A[1]), 45.0),
+    _lot("C", D_C, E_A, HOLDER_A, LIP_A, 45.0),
 )
 
 # --- the powder and the drink: rules ----------------------------------------------------------------------------
@@ -349,7 +350,9 @@ def reset_state(dose_ml: float | None = None) -> None:
     dose = lots.current().dose if dose_ml is None else dose_ml
     _L.update(dose=float(dose), scoop=float(dose), dry=np.zeros(N_REG), hyd=np.zeros(N_REG), lumps=np.zeros(N_REG),
               still=np.zeros(N_REG), swirl=0.0, spill=0.0, juice_spilt=False, inflow=0.0, inflow_reg=-1,
-              spill_cells=set(), w_hist=[], stir=0.0, known=False, clear=False, hold=0, steps=0, max_tilt=0.0)
+              spill_cells=set(), w_hist=[], stir=0.0, known=False, clear=False, hold=0, partial_hold=0,
+              released_hold=0, certificate=None, invalid=False, measurement_invalid=False,
+              steps=0, max_tilt=0.0)
 
 
 def scoop_capacity(pos, quat) -> tuple[float, np.ndarray, np.ndarray]:
@@ -383,6 +386,8 @@ def _land(point, tumbler):
 
 
 def _note_spill(ml, xy):
+    if np.any(np.abs(np.asarray(xy)-MAT_XY) > np.asarray(CATCH_SIZE)/2):
+        _L["measurement_invalid"]=True
     i = int(round((xy[0] - SPILL_X[0]) / SPILL_STEP))
     j = int(round((xy[1] - SPILL_Y[0]) / SPILL_STEP))
     if 0 <= i < len(SPILL_X) and 0 <= j < len(SPILL_Y):
@@ -431,6 +436,13 @@ def _stirring(whisk, tumbler, dt):
 def step_powder(objects, dt: float = DT) -> None:
     """One control step of the powder: out of the scoop, onto the drink or the mat, wetted by stirring, lumps."""
     tum, sc, wh = objects["tumbler"], objects["scoop"], objects["whisk"]
+    # Wet scoop residue cannot be weighed as dry powder in the physical protocol.
+    for _,c,r,size in SCOOP.world_boxes({"base":(np.asarray(sc.pos),_R(sc.quat_xyzw))}):
+        half=np.abs(r)@(size/2)
+        q=np.maximum(np.abs(c[:2]-tum.pos[:2])-half[:2],0.)
+        if (np.linalg.norm(q) <= T_RIN and c[2]-half[2] <= tum.pos[2]+SURF
+                and c[2]+half[2] >= tum.pos[2]+T_FLOOR):
+            _L["measurement_invalid"]=True
     _L["max_tilt"] = max(_L["max_tilt"], tilt.tilt_of(tum.quat_xyzw))
     if _L["max_tilt"] > SPILL_TILT + EPS:
         _L["juice_spilt"] = True
@@ -473,23 +485,58 @@ def step_powder(objects, dt: float = DT) -> None:
     cbar = hyd.sum() / N_REG
     flux = a * (cbar - hyd)
     flux -= flux.mean()
-    hyd += flux
-    np.clip(hyd, 0.0, None, out=hyd)
+    # Limit the conservative exchange before it would make a region negative.
+    # Clipping after exchange would create powder and corrupt delivery accounting.
+    losing = flux < 0.0
+    scale = min(1.0, float(np.min(hyd[losing] / -flux[losing]))) if losing.any() else 1.0
+    hyd += max(0.0, scale) * flux
     _L["steps"] += 1
 
 
 # --- end state ---------------------------------------------------------------------------------------------------
-LUMP_MAX = 0.05  # mL: about one 4.6 mm lump
+LUMP_MAX = 0.05  # display batching only; not a physical lump-volume threshold
+LUMP_VISIBLE = 1e-6  # numerical inventory tolerance; any rendered agglomerate fails
+# A modeled dry island is a 1 mm deep circular patch. At this inventory its
+# diameter reaches the physical screen's 2 mm observable-defect threshold.
+DRY_VISIBLE = math.pi * 0.001 ** 2 * 0.001 * 1e6  # mL, chosen visual proxy
+ACCOUNT_TOL = 1e-4  # mL numerical conservation tolerance, not a scale uncertainty
 POWDER_SPILL_MAX = 0.05  # share of the dose
-HALF, FULL = 0.50, 0.95  # shares of the dose hydrated
+HALF, FULL = 0.50, 0.95  # shares of the initial dose delivered into the drink
 UNIFORM, DRY_MAX = 0.10, 0.01
 T_UPRIGHT, T_SPOT, ON = 5.0, 0.015, 0.003
+SUPPORT_EPS = 0.00025  # 0.25 mm numerical contact penetration allowance, not an airborne gap
 S_UPRIGHT = 10.0
 HOLD_STEPS = 20
 
 
+def inventory_valid() -> bool:
+    """Independent material accounting; unknown, negative or created powder fails closed."""
+    try:
+        values = np.r_[_L["scoop"], _L["spill"], _L["dry"], _L["hyd"], _L["lumps"]]
+        return bool(np.isfinite(values).all() and np.isfinite(_L["dose"]) and _L["dose"] > 0
+                    and values.min() >= -ACCOUNT_TOL and abs(values.sum() - _L["dose"]) <= ACCOUNT_TOL)
+    except (KeyError, TypeError, ValueError):
+        return False
+
+
+def dry_defect() -> bool:
+    """A rendered dry island at least 2 mm across; no hidden dry-mass percentage."""
+    return bool(np.any(_L["dry"] >= DRY_VISIBLE))
+
+
+def lump_defect() -> bool:
+    """Rendered agglomerates stand in for material retained by the specified sieve."""
+    return bool(np.any(_L["lumps"] > LUMP_VISIBLE))
+
+
+def delivered_share() -> float:
+    return float((_L["dose"] - _L["scoop"] - _L["spill"]) / _L["dose"])
+
+
 def _gate_ok() -> bool:
-    return bool(_L["known"] and not _L["juice_spilt"] and float(_L["lumps"].sum()) < LUMP_MAX - EPS
+    return bool(_L["known"] and not _L["invalid"] and not _L["measurement_invalid"]
+                and inventory_valid() and not _L["juice_spilt"]
+                and not lump_defect() and not dry_defect()
                 and _L["spill"] < POWDER_SPILL_MAX * _L["dose"] - EPS)
 
 
@@ -513,32 +560,99 @@ def _tumbler_on_spot(tum) -> bool:
 
 
 def _whisk_in_holder(wh, ho) -> bool:
-    q = _R(ho.quat_xyzw).T @ (np.asarray(wh.pos, float) - np.asarray(ho.pos, float))
-    return bool(math.hypot(q[0], q[1]) <= H_RIN + EPS and -0.002 - EPS <= q[2] <= H_H + EPS)
+    rh = _R(ho.quat_xyzw)
+    q = rh.T @ (np.asarray(wh.pos, float) - np.asarray(ho.pos, float))
+    # Test the actual lowest collision point in the holder's frame, including
+    # a tilted head, rather than a symmetric tolerance around the tip origin.
+    vertices = np.concatenate([np.asarray(s.points) for s in WHISK.shapes if s.collide])
+    world = np.asarray(wh.pos) + vertices @ _R(wh.quat_xyzw).T
+    bottom = float(((world-np.asarray(ho.pos)) @ rh)[:, 2].min())
+    return bool(math.hypot(q[0], q[1]) <= H_RIN + EPS and H_FLOOR-SUPPORT_EPS <= bottom <= H_FLOOR+ON+EPS
+                and tilt.tilt_of(wh.quat_xyzw) <= 15.0 + EPS)
 
 
 def _scoop_down(sc) -> bool:
-    return bool(tilt.tilt_of(sc.quat_xyzw) <= S_UPRIGHT + EPS and float(sc.pos[2]) - MAT_Z <= ON + EPS
-                and float(sc.pos[2]) - MAT_Z >= -ON - EPS)
+    return bool(tilt.tilt_of(sc.quat_xyzw) <= S_UPRIGHT + EPS and _on_surface(sc, MAT_XY, MAT_SIZE[:2], MAT_Z))
+
+
+def _on_surface(obj, xy, size, height) -> bool:
+    lo, hi = np.asarray(obj.low), np.asarray(obj.high)
+    return bool(np.isfinite(np.r_[lo, hi]).all() and height-SUPPORT_EPS <= lo[2] <= height+ON+EPS
+                and np.all(lo[:2] >= np.asarray(xy)-np.asarray(size)/2-EPS)
+                and np.all(hi[:2] <= np.asarray(xy)+np.asarray(size)/2+EPS))
+
+
+def _working_surface(obj) -> bool:
+    from yam_arena import station
+    # Bare-table support cannot certify an object embedded in the raised mat.
+    lo, hi = np.asarray(obj.low), np.asarray(obj.high)
+    mat_lo = np.r_[np.asarray(MAT_XY)-np.asarray(MAT_SIZE[:2])/2, TOP]
+    mat_hi = np.r_[np.asarray(MAT_XY)+np.asarray(MAT_SIZE[:2])/2, MAT_Z]
+    if np.all(np.minimum(hi, mat_hi)-np.maximum(lo, mat_lo) > SUPPORT_EPS):
+        return False
+    return bool(_on_surface(obj, MAT_XY, MAT_SIZE[:2], MAT_Z)
+                or _on_surface(obj, station.TABLE_CENTER[:2], station.TABLE_SIZE[:2], TOP))
+
+
+def _released_end(objects) -> bool:
+    """All positive tiers need independently supported, still, unheld objects."""
+    tum, wh, sc, ho, co = (objects[k] for k in ("tumbler", "whisk", "scoop", "holder", "coaster"))
+    fixtures = (_on_surface(ho, MAT_XY, MAT_SIZE[:2], MAT_Z)
+                and _on_surface(co, MAT_XY, MAT_SIZE[:2], MAT_Z))
+    cup_supported = (abs(float(tum.low[2])-float(co.high[2])) <= ON+EPS
+                     and float(tum.low[2]) >= float(co.high[2])-SUPPORT_EPS
+                     and np.linalg.norm(tum.pos[:2]-co.pos[:2]) <= COASTER_R-.010+EPS)
+    whisk_in_drink = (abs(float(wh.low[2])-(float(tum.pos[2])+T_FLOOR)) <= ON+EPS
+                      and float(wh.low[2]) >= float(tum.pos[2])+T_FLOOR-SUPPORT_EPS
+                      and np.linalg.norm(wh.pos[:2]-tum.pos[:2]) <= T_RIN-.006+EPS)
+    whisk_supported = _whisk_in_holder(wh, ho) or whisk_in_drink or _working_surface(wh)
+    return bool(_L["clear"] and fixtures and cup_supported and _tumbler_on_spot(tum)
+                and whisk_supported and _working_surface(sc)
+                and all(s.resting() for s in (tum, wh, sc, ho, co)))
 
 
 def _end_ok(objects) -> bool:
     tum, wh, sc, ho = objects["tumbler"], objects["whisk"], objects["scoop"], objects["holder"]
-    return bool(_L["clear"] and _tumbler_on_spot(tum) and _whisk_in_holder(wh, ho) and _scoop_down(sc)
-                and tum.resting() and wh.resting() and sc.resting())
+    return bool(_released_end(objects) and _whisk_in_holder(wh, ho) and _scoop_down(sc))
 
 
 def _drink_ok() -> bool:
-    return bool(_gate_ok() and hydrated_share() >= FULL - EPS and uniform())
+    return bool(_gate_ok() and delivered_share() >= FULL - EPS)
+
+
+def _one_tool_ok(objects) -> bool:
+    tum, wh, sc, ho = (objects[k] for k in ("tumbler", "whisk", "scoop", "holder"))
+    return bool(_released_end(objects) and (_whisk_in_holder(wh, ho) or _scoop_down(sc)))
+
+
+def _stamp(objects):
+    return tuple(float(v) for k in ("tumbler", "whisk", "scoop", "holder", "coaster")
+                 for v in np.r_[objects[k].pos, objects[k].quat_xyzw, objects[k].lin_vel,
+                                 objects[k].ang_vel, objects[k].low, objects[k].high])
 
 
 def record(objects, clear, dt: float = DT) -> None:
     """One control step: the powder, whether every finger and gripper is clear of the tumbler, the whisk and the
-    scoop (None: unknown, which scores 0 until it is known again), and how long the finished state has held."""
+    scoop and their holder/coaster supports (None: unknown, which scores 0), and the supported release holds."""
     _L["known"] = clear is not None
+    try:
+        values = np.asarray(_stamp(objects))
+        if not np.isfinite(values).all() or not np.isfinite(dt) or dt <= 0 or dt > 0.100001:
+            _L["invalid"] = True
+            return
+        if any(not .99 <= np.linalg.norm(objects[k].quat_xyzw) <= 1.01
+               for k in ("tumbler", "whisk", "scoop", "holder", "coaster")):
+            _L["invalid"]=True
+            return
+    except (KeyError, AttributeError, TypeError, ValueError):
+        _L["invalid"] = True
+        return
     step_powder(objects, dt)
     _L["clear"] = bool(clear)
     _L["hold"] = _L["hold"] + 1 if (_drink_ok() and _end_ok(objects)) else 0
+    _L["partial_hold"] = _L["partial_hold"] + 1 if (_drink_ok() and _one_tool_ok(objects)) else 0
+    _L["released_hold"] = _L["released_hold"] + 1 if (_gate_ok() and _released_end(objects)) else 0
+    _L["certificate"] = _stamp(objects)
 
 
 if "dose" not in _L:
@@ -546,18 +660,22 @@ if "dose" not in _L:
 
 
 def score(objects):
-    """0 once any lump has formed, any juice has spilled or 5% of the thickener has fallen outside the drink, and while
-    the hands' state is unknown. 1.0: at least 95% of the dose wetted into the drink, even through it, with the
-    tumbler upright on its spot, the whisk standing in its cup, the scoop down on the mat, nothing held and all still
-    for 1 s. 0.75: the drink made (95% wetted, even) without that end state. 0.5: 95% wetted, not yet even.
-    0.25: half the dose wetted."""
+    """Grade measured delivery and visible dispersion, then the existing tool put-away goals.
+    The score does not establish an IDDSI level, molecular hydration or suitability to serve."""
     if not _gate_ok():
+        return 0.0
+    try:
+        if _L["certificate"] != _stamp(objects):
+            return 0.0
+    except (KeyError, AttributeError, TypeError, ValueError):
+        return 0.0
+    if _L["released_hold"] < HOLD_STEPS or not _released_end(objects):
         return 0.0
     if _L["hold"] >= HOLD_STEPS and _drink_ok() and _end_ok(objects):
         return 1.0
-    share = hydrated_share()
+    share = delivered_share()
     if share >= FULL - EPS:
-        return 0.75 if uniform() else 0.5
+        return 0.75 if _L["partial_hold"] >= HOLD_STEPS and _one_tool_ok(objects) else 0.5
     if share >= HALF - EPS:
         return 0.25
     return 0.0
@@ -568,7 +686,7 @@ def success(objects):
 
 
 def distance(objects):
-    return float(max(0.0, 1.0 - hydrated_share()))
+    return float(max(0.0, 1.0 - delivered_share())) if inventory_valid() else 1.0
 
 
 # --- simulator hooks: the hands ---------------------------------------------------------------------------------
@@ -620,16 +738,16 @@ def hand_points(link_poses) -> np.ndarray:
     return np.concatenate(pts) if pts else np.zeros((0, 3))
 
 
-SCORED = ("tumbler", "whisk", "scoop")
+SCORED = ("tumbler", "whisk", "scoop", "holder", "coaster")
 
 
 def points_clear(points, objects) -> bool:
-    """True when no point is within CLEAR of any shape (its box) of the tumbler, the whisk or the scoop."""
+    """True when no point is within CLEAR of any shape (its box) of the tumbler, whisk, scoop, holder or coaster."""
     from yam_arena import analysis
 
-    if len(points) == 0:
+    if len(points) == 0 or not np.isfinite(points).all():
         return False
-    spec = {"tumbler": TUMBLER, "whisk": WHISK, "scoop": SCOOP}
+    spec = {"tumbler": TUMBLER, "whisk": WHISK, "scoop": SCOOP, "holder": HOLDER, "coaster": COASTER}
     for name in SCORED:
         s = objects[name]
         boxes = spec[name].world_boxes({"base": (np.asarray(s.pos, float), _R(s.quat_xyzw))})
@@ -651,21 +769,29 @@ def _hands_clear(sim, st) -> bool:
     origin = parts._np(base.scene.env_origins[0])
     poses = {}
     for arm in ("left_robot", "right_robot"):
-        asset = base.scene[arm]
-        lp = parts._np(asset.data.body_link_pose_w)[0]
+        try:
+            asset = base.scene[arm]
+            lp = parts._np(asset.data.body_link_pose_w)[0]
+        except (KeyError, AttributeError, IndexError, TypeError, ValueError):
+            return None
+        if not set(HAND_LINKS).issubset(asset.body_names) or not np.isfinite(lp).all():
+            return None
         for i, n in enumerate(asset.body_names):
             if n in HAND_LINKS:
                 m = np.eye(4)
                 m[:3, :3] = _R(lp[i, 3:])
                 m[:3, 3] = lp[i, :3] - origin
                 poses[f"{arm}:{n}"] = (n, m)
-    if len({n for n, _ in poses.values()}) < len(HAND_LINKS):
+    if len(poses) != 2 * len(HAND_LINKS):
         return None
     from yam_arena import analysis
 
     pts = []
     for key, (n, m) in poses.items():
-        for k, h in enumerate(analysis.link_hulls().get(n, [])):
+        hulls = analysis.link_hulls().get(n, [])
+        if not hulls:
+            return None
+        for k, h in enumerate(hulls):
             if (n, k) not in _FACE_PTS:
                 _FACE_PTS[(n, k)] = _face_points(h)
             pts.append(_FACE_PTS[(n, k)] @ m[:3, :3].T + m[:3, 3])
@@ -695,7 +821,7 @@ def _draw(sim) -> None:
         on.add(f"juice{i}_{0 if f < 0.25 else 1 if f < 0.6 else 2 if f < 0.9 else 3}")
         if _L["dry"][i] > 0.6:
             on.add(f"dry{i}_1")
-        elif _L["dry"][i] > 0.03:
+        elif _L["dry"][i] >= DRY_VISIBLE:
             on.add(f"dry{i}_0")
         n = int(min(3, math.ceil(_L["lumps"][i] / LUMP_MAX - 1e-9))) if _L["lumps"][i] > 1e-6 else 0
         on |= {f"lump{i}_{k}" for k in range(n)}
@@ -733,6 +859,9 @@ def _on_step(sim) -> None:
         print(f"[powder] t={_L['steps'] * DT:.1f} scoop={_L['scoop']:.2f} dry={_L['dry'].round(2).tolist()} "
               f"hyd={_L['hyd'].round(2).tolist()} lumps={_L['lumps'].sum():.3f} spill={_L['spill']:.2f} "
               f"stir={_L['stir']:.3f} swirl={_L['swirl']:.3f} clear={clear} hold={_L['hold']} "
+              f"invalid={_L['invalid']} measure_invalid={_L['measurement_invalid']} "
+              f"released={_released_end(st)} whisk_stowed={_whisk_in_holder(st['whisk'],st['holder'])} "
+              f"scoop_stowed={_scoop_down(st['scoop'])} "
               f"ttilt={tilt.tilt_of(st['tumbler'].quat_xyzw):.1f} stilt={tilt.tilt_of(st['scoop'].quat_xyzw):.1f}",
               flush=True)
     _draw(sim)

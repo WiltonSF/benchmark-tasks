@@ -1,16 +1,6 @@
-# Whisk a premeasured scoop of thickener into a resident's 200 mL drink without lumps
+# Disperse a premeasured scoop of thickener into a 200 mL drink without lumps
 
-Nursing assistants (O*NET 31-1131.00, about 1.3 million US workers: "Feed patients or assist patients to eat or
-drink") and home health and personal care aides (31-1122.00: "Prepare and serve meals ... according to the
-patient's diet") make up thickened drinks for people with dysphagia (swallowing difficulty) to the level on the
-care plan, using the IDDSI framework (International Dysphagia Diet Standardisation Initiative). A thin or patchy
-drink, or one with lumps, is a choking and aspiration risk. The label of Thick-It Original (a modified food starch
-thickener sold in the US) says to "slowly add level measured thickener to liquid, stirring with fork or whisk as
-you pour". Tipped in at once, or poured onto still juice, the powder wets only on its outside and traps dry lumps.
-
-The robot has a premeasured dose of thickener in a flour scoop, a 200 mL drink in a tumbler and a whisk in a
-utensil cup. Two hands are needed: one tips the scoop slowly over the drink while the other keeps the whisk moving
-through it, and the whisk keeps going until the drink is even.
+Care aides prepare drinks with powdered thickeners during meal assistance. The benchmark measures delivery and observable dispersion of a supplied dose and the existing tool put-away goals. It does not certify a prescribed consistency, an IDDSI level, complete hydration or suitability to serve. Flow readings are separate diagnostics.
 
 ## Run
 
@@ -23,7 +13,7 @@ through it, and the whisk keeps going until the drink is even.
 Use `--policy dream` for Dream-1. `--epochs 3` runs lots A, B and C (trial k uses lot k mod 3) and `task_score` is
 their mean; `TASK_LOT=A|B|C` in the environment pins every trial to one lot, and `TASK_DEBUG=1` prints the powder's
 state every half second. Submissions run with `-E object_jitter=0`. A trial runs at most 2,400 control steps
-(120 s); the demo reaches full score after about 95 s in each lot. The first control step of a run also samples the gripper's collision
+(120 s). The revised scripted runs scored 1.0 in A/B/C at 1,848 / 1,847 / 1,848 steps (92.40 / 92.35 / 92.40 s). The first control step of a run also samples the gripper's collision
 hulls for the hands-clear check, which takes about 40 s of wall time once.
 
 Files: `task.py` (scene, powder model, scoring, demo), `parts.py` (multi-shape parts, visual-only meshes), `lots.py`
@@ -38,16 +28,17 @@ demo's grip rotation in the task's own process only.
 |---|---|---|---|
 | Placemat, navy | 45 x 60 cm, 2 mm | fixed | centred 30 cm forward on the centre line |
 | Coaster, cork | 9 cm across, 4 mm | 6 g | the tumbler's mark |
-| Tumbler, clear polycarbonate, 300 mL | 8.6 cm across (8.0 inside), 6.5 cm tall, 5 mm base | 35 g + 200 g juice | 200 mL apple juice, 4.0 cm deep |
+| Tumbler, clear polycarbonate, 300 mL | 8.6 cm across (8.0 inside), 6.5 cm tall, 5 mm base | 91 g estimated + 200 g juice | 200 mL apple juice, 4.0 cm deep |
 | Utensil cup, white ceramic | 5.2 cm across, 3.6 cm bore, 6.0 cm tall, 8 mm base | 200 g | holds the whisk |
 | Mini whisk | 16 cm: steel wire head 6 cm long, 2.6 cm across at most; red handle 1.6 cm across, 10 cm long | 30 g | stands head down in the cup |
 | Flour scoop, red polypropylene | flat floor 8 x 6 cm, open front, back wall 4.5 cm, side walls 4.5 cm at the back falling to 2.0 cm at the front, 2 mm walls; hollow handle (an inverted U, 1.4 x 1.4 cm) 10 cm long, its top level with the back wall's top | 30 g | lies flat, open front toward the robot |
 | Thickener, Thick-It Original (starch) | 30 mL = 2 level tablespoons (lot A), 45 mL = 3 (lots B, C) | | in the scoop against its back wall |
 
-Doses from the product's chart for apple juice (same as water) (per 4 fl oz: mildly thick 3 1/2 to 4 teaspoons, moderately thick about
-4 1/2 to 5 1/2), scaled to 200 mL (6.8 fl oz): 2 tablespoons for IDDSI level 2 (mildly thick), 3 for level 3
-(moderately thick). A care plan or the tin in use may differ; the real trial checks the result with the IDDSI flow
-test, not the dose.
+Use **Mott's 100% Original Apple Juice, 64 fl oz bottle**, the clear pulp-free juice from concentrate, and **Thick-It Original Food & Beverage Thickener**, not Original Concentrated or Clear Advantage. Record both labels, batch/expiry identifiers and ingredients; use the same formulations and batches across a comparison. No cider, cloudy juice or altered formula is substituted. Measure 200.0 mL juice with a graduated cylinder. Juice, powder and utensils start at **20-22 degrees C**, checked with a thermometer; record starting and final temperatures. This is a chosen benchmark control.
+
+Lots A/B/C use 30/45/45 mL of leveled powder measured with a 15 mL tablespoon. These are benchmark doses, not a claim that either volume produces a prescribed clinical consistency. Weigh each actual dose; do not assume a grams-per-tablespoon conversion.
+
+A removable dry waterproof catch liner,600 x750 mm centred at x300,y0 mm, surrounds the existing mat. Powder outside it makes accounting ungradable. Secure impervious covers over robot bases/electronics outside arm paths; protect exposed pads if a wet tool can transfer liquid. Inspect/clean covers and pads between trials and replace contaminated or damaged covers. These physical protective accessories are omitted from simulation and preserve the published surface heights.
 
 ## Lots
 
@@ -56,14 +47,15 @@ Positions are of centres, in cm forward from the line between the arm bases (x) 
 
 | Lot | Tumbler and coaster | Utensil cup and whisk | Scoop's front edge (middle) | Dose |
 |---|---|---|---|---|
-| A (screenshot) | x 22, y -3 | x 30, y -18 | x 27, y +10 | 30 mL (level 2) |
-| B | x 22, y +3 | x 30, y +18 | x 27, y -10 | 45 mL (level 3) |
-| C | x 19, y +4 | x 30, y -18 | x 27, y +10 | 45 mL (level 3) |
+| A (screenshot) | x 22, y -3 | x 30, y -18 | x 27, y +10 | 30 mL |
+| B | x 22, y +3 | x 30, y +18 | x 27, y -10 | 45 mL |
+| C | x 19, y +4 | x 30, y -18 | x 27, y +10 | 45 mL |
 
 Lot B is lot A's mirror image, so the hands swap jobs. Lot C moves the drink 7.6 cm from lot A's place: a replay of
 lot A's motions pours the thickener onto the mat and drives the whisk into the tumbler's rim. Lots stop that fixed
-habit, not a memorised replay of all three layouts. The demo reads only where the tumbler, the utensil cup and the
-scoop are (visible); it never reads the dose or the lot.
+habit, not a memorised replay of all three layouts. The demo is an open-loop recipe using the published visible
+positions and yaw from the layout helper. It reads no live object state, hidden dose or material inventory; it does
+not demonstrate visual inference or adaptation to an unseen layout.
 
 ## The powder model (what is simulated)
 
@@ -101,44 +93,45 @@ step (20 Hz). Every rule:
    speeds above 0.2 m/s earn no more stirring.
 
 The rates and thresholds (repose angle, 200 mL/s, 0.25 s and 3 mm, 0.2 m/s, 3 cm, 40, 5 mL/s, 1.5 mL, 0.02 and 3 s,
-2, 1.5 s) are chosen to give the behaviour described, not measured. The powder's weight is not applied to the scoop
-(at most 23 g).
+2, 1.5 s) are chosen to give the behaviour described, not measured. The powder's weight is not applied to the scoop; its physical dose mass must be weighed for every trial.
 
 Drawing: the powder in the scoop as a cream slab (9 sizes), a falling stream where it lands, each region of the
 juice in 4 shades from clear amber to cloudy by how much wetted powder it holds against an even share, a cream
 patch for floating dry powder, white beads for lumps, and cream spots on the mat for spilled powder.
 
-## Scoring (exact)
+## Scoring and physical measurements
 
-Per trial, with V the dose (mL):
+The revised primary score uses **delivery**, not a percentage wetted/dissolved. The quality screen has a declared 2 mm observable-defect scale; it is not a clinical texture standard.
 
-- 0 for the trial once lumps reach 0.05 mL (about one 4.6 mm lump), once the juice spills, or once 5% of V or more
-  has been spilled, at any step; and 0 while the hands' state is unknown: if the simulator cannot report the finger
-  tips and grippers, or the check fails, that step records the state as unknown and the trial scores 0 until it is
-  known again (fails closed).
-- **Wetted share** W = wetted powder in the drink / V. **Even**: every region's wetted powder within 10% of the
-  regions' mean, and less than 1% of V still dry and floating.
-- 1.0 when W >= 0.95, the drink is even, and for 20 control steps (1 s) in a row: the tumbler leans at most 5
-  degrees, its centre within 15 mm (horizontally) and 3 mm (vertically) of its start; the whisk's tip is inside the
-  utensil cup's bore (within its 18 mm radius of the cup's axis, below its rim); the scoop leans at most 10 degrees
-  with its underside within 3 mm of the mat; all three move under 0.01 m/s and 0.5 rad/s; and no point on the faces
-  of either arm's finger tips or gripper body (their collision hulls, sampled every 3 mm) is within 5 mm of any shape
-  of the tumbler, the whisk or the scoop. Each comparison allows 1e-6.
-- 0.75 when W >= 0.95 and the drink is even, without that end state.
-- 0.5 when W >= 0.95 but the drink is not even.
-- 0.25 when W >= 0.50.
-- 0 otherwise.
+Use a checked scale with 0.01 g display resolution. Record the empty dry scoop, loaded scoop, dry scoop residue and all dry off-cup powder, using tared recovery containers. Let M be initial powder mass, R dry scoop residue, and S all dry powder recovered outside the drink, including the liner, mat, coaster, holder, cup exterior and other surfaces. **D=(M-R-S)/M**. Powder on a tool or outside the drink must not be silently credited. All mass differences use the same scale and a documented conservative uncertainty u, at least 0.02 g per weighing or the larger error observed with a reference mass. Propagate individual weighing intervals through the mass differences: D_low=1-(R_high+S_high)/M_low and spill_high=S_high/M_low. Award 50% or 95% only when D_low reaches that boundary; permit a spill only when spill_high is strictly below 5%. A straddled delivery boundary earns the supported lower tier; a straddled safety/validity gate earns zero. M_low must be positive.
 
-Where the arms end up is never scored. The powder's history is reset by the simulator's reset hook at the start of
-each trial, never by anything the robot does.
+Wet residue or wet recovered powder cannot be weighed as dry thickener. Incomplete recovery, unaccounted material transfer, liquid-contaminated scoop residue, an obscured quality examination or an unmeasurable amount of undispersed powder on utensils makes the trial ungradable and scores zero. Do not invent a drying or juice-solids correction.
 
-**Real trials.** Weigh the scoop before and after and sweep spilled powder off the mat onto tared paper (spilled
-5% or more scores 0). Draw a spoon along the bottom and round the wall, then pour the drink through a 2 mm kitchen
-sieve: any lump of 4 mm or more scores 0. After 1 minute standing (the label's wait for water and juice), run the
-IDDSI flow test (a 10 mL slip-tip syringe filled to 10 mL, flowing for 10 s) on a sample from the middle and one from
-the wall: level 2 leaves 4 to 8 mL, level 3 more than 8 mL. Both in the band: even (0.75 tier and above). One in
-the band, or both below it but thicker than the plain juice (over 1 mL left): 0.5. A juice spill, the tumbler
-tipped past 25 degrees on the video, scores 0.
+At the scored end state, film/photograph the undisturbed drink from above and through its wall, with a millimetre reference and sufficient magnification to resolve 2 mm. A dry-looking island/raft or exposed dry core with smallest visible width at least 2 mm fails. Before any destructive examination, record tool placement/release and the hold. After diagnostic sampling (if performed), inspect the bottom/wall with a spoon, then pour the entire drink, each diagnostic aliquot and its effluent through the **same flat stainless woven sieve with 2.0 mm clear square apertures**. Gravity-drain for **60 s**. Do not rinse, press, rub, shake or crush retained material. Any discrete thickener agglomerate retained fails. Photograph the residue with a millimetre reference; continuous liquid coating alone is not an agglomerate, and an obscured mesh is ungradable. The texture screen is final-state examination. It does not prove a lump never existed earlier; the model's irreversible lump rule is a disclosed approximation. Juice/powder spills remain whole-trial checks from video and collection.
+
+Apply the common validity, quality and released/support/stillness gates to **every** positive tier, including partial-dose trials: any juice spill, at least 5% off-cup powder, a dry defect or a sieve-retained agglomerate gives zero. Then award the highest supported tier:
+
+| Score | Delivery and completion |
+|---|---|
+| 0 | A common gate fails or D_low is below 50% |
+| 0.25 | D_low at least 50% |
+| 0.5 | D_low at least 95% |
+| 0.75 | D_low at least 95% and either tool correctly put away, with the release/stillness hold below |
+| 1.0 | D_low at least 95% and both tools correctly put away, with that hold |
+
+For **every positive tier**, require **1 s** with the tumbler within 5 degrees upright, its centre within 15 mm horizontally and 3 mm vertically of its start; tumbler, whisk, scoop, holder and coaster below 10 mm/s and 0.5 rad/s; all gripper/fingertip faces more than 5 mm from those five. A correctly stowed whisk has its lowest collision point 0-3 mm above the holder floor, inside its 18 mm bore radius, and lean at most 15 degrees. A correctly stowed scoop has its complete footprint inside the 45 x 60 cm mat, underside within 3 mm above its top, and lean at most 10 degrees. The holder and coaster must themselves rest on the mat; moving a holder and whisk together into the air is invalid. The tumbler bottom must bear on its coaster. A non-stowed whisk/scoop may earn a material-progress tier only after release on a declared support: the whisk on the holder/tumbler floor or tabletop/mat, the scoop on tabletop/mat. No tool or support may be held or airborne. Support tests allow at most 0.25 mm numerical contact penetration (the first native trace showed approximately 0.1 mm at the cup/coaster); deeper embedding fails. Use side/overhead video and a ruler; a held or airborne tool is not put away. A/B/C are judged separately and averaged.
+
+### Simulator correspondence
+
+The simulator independently conserves scoop, spill, dry, dispersed and lump inventories; missing, nonfinite, negative or inconsistent accounting gives zero. Delivery is (dose-scoop-spill)/dose. Exact simulated values have a 1e-6 comparison allowance, not a claim of zero physical weighing uncertainty. A dry region is drawn as a 2 mm island once its inventory reaches the chosen 1 mm-deep circular-patch amount (0.00314159 mL); this visible marker is the scored dry defect. Any nonnegligible modeled lump inventory draws an agglomerate and fails the coarse sieve proxy. These marker/response rules are estimates, not calibrated particle hydration or a simulated sieve. The former 0.05 mL lump-total rule, 50%/95% wetted tests, dry-percentage test and concentration-uniformity test are not score predicates. Internal wetting/mixing dynamics still make dumping, no-whisk pouring and late whisking form defects.
+
+Wet scoop/juice contact and powder leaving the recoverable liner invalidate the modeled weighing protocol. No drying correction is assumed. Both arms must supply all gripper and fingertip states with finite geometry. Unknown state fails closed. Stowage hold is 20 consecutive control steps, reset when its conditions fail. Powder history resets only on the real trial-reset callback. A hold certificate must match the current object states; it cannot be reused after movement or missing data.
+
+### Optional flow diagnostic: zero effect on primary score
+
+After the last robot stirring, leave the drink undisturbed for **60 s**. Before spoon/sieve examination, take original unsieved samples at mid-depth from the centre and from 5 mm inside the wall on the +x side. Record sample/draw/test times, temperatures and locations. Use clean dry 10 mL slip-tip syringes conforming to the IDDSI 61.5 mm zero-to-10 mL scale length, fill to 10 mL, and record the volume remaining after 10 s of gravity flow. Repeat each location with a fresh sample/syringe and retain every sample/effluent for the texture examination. Report individual numerical readings and any blocked/abrupt/no flow. Do not classify no flow as level 3 or infer an even drink from two broad bands.
+
+**Every flow result, including a boundary, discordant, blocked or no-flow result, changes the primary score by zero.** It never upgrades a delivery tier, overrides a quality failure or establishes a wetted percentage. No primary benchmark score certifies a care-plan outcome or a drink for serving. A scored consistency claim would require a separately validated physical recipe/test relationship; none is claimed here.
 
 ## Demo
 
@@ -151,17 +144,12 @@ tumbler's centre and 1 cm above the rim, so the thickener runs in at about 1 to 
 goes on for about 20 s after the scoop is empty. The scoop goes back down on the mat where it started and the whisk
 back in its cup, and both hands let go. The demo uses `tilt.py` for the leaning grips.
 
-Offline (`near_misses.py`, the objects' poses only, as if held rigidly), the demo scores 1.0 in every lot, and
-still does with 40% of its stirring amplitude or the pour twice as fast; with 30% of the amplitude, or the pour
-three times as fast, lumps form and it scores 0. These also score 0: the scoop jumped to 42 degrees in one step, or
-tipped from 18 to 42 degrees in 1 s, under a 1 cm, 2 Hz whisk; whisking hard, holding the whisk still through such
-a dump and restarting it 3 s later; pouring at the demo's pace while the whisk only trembles 1 mm either way each
-step; pouring with no stirring; stirring only after the pour; and lot A's motions in lot C's layout.
+Run `python near_misses.py` for delivery boundaries, visible dry/lump defects, conservative accounting, every tool stowage combination, unknown/missing-arm data and the existing pour/whisk/replay controls. The revised native demo scored 1.0 / 1.0 / 1.0 in A/B/C, with success termination at 1,848 / 1,847 / 1,848 steps. The matching Dream run used `dreamlabs/dream-1-beta` and scored 0.0 / 0.0 / 0.0, reaching 2,400 steps in each lot. Both used 20 Hz, the published instruction, zero object jitter and identical task.py/helper hashes; there were zero run errors or abstentions. The media package shows lot A; the three per-lot records and camera streams were checked separately. These are simulation results, not measured hardware outcomes.
 
 ## Known limits
 
 - The powder and juice are a model with stated rules, not a fluid or granular simulation. Thickening over time
-  (viscosity rising) is not modelled; the score reads how much powder was wetted and how evenly it is spread.
+  (viscosity rising) is not modelled; wetting/mixing are internal response dynamics, while the score reads delivered amount, visible defects and tool put-away.
 - Only the whisk stirs; the scoop or a finger dipped in the juice does not.
 - The tumbler and utensil cup are 20- and 16-sided; the whisk's head is a solid convex body, not wires.
 
@@ -169,14 +157,12 @@ step; pouring with no stirring; stirring only after the pour; and lot A's motion
 
 - TK-AUSTZF (a lab polymer stock sprinkled into a stirred beaker) poses the same physical problem in a specialist
   setting and was closed for importance and scoring, not as a duplicate. This task is a core duty of a large care
-  occupation, gives partial credit for each real step (half the dose wetted, all of it, an even drink, the tools
-  put down), never scores where the arms end up, and its real-trial checks (scoop and spill weights, a spoon and
-  sieve for lumps, the IDDSI flow test) measure the same things the simulator scores.
-- TK-6RMQTA (working flour into a dough with a spoon while steadying the bowl) works a whole batch already in the
-  bowl; nothing is added at a rate, and there is no lump rule.
-- BEHAVIOR-1K's `make_instant_coffee`, `make_hot_cocoa`, `making_a_drink` and `mixing_drinks` put a powder or
-  drinks into a cup and stir or combine them; none has a rule for the rate the powder goes in, lumps, or how even
-  the result is, so tipping the powder in at once succeeds there and fails here.
+  occupation, gives partial credit for measured delivery and the existing tool put-away goals. Its 2 mm observable-defect screen is a coarse physical counterpart to disclosed material proxies, and the flow test is diagnostic only.
+- Comparison names in BEHAVIOR-1K are `make_instant_coffee`, `make_hot_cocoa`, `making_a_drink` and `mixing_drinks`. This benchmark grades delivered dose, the specified dry/lump examination and tool put-away; abrupt addition fails under its disclosed irreversible-lump model.
 
 
-Source for the label wording and doses: Thick-It Original guide, https://www.vitalitymedical.com/pub/pdf/guide-thick-it-original.pdf
+Background mixing guide: [Thick-It Original guide](https://www.vitalitymedical.com/pub/pdf/guide-thick-it-original.pdf). The 30 / 45 mL benchmark doses are chosen values and do not establish a prescribed consistency.
+
+Sources for the controlled products and diagnostic method: [Mott's Original Apple Juice](https://www.motts.com/products/juice/motts-100-original-apple-juice), [Thick-It preparation instructions](https://thickit.com/education/how-to-use/), and [IDDSI testing methods](https://www.iddsi.org/images/Publications-Resources/DetailedDefnTestMethods/English/V2TestingMethodsEnglish31july2019.pdf). Benchmark thresholds and the room-temperature range are design choices, not clinical validation.
+
+The tumbler shell mass is an estimate, not a measured product: pi*(43^2*65 - 40^2*60) = 75,979 mm^3, about 91 g at an assumed polycarbonate density of 1.20 g/cm^3. The 20-sided collision hull approximates that cylindrical shell. [SABIC LEXAN sheet properties](https://ff.sabic.eu/uploads/resources/SABIC-SFS-6211-EN%20LEXAN%20Glazing%20Guide%20-%20rebrand%202021.pdf) supplies the density reference; it does not identify or validate a specific tumbler. Record the actual vessel mass when reproducing physically.
