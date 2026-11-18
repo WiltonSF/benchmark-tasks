@@ -1,0 +1,24 @@
+{
+  "title": "Fit an add-on board onto a robot controller's 2 x 20 header with every pin in its own socket",
+  "category": "Impact on AI timelines",
+  "keywords": [
+    "robot assembly",
+    "electronics assembly",
+    "add-on board",
+    "stacking header",
+    "2.54 mm pitch",
+    "pin alignment",
+    "bent pin",
+    "press fit",
+    "controller board"
+  ],
+  "instruction": "Fit the blue add-on board fully onto the controller's header, with every pin in its own socket and none bent, then let go.",
+  "context": "Robot builders and electronics technicians stack add-on boards (motor drivers, sensor boards) onto controller headers whenever they build or repair a robot. A board shifted by one row or one pin still goes fully down and looks fitted, but every signal lands on the wrong contact, and pins pressed against the plastic beside their sockets bend.",
+  "setup": "Positions: x ahead of the line through the arm bases, y to the robot's left of the midline, heights above the table top. Controller (fixed): a 100 x 70 x 6 mm aluminium carrier plate centred at x 32.0 cm, y -10.0 cm, long side along y; on it a green FR-4 PCB 85 x 56 x 1.6 mm; on that, centred, a black 2 x 20 socket header 50.8 mm long (along y) x 5.08 mm wide x 8.5 mm tall, contacts at 2.54 mm pitch along and across (rows 2.54 mm apart, 1.27 mm of plastic outside each), its top face 16.1 mm above the table. An 8 mm white square on the PCB marks pin 1, at the header's +y end on its +x side. Add-on board (loose, 35 g): a blue FR-4 PCB 65 x 56 x 1.6 mm (65 mm along y) with an aluminium heat sink 25 x 25 x 12 mm glued at its centre; underneath, centred under the heat sink, two rows of 20 gold pins, 0.64 mm square, 6.0 mm long, matching the header; an 8 mm white square on its top marks pin 1 (+y end, +x side). Foam holder (fixed): two black antistatic foam blocks 20 x 60 x 20 mm with a 10 mm slot between them, centred at x 22.0 cm, y -21.5 cm; the board lies flat on them, long side along y, pin 1 mark on the same side as the controller's, its pins hanging into the slot.",
+  "scoring": "Scored at the end, except the bent-pin rule. 1.0: the board fully seated (underside at most 0.3 mm above the header top), every pin in its own socket (pin field within 0.7 mm of the header's centre across and along, turned so that the end pins are within 0.7 mm, pin 1 over pin 1), tilted at most 3.4 degrees, let go (no part of either arm within 5 mm of the board) and still for 1 s. 0.5: the same, but pushed only at least 2 mm into the correct sockets. 0: anything else, including a board fully down but shifted by one row or one pin, or turned round. 0 for the whole trial once a pin is bent: the pins pushed into sockets with the board tilted over 3.4 degrees or moved more than 0.7 mm off them, or pressed with 12 N or more while standing on the plastic beside their sockets. Real trial: a feeler gauge at the corners, a photo along each row with a 1 mm grid, a 10x loupe on the pins afterwards.",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "1. Lift the add-on board straight off the header with a board puller. 2. Check every pin with a 10x loupe against a straight edge; replace the board if any pin is bent. 3. Press its pins into the slot of the foam holder so the board lies flat on both blocks, pin 1 mark on the same side as the controller's. 4. Check the controller and holder positions against the layout. Nothing else is consumed.",
+  "fidelity": "True-size boards, header and pins. The pins and sockets are not modelled one by one: the pin rows stand on the header's entry face, a stiff slider that gives way (24 N for all 40 contacts, an estimate) only while every pin tip is within 0.7 mm of a socket centre and the board is level within 3.4 degrees; elsewhere it stays put. Bending is a rule. Once in, the sockets do not hold the board sideways or resist pulling it off. Fixed layout.",
+  "scores": "Dream-1 run: 0.0 (the right gripper took the board off the foam and held it beside the controller; its pins never reached the header); demo: 1.0 in both of 2 trials",
+  "media": "M-TFGSB8"
+}
