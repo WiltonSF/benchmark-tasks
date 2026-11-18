@@ -1,0 +1,23 @@
+{
+  "title": "Press a servo horn onto its 25-tooth output spline with the arm on the zero mark",
+  "category": "Impact on AI timelines",
+  "keywords": [
+    "robot assembly",
+    "hobby servo",
+    "servo horn",
+    "25-tooth spline",
+    "indexing",
+    "press fit",
+    "zero mark",
+    "MG996R"
+  ],
+  "instruction": "Fit the white horn fully onto the servo's output shaft with its arm on the white zero mark, then let go.",
+  "context": "Robot builders fit a horn to every hobby-servo joint they assemble or repair, and the horn's arm sets the joint's zero. A 25-tooth spline only accepts the horn every 14.4 degrees and presses on equally well at all 25, so the arm has to be turned onto the mark before the press: a horn pressed on one tooth off looks fitted but puts the joint 14.4 degrees out.",
+  "setup": "Positions in cm from the midpoint between the arm bases (x forward, y to the robot's left); heights above the table top. Servo (fixed): a black TowerPro MG996R-size case 40.7 x 19.7 x 37 mm with 54 mm mounting ears, screwed to a 70 x 40 x 3 mm aluminium base plate, long side along x; its 25-tooth output shaft is 10 mm from the far (+x) end at x 30.0, y -9.0, rising from a 13 mm round boss whose top is 42 mm above the table. A white paint line 3 mm wide on the case top, from 7 to 28 mm out from the shaft towards the robot (-x), is the zero mark. Horn (loose): the MG996R's white nylon single-arm horn, 25-tooth bore 6.6 mm across and 5 mm deep, hub 13 mm across and 6.5 mm tall, arm reaching 30 mm from the axis (5 mm wide, 2 mm thick, top flush with the hub). It lies hub down on a black foam pad 45 x 45 x 25 mm centred at x 21.0, y -20.5, its arm pointing 112 degrees from +x (68 degrees from the mark). Crest on crest the horn stands 3.5 mm proud of seated; it takes 32 N to press home.",
+  "scoring": "Scored at the end, except damage. 1.0: the horn fully home on the tooth position that puts its arm on the mark (arm within 2.5 degrees of the mark, hub at most 0.3 mm above the boss, tilted at most 2 degrees), let go (no part of either arm within 5 mm of the horn) and still for 1 s. 0.5: the same tooth position and let go and still, but pressed only at least 1 mm onto the teeth. 0: anything else, including a horn fully home on any other tooth, or standing on the tooth crests. A horn pulled off a wrong tooth and refitted is judged where it ends. 0 for the whole trial if the horn is turned more than 4 degrees on the teeth (stripped) or forced more than 2.3 mm off the axis while on them. Real trial: a top photo with a ruler against the mark (one tooth is about 7.5 mm at the arm tip), a 0.3 mm feeler gauge under the hub, the video for the release.",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "1. Pull the horn straight off the shaft by hand or with a horn puller. 2. Check its bore teeth with a 10x loupe; replace it if any are stripped. 3. Lay it hub down at the foam pad's centre, its arm 112 degrees from +x (68 degrees from the mark, towards the robot's left). Nothing else is consumed; the servo stays screwed down.",
+  "fidelity": "True-size servo and horn. Stand-off 3.5 mm and press force 32 N are the values measured on this pair by the original task (credited in the README), not re-measured. Teeth are not modelled: the crests are a sprung collar that gives way only at 32 N with the arm within 2.5 degrees of a tooth position; a 3.2 mm core keeps the bore within 2 mm of the axis; turning on the teeth is scored as stripping. Horn mass raised to 20 g (real about 3 g) for solver stability. Fixed layout.",
+  "scores": "Dream-1 run: 0.0 (the right arm moved over the servo and back without picking up the horn); demo: 1.0 in both of 2 trials (success at step 536)",
+  "media": "M-8E22L9"
+}
