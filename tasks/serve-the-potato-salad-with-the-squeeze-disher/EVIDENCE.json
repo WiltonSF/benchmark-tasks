@@ -1,0 +1,175 @@
+{
+  "format_version": 1,
+  "updated_utc": "2026-11-18T08:53:38.137707+00:00",
+  "environment": {
+    "simulator": "Isaac Sim6.1 / IsaacLab17.0.2 / OmniPhysX110.3.2",
+    "physics_hz": 240,
+    "control_hz": 20,
+    "epochs": 2,
+    "native_environment_seed": 42,
+    "inspect_seed_cli_argument": null,
+    "seed_note": "Factory runner omitted --seed; native Isaac environment explicitly reported42. Task layout reset is deterministic AthenB with object_jitter0. No assertion about the recorded Inspect trial-seed field is made.",
+    "exact_packages": {
+      "isaaclab": "17.0.2",
+      "isaacsim": "6.1.0.0",
+      "isaaclab_physx": "6.0.0",
+      "inspect_robots": "1.0.0"
+    }
+  },
+  "runtime_and_control_sha256": {
+    "controls/inertia.py": "82cb8d588097c2ff85785032a5ac9e52511d5ec41d2cbc11ca5c9f24f1138d61",
+    "controls/material.py": "3a7b8013db2b4d50defb97bb179b14a400614b216c4de8407e62a987176115b6",
+    "controls/native_api.py": "e0eb9b3454aada563015d339deb2decf946d464474e68e9e9c2eb64e7112e7b0",
+    "controls/scorer.py": "6cb4b06d9e428ba3d1d2e4a837a701d9cee6defe82d72657d45c8b5ace52251f",
+    "demo-path.json": "9c3af41e08a04d836f6ff8a42bf93dd570aa6f50ee6ad466306cfde203e6f489",
+    "geom_helpers/__init__.py": "55a6ebeff69c7b32c530d370e127ec03288938255715490d730f145f7190c5e5",
+    "lots.py": "0884467daca1fab173c0feed70de572b4dfbda80d1758bd857ba29d90f14aabb",
+    "material_runtime/__init__.py": "f64073d0a9135194691ffc5fb48906366a9366132cc5b9fb31e3a092371b0315",
+    "native_history/__init__.py": "439563d31812c2269be526f3b72c3915f0da5637d4c223ef98f923891ba8d972",
+    "near_misses.py": "51a59a393e9d794faf100e43018db5b4aac4e0c947f05f66274167403f38934e",
+    "parts.py": "3a258f3b3c7b33b9cf534939dd269906263f3de1bf51edbeb20b21ab18340d9a",
+    "task.py": "4690ecd0450cd7f1061b13cdb8f9bf01f5ca9326c3467a9dc8cc9f3b222bf536",
+    "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567"
+  },
+  "expert": {
+    "run": 13,
+    "status": "completed",
+    "outcome": "2 succeeded",
+    "mean_task_score": 1.0,
+    "layouts": {
+      "A": {
+        "rows": 227,
+        "start_s": 0.25,
+        "end_s": 56.74999999999891,
+        "coverage_errors": [],
+        "force_projected_N": 38.5247688293457,
+        "force_contact_N": 38.21657455308208,
+        "max_excursion_mm": 0.00152726966839034,
+        "min_vertical": 0.9999999999679495,
+        "endpoint": {
+          "tier": 1.0,
+          "held": 2.0499999999998835,
+          "captured_ml": 39.73394821972604,
+          "served_ml": 38.76239982215272,
+          "spill_ml": 0.5333628352714251,
+          "cap_ml": 0.4381855623019481,
+          "support": {
+            "disher": [
+              0.0,
+              0.0,
+              0.6944836974143982
+            ],
+            "bowl": [
+              3.1236663744493853e-06,
+              -1.8887645580889512e-07,
+              5.809633255004883
+            ],
+            "plate": [
+              4.658771786125726e-07,
+              1.81806811383467e-07,
+              1.968872308731079
+            ]
+          },
+          "physics_ticks": 13740
+        }
+      },
+      "B": {
+        "rows": 227,
+        "start_s": 0.25,
+        "end_s": 56.74999999999891,
+        "coverage_errors": [],
+        "force_projected_N": 38.087974548339844,
+        "force_contact_N": 37.510110744318595,
+        "max_excursion_mm": 0.38972560615353913,
+        "min_vertical": 0.9999999999476132,
+        "endpoint": {
+          "tier": 1.0,
+          "held": 1.9999999999998863,
+          "captured_ml": 39.914621623646795,
+          "served_ml": 38.9833613950764,
+          "spill_ml": 0.4951129044631687,
+          "cap_ml": 0.43614732410722945,
+          "support": {
+            "disher": [
+              0.0,
+              0.0,
+              0.6943994760513306
+            ],
+            "bowl": [
+              2.6994698600901756e-06,
+              -3.5008486065635225e-07,
+              5.8077712059021
+            ],
+            "plate": [
+              2.0311816228968382e-07,
+              -2.0621162377665314e-07,
+              1.9711483716964722
+            ]
+          },
+          "physics_ticks": 13740
+        }
+      }
+    },
+    "media_sha256": {
+      "demo.mp4": "2988218abb10202663d0089571a22254f503027fde64c27aa51ec97e68dd9f3d",
+      "setup.png": "74a70f44eb02fc0f094a9f6d7978a00080f775f58fd11dce0671232e49721a78"
+    }
+  },
+  "dream": {
+    "run": 15,
+    "status": "completed",
+    "mean_task_score": 0.0,
+    "runtime_matches_expert": true,
+    "authorization": "One replacement Dream requested after successful expert in November18 07:30 shipping update.",
+    "outcome": "2 hit step limit",
+    "layouts": {
+      "A": {
+        "rows": 240,
+        "end_s": 59.99999999999873,
+        "task_score": 0.0,
+        "history_ticks": 14520,
+        "physics_ticks": 14520,
+        "history_valid": true,
+        "api_errors": false,
+        "served_ml": 0.0,
+        "spill_ml": 0.0,
+        "captured_ml": 0.0,
+        "peak_projected_N": 1.720694899559021,
+        "peak_contact_N": 0.0
+      },
+      "B": {
+        "rows": 240,
+        "end_s": 59.99999999999873,
+        "task_score": 0.0,
+        "history_ticks": 14520,
+        "physics_ticks": 14520,
+        "history_valid": true,
+        "api_errors": false,
+        "served_ml": 0.0,
+        "spill_ml": 0.0,
+        "captured_ml": 0.0,
+        "peak_projected_N": 1.8322592973709106,
+        "peak_contact_N": 0.0
+      }
+    },
+    "media_sha256": "0d87959742ba95d11512241fabf4de3e3c62c879903fb205a9057fcde741c50c",
+    "client_retries": {
+      "session_expiry_responses": 48,
+      "successful_action_responses_per_layout": 25,
+      "rows_per_response": 48,
+      "errored_trials": 0,
+      "abstentions": {},
+      "inspect_status": "success",
+      "dry_run": false
+    }
+  },
+  "physical_robot_results": "None; native simulation plus explicitly stubbed CPU controls only",
+  "limitations": "Estimated geometry/material parameters and net-force sensors; no physical food or hardware calibration. See README.",
+  "interrupted_dream": {
+    "run": 14,
+    "status": "completion unconfirmed: SSH disconnected when external host entered STOPPING",
+    "mean_task_score": null,
+    "last_observed": "A60s completed with zero food/contact progress; B38.75s zero progress; task history valid through observation. This is not a completed Dream result.",
+    "runtime_matches_expert": true
+  }
+}
