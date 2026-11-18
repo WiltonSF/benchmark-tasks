@@ -1,0 +1,21 @@
+{
+  "title": "Clamp two pine boards edge to edge with a one-hand bar clamp",
+  "category": "Societal relatability",
+  "keywords": [
+    "one-hand clamp",
+    "ratchet trigger",
+    "woodworking",
+    "home repair",
+    "force",
+    "squeeze"
+  ],
+  "instruction": "Clamp the two boards together edge to edge with the bar clamp, then let go.",
+  "context": "Clamping two pieces of wood together while glue sets is one of the most familiar home DIY and craft jobs: mending a split shelf or chair rail, gluing up a small panel, a school woodwork project. The one-hand bar clamp, sold in every hardware store, is the usual tool: the jaws go round the work and the trigger is squeezed against the grip, stroke after stroke, until the pieces are pressed together.",
+  "setup": "Station bench (laminate). Two planed pine boards, each 220 x 60 x 27 mm (5/4 stock, 155 g; one pale, one darker), lie flat side by side along the bench with their long edges 2 mm apart and their ends toward the robot: the pale board's middle at (0.368, 0.011) m and the darker one's at (0.368, -0.051) m (x away from the robot, y to its left). A red 6 in one-hand bar clamp (about 290 g) lies flat on its side 6.2 cm in front of the boards' near ends, jaws open 140 mm and pointing away from the robot: its fixed jaw 10 mm left of the pale board and its sliding jaw 8 mm right of the darker one. Its black pistol grip (24 mm across) and black trigger (8 mm, sprung open 20 mm from the grip) lie beside the pale board on the robot's left, pointing away from the robot. The steel bar is 12.7 x 5 mm. Both jaw pads are black rubber, 38 x 24 mm. Lot B moves the boards and the clamp together 30 mm farther from the robot and 45 mm to its right. Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "Clamped: the clamp's two pads on the two boards' outer edges (each within 1 mm), bearing on at least the first 15 mm of each edge from the boards' ends, with the joint between the boards closed (0.5 mm or less along its whole length) and at least 60 N between the jaws. 1.0: clamped, the boards' near ends within 3 mm of each other and their tops level within 1 mm, both robot hands more than 5 mm from the clamp and the boards, and all still (under 2 mm) for 1 s. 0.5: let go and still for 1 s with both pads on the outer edges and the joint closed, but short of 1.0 (for example under 60 N, or the ends or tops misaligned). 0.25: let go and still for 1 s with the clamp round both boards near their ends (between its jaws, pads on at least 15 mm of the edges). 0 otherwise, and 0 for the whole trial if a board or the clamp is ever knocked off the bench or tipped past 30 degrees. Real trial: a 0-200 N thin load cell or force-sensing pad (3 mm or less) between the fixed pad and the board must read 60 N or more after the hands are clear; a 0.5 mm feeler gauge, a straightedge and a ruler check the rest. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "1. Squeeze the clamp's release lever and open the jaws to 140 mm between the pads. 2. Lay the two boards flat on the bench, ends toward the robot, long edges 2 mm apart (a 2 mm spacer, then removed), their middles where the setup says for the lot. 3. Lay the clamp flat on its side, jaws pointing away from the robot, its pads 62 mm short of the boards' near ends, fixed jaw 10 mm left of the pale board, grip and trigger on the robot's left. 4. Check the trigger has sprung fully open.",
+  "fidelity": "Rigid boards and clamp. The clamp is a mechanism: a sprung trigger hinged in the handle drives the bar through a one-way drive plate (3 mm a full squeeze, lever 4.6 to 1 at the trigger's middle), a one-way brake holds the bar, and the fixed pad is a 25 N/mm spring whose compression gives the force; real pads and wood are stiffer. No release lever, no glue. Lots stop a single fixed replay. Boards and clamp: 1/s angular damping, 32 solver iterations (stop creep, add no force).",
+  "scores": "Dream-1 run: 0.0 (mean of lots A and B; both arms hovered and touched nothing); demo: 1.0 in each lot (87 N held after the release)",
+  "media": "M-GBWQ9R"
+}
