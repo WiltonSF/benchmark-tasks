@@ -1,0 +1,21 @@
+{
+  "title": "Take an anti-theft hard tag off a jacket cuff at a counter-mounted magnetic detacher",
+  "category": "Impact on jobs",
+  "keywords": [
+    "retail checkout",
+    "anti-theft hard tag",
+    "magnetic detacher",
+    "spring clutch",
+    "garment handling",
+    "bimanual"
+  ],
+  "instruction": "Take the anti-theft tag off the jacket cuff and leave both on the counter.",
+  "context": "Cashiers and retail salespersons (each over 3 million US workers) take a hard tag off almost every garment they sell. The tag's clutch grips its pin until the tag's lock dome sits in the detacher's magnet; pulled any other way, the pin stays put and the tag comes along with the garment, and once the dome leaves the magnet the clutch grips the pin again.",
+  "setup": "Station table. Positions in cm: x forward from the line between the arm bases, y to the robot's left of their midpoint; heights above the counter. Counter top: a light beige laminate board 2.5 thick, fixed on the table, x 16 to 40, y -26 to 14. Detacher: a counter-mounted magnetic detacher set flush in the counter, centred at (27, 3.5): a round dark grey top 7.4 across with a bright rim, and in its middle a round well 2.8 across and 0.7 deep. Hard tag: a grey ABS rectangular hard tag, 7.4 long, 4.2 wide, 2.0 thick, 30 g, with a darker round lock dome 2.0 across and 0.6 proud on its underside, centred 1.4 from one end (the pin end). Its pin: steel, a 1.5 across domed head and a 3 mm grooved shaft 1.9 long; pushed home, the shaft passes through the cuff's hem and 1.6 into the tag over the dome. Jacket cuff: navy quilted nylon, flattened, 8.0 across, 2.3 thick and 6.0 deep (80 g), with a single-layer hem 0.3 thick and 2.4 deep along its edge (8 g); the pin goes through the hem 0.8 in from its edge, and the hem bends freely at the pin. Layout: the tag lies dome-down on the counter, long side along y, free end toward the detacher, the pin at (27, -8.5); it rests on its dome's rim and its free end, leaning 6.8 degrees. The hem lies on the tag's top and the cuff on the counter behind it, from y -10.7 to -16.7, centred on x 27. Nothing else is on the counter; the arms start at their ready pose.",
+  "scoring": "Judged from the video and a final photo with a ruler. Pin travel counts only while the tag's dome sits in the detacher's well (dome centre within 4.5 mm of the well's axis, its bottom within 2.5 mm of the well floor, the tag within 8 degrees of level); pin pushed back in counts against it at any time. 0.25 if the pin has been drawn 5 mm or more that way. 0.5 if the pin is out of the tag (its tip at least 0.5 mm above the tag's top face, or more than 3 mm off the pin hole's axis) and all 16 mm (to within 0.5 mm) were drawn with the dome in the well. 0.75 if, as well, the cuff has been let go (no hand within 5 mm of it, hem or pin) and the pin's tip is 10 mm or more from the tag's pin hole. 1.0 if, as well, no hand is within 5 mm of the tag, and neither the tag nor the cuff has moved more than 2 mm for 1 s. 0 for the whole trial if the tag or the cuff ever falls off the counter. Doing nothing scores 0.",
+  "run_limit": "900 steps (45 seconds at 20 Hz)",
+  "reset_notes": "1. Take the cuff and pin off the counter and push the pin back through the hem's hole. 2. Lay the tag dome-down on its taped outline on the counter, pin end at the mark (27, -8.5), free end toward the detacher. 3. Lay the hem over the tag's top and push the pin through the hem into the tag's pin hole until the clutch clicks and the head sits on the hem; check that pulling the cuff up lifts the tag with it. 4. Lay the cuff flat on the counter behind the tag, square to it. 5. Check the detacher's well is empty.",
+  "fidelity": "Rigid bodies, 240 Hz physics. The clutch is a spring-loaded steel plate in the tag whose slot sits in the pin's groove; the magnet is a rule that draws the plate back only while the dome sits in the well, and its spring returns it when the dome leaves. The cuff is a stiff quilted piece; its hem is a separate piece that bends at the pin (a hinge). The counter is a board on the table so the detacher can sit flush.",
+  "scores": "Dream-1 run: 0.0 (mean of 2 trials, both hit the step limit); demo: 1.0 (2 trials, 1.0 each)",
+  "media": "M-B9WTYK"
+}
