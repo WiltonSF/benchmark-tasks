@@ -1,5 +1,7 @@
 # Skim the fat off stock
 
+Skimming floating fat from soup or stock is a familiar household cooking task. The goal is to remove the greasy surface layer while keeping the broth for the meal. Taking too much broth wastes food, and spilling oil makes a mess. The category is Societal relatability; the relevance is everyday home cooking.
+
 A room-temperature water/oil analogue tests selective floating-layer removal with a real-size ladle. No heat or raw food is involved. This is a rigid simulation with material proxies; no measured robot or physical calibration result is claimed.
 
 ## Run
@@ -19,6 +21,12 @@ Use the dimensions, materials and exact positions in task.json. The reference on
 For a room-temperature bench version use650mL water with food-safe brown colouring and160mL yellow vegetable oil. Let them separate before the trial. The protected physical bench, runoff lip and secured robot covers are specified in task.json. The mat and lip collect runoff; nothing is returned during grading. These safety accessories are omitted from simulation, and table-relative heights are measured from the protected working surface. Measure the phases in each vessel after the trial by letting them settle and transferring them to graduated cylinders with1mL divisions. Measure small runoff with a graduated2mL syringe. Liquid still inside the ladle is retained; liquid on its exterior or the rest counts as spill. The proxy assumes a3mm stream radius, conservatively shrinking each receiving aperture by3mm. If measurement uncertainty could change a threshold decision, give no full credit. The waste must contain at least112mL oil and at most one-quarter as much water as oil; spill at most2mL. These are benchmark design thresholds, not culinary standards.
 
 Mark both vessels' starting outlines and use overhead/side video plus a ruler/inclinometer to check their5mm/2.56degree whole-trial limits. Use side/overhead views to confirm the ladle bears on both rest supports, the cup stands on the table, all hands are more than5mm away, and everything is still for2s. A pose with the same bottom height but no supporting contact fails. Simulation requires an upward SDK contact signal of at least 0.75 total, with at least 0.02 on a handle bridge and the bowl pad, and rejects support from other arm links. These are raw SDK signal thresholds, not calibrated newtons. A diagnostic found about 4.91 reported units under the measured 100 g simulated ladle; its absolute force scale is unverified. No division or invented conversion is applied. Actual collider-specific contacts, rest geometry, stillness and full arm clearance jointly certify support; zero or unknown data gives no credit. For an instrumented physical bench, support the bridge and bowl pad on independent force sensors, compensating thickness to preserve the published heights. Require positive load above measurement uncertainty on both supports, and total upward load consistent with the wet utensil's independently measured weight. Unknown support fails. This describes a physical verification protocol; no physical sensor result is claimed. The same safe completion gate applies to partial credit. task.json lists the exact simulator thresholds and tiers.
+
+## Physical reset and pad protection
+
+Before a physical trial, protect the gripper pads with securely fitted, oil-resistant impervious covers wherever oil can reach them through the wet ladle or its rest. Keep covers clear of joints and verify grip before the trial. Non-contact robot covers and the runoff mat do not protect exposed pads from transfer through a wet utensil.
+
+Between trials, clean and dry the vessels, the entire ladle including its grip, and the rest. Inspect the pads and covers for transferred oil or damage; clean affected surfaces and replace contaminated or damaged covers before reuse. Then follow the numbered reset steps in task.json to measure the phases and restore the published layout. These are physical precautions, not simulated features or a claim that covered-pad grip has been validated on hardware.
 
 ## Material proxy and checks
 
