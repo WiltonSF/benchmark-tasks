@@ -1,0 +1,23 @@
+{
+  "title": "Take the battery pack off a cordless drill and put it in the tray",
+  "category": "Societal relatability",
+  "keywords": [
+    "household",
+    "cordless drill",
+    "battery pack",
+    "charging",
+    "two-button release",
+    "rail slide",
+    "bimanual",
+    "true scale"
+  ],
+  "instruction": "Take the battery pack off the drill and put it in the blue tray. Leave the drill standing on the bench.",
+  "context": "Taking the pack off a cordless drill is a routine home chore: the charger takes the pack, not the drill, and the same pack moves between a household's tools of one brand. The pack is latched until both side buttons are held in at once, then slides off along rails against their friction, so one hand must keep the drill from following while the other squeezes and draws the pack out. Unlike a two-latch lid or a buckle, the latch is under a 1.1 kg tool that must be left standing.",
+  "setup": "Left and right are the robot's. Positions in metres from the midpoint between the arm bases: x forward, y to the robot's left; heights above the bench. Drill: an 18 V compact drill/driver (Milwaukee M18 2801-20 size: 165 mm long, 1.13 kg without its pack), red housing, black rubber grip, steel chuck, standing upright on its pack. Pack: an 18 V compact pack (M18 CP2.0 size: 118 x 79 x 55 mm, 430 g), black with a red top, flat on the bench under the drill with its middle at (0.28, -0.06); it rides in two rails under the drill's foot and slides off toward the chuck, which points to the robot's left (+y). It is latched until both release buttons are in at once: one red 18 x 12 mm button on each side face, 41 mm from the pack's middle toward the chuck, 4 mm proud, 4 mm travel, 6 N at rest and 12 N flush; the latch frees once both are 1.5 mm in. The rails hold the pack for its first 70 mm of travel. Tray: blue plastic, 200 x 150 mm inside (200 along x), 45 mm walls, 0.3 kg, loose, centred at (0.26, 0.25). Nothing else is on the bench. Lot B mirrors lot A across the bench's centre line: drill and pack at (0.28, 0.06) with the chuck pointing to the robot's right, tray at (0.26, -0.25). Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "The seat is where the pack sits on the drill at the start, measured on the drill wherever it is. 1.0: both buttons were in 1.5 mm or more at the same moment; the pack's middle is 8 cm or more from its seat; the pack lies flat on the tray floor (its four lowest corners within 1.5 mm of it) wholly inside the walls; the tray within 5 degrees of flat; the drill stands upright (within 10 degrees) on its foot on the bench; no part of either gripper within 5 mm of the pack or the drill; all of this unchanged for 1 s. 0.5: both buttons were in together and the pack is off the drill (8 cm or more from its seat) but not placed and let go in the tray as above. 0.25: both buttons were in together and the pack has slid 1 cm or more along the rails, still on the drill. 0 otherwise, and for the whole trial if the drill ever tipped past 45 degrees or the drill or pack fell off the bench. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "1,600 steps (80 seconds at 20 Hz)",
+  "reset_notes": "1. Take the pack out of the tray and the drill off the bench. 2. Stand the pack flat on the bench with its middle at the lot's position, button end toward the side the chuck will point to (lot A: robot's left). 3. Slide the drill's foot onto the pack's rails from the button end until both buttons click out. 4. Put the empty tray at the lot's position, long side along x. 5. Park both arms.",
+  "fidelity": "Rigid bodies, 240 Hz physics, 20 Hz control. Drill and pack are boxes and cylinders at the listed sizes and masses. The latch is geometric: sprung buttons carry catches seated in the drill's sole. Button springs, the 1.5 mm catch release and frictions are estimates. The 1.13 kg drill is above the arm's usual 1 kg: held by its grip it sags about 4 cm and leans up to 10 degrees. Real trials: use a dead pack with taped terminals. Lots stop one fixed habit, not a replay of both layouts.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A and B; both trials ran to the 1,600-step limit); demo: 1.0 (mean of lots A and B, each 1.0, full score held from about 27 s)",
+  "media": "M-DMPW96"
+}
