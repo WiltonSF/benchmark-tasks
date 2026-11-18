@@ -1,0 +1,22 @@
+{
+  "title": "Open a clothes drawer jammed by a T-shirt sleeve caught behind its rail, without tearing the sleeve",
+  "category": "Societal relevance",
+  "keywords": [
+    "drawer",
+    "clothing",
+    "snag",
+    "deformable",
+    "recovery",
+    "household",
+    "bimanual"
+  ],
+  "instruction": "Open the drawer all the way without tearing anything.",
+  "context": "A drawer packed with clothes often sticks part-way open when a sleeve rides up and catches behind the rail above it, something most people deal with at home. Pulling harder tears the garment; the cloth has to be pushed back down through the gap first. Unlike TK-H2VFXU, where a rigid bar outside the drawer is slid away, the obstruction here is soft fabric inside the drawer, reached only through the gap the jammed drawer leaves.",
+  "setup": "Station table; distances in cm forward from the line between the arm bases (x), sideways from their midpoint (y, left +), heights above the table. Low wooden nightstand (oak-colour, 1.8 cm boards), fixed: 42 wide x 32 deep x 25 tall, front face at x 38, centred at y 0. One drawer opening 3 to 19 high; above it a 2 cm deep rail under the top's front edge (rail underside at 19). Drawer: front 37 wide x 15 tall (3.5 to 18.5), box 27.2 deep x 36 wide with sides 12 tall (to 16), on slides that stop at 25 cm open; it starts open 10 cm (front at x 28). Black bar handle 12 x 1.2 x 2 on two stems 9 apart, standing 4.5 off the front, centre at height 12.5, y 0. In the drawer: three folded layers (charcoal, grey, white), 24.8 deep x 33 wide, 2.3 each (to 11.5), and on them a folded mustard-yellow T-shirt, 1.5 thick, from y -2 to 16.5. Its sleeve, 9 wide (y 5.5 to 14.5), leaves the shirt's front edge (x 32.5, height 13), rises to 17 at x 33, runs back at about 18 under the rail to x 41, then rises behind the rail to 21 at x 47. Nothing else on the table.",
+  "scoring": "At the end of the trial: 1.0 if the drawer is open at least 22 cm (front face 22 cm or more in front of the nightstand's front), no part of the sleeve stands within 5 mm of the rail's underside inside the nightstand, the whole sleeve is inside the drawer (between its front, back and sides, no more than 3 cm above its side tops), neither hand is within 5 mm of the drawer, its handle, the clothes or the sleeve, and nothing has moved for 1 s. 0.5 if all of that holds but the drawer is open less than 22 cm. 0 otherwise. The trial scores 0 if at any moment the sleeve is torn (in the simulation: the pull on it while caught behind the rail passes 20 N, judged over the whole trial). Possible scores: 0, 0.5, 1.0.",
+  "run_limit": "800 steps (40 seconds at 20 Hz)",
+  "reset_notes": "1. Push the drawer shut, refold the T-shirt and lay the clothes back as listed. 2. Pull the drawer open 10 cm. 3. Lift the shirt's sleeve from its front edge, lay it forward and back under the rail, and push its end up behind the rail so it stands about 2 cm above the rail's underside. 4. Check that the drawer now catches after about 1.5 cm more of a gentle pull. 5. Replace the shirt if a trial tore it.",
+  "fidelity": "Rigid simulator. The sleeve is five 9 cm wide, 4 mm thick segments of 12 g hinged across the sleeve: it bends in one plane only. Each fold line is springy up to 0.12 rad and then keeps the bend it is pushed into, as cloth does. A stand-in rule replaces the fabric's snag: cloth within 5 mm of the rail's underside catches on it, and a 4,000 N/m spring then holds the drawer; over 20 N counts as torn. The folded clothes are one rigid block. One fixed layout.",
+  "scores": "Dream-1: 0.0 in 1 completed trial (second trial did not run: API access ended); demo: 1.0 (two trials, 1.0 each)",
+  "media": "M-CKVE3S"
+}
