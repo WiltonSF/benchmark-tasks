@@ -15,13 +15,13 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import parts  # noqa: E402  (before lots.py, so its reset hooks run first)
 import lots  # noqa: E402
 import tilt  # noqa: E402
-from yam_arena.demo import FINGER_CLOSED, Waypoint  # noqa: E402
+from yam_arena.demo import FINGER_CLOSED, FINGER_OPEN, Waypoint  # noqa: E402
 from yam_arena.task_file import TABLE_TOP  # noqa: E402
 
 SCENE = "station"
 TOP = TABLE_TOP[SCENE]
 
-OLIVE, DARK, STEEL, EDGE, GOLD, PIN = ((0.30, 0.34, 0.16), (0.10, 0.10, 0.11), (0.42, 0.44, 0.47),
+G10, DARK, STEEL, EDGE, GOLD, PIN = ((0.72, 0.64, 0.48), (0.10, 0.10, 0.11), (0.42, 0.44, 0.47),
                                         (0.88, 0.90, 0.93), (0.85, 0.62, 0.15), (0.70, 0.70, 0.72))
 
 # Knife. Part frame: origin on the table under the blade's pivot, z up; the handle runs along -y from the pivot, the
@@ -51,8 +51,8 @@ def _box(lo, hi, color):
 
 
 HANDLE_SHAPES = [
-    _box((-HANDLE_W / 2, HANDLE_Y0, 0.0), (HANDLE_W / 2, HANDLE_Y1, SCALE_T), OLIVE),  # lower scale
-    _box((-HANDLE_W / 2, HANDLE_Y0, HANDLE_T - SCALE_T), (HANDLE_W / 2, HANDLE_Y1, HANDLE_T), OLIVE),  # button scale
+    _box((-HANDLE_W / 2, HANDLE_Y0, 0.0), (HANDLE_W / 2, HANDLE_Y1, SCALE_T), G10),  # lower scale
+    _box((-HANDLE_W / 2, HANDLE_Y0, HANDLE_T - SCALE_T), (HANDLE_W / 2, HANDLE_Y1, HANDLE_T), G10),  # button scale
     _box((-HANDLE_W / 2, HANDLE_Y0, SCALE_T), (-HANDLE_W / 2 + 0.003, -0.020, HANDLE_T - SCALE_T), DARK),  # spacer
     parts.cylinder(0.005, 0.0012, at=(0.0, 0.0, HANDLE_T - 0.0004), color=PIN, axis="z"),  # pivot screw head
 ]
@@ -72,25 +72,25 @@ BLADE = parts.Hinge("blade", shapes=BLADE_SHAPES, pivot=(0.0, 0.0, BLADE_ZC), ax
 BUTTON = parts.Slider("button", shapes=BUTTON_SHAPES, axis=(0.0, 0.0, -1.0), travel=BUTTON_TRAVEL, mass=BUTTON_MASS,
                       spring=BUTTON_K, damping=0.5)
 
-KNIFE_XY = (0.30, 0.0)  # the pivot, both lots
+KNIFE_XY = (0.30, 0.0)  # the pivot, lot A
 KNIFE_YAW = 0.0  # lot A: handle to the robot's right, blade to its left, edge facing away
-LOT_B_XY = KNIFE_XY
-LOT_C_XY = (0.31, 0.0)
+LOT_B_XY, LOT_B_TURN = (0.28, 0.04), math.radians(40.0)  # lot B: turned 40 degrees anticlockwise seen from above
+LOT_C_XY, LOT_C_TURN = (0.33, 0.03), math.radians(-60.0)  # lot C: turned 60 degrees clockwise
 
 
 KNIFE = parts.Part("knife", pos=(*KNIFE_XY, TOP), yaw=KNIFE_YAW, mass=HANDLE_MASS, shapes=HANDLE_SHAPES,
                    joints=[BLADE, BUTTON])
 OBJECTS = [KNIFE]
 
-# Lot A (the screenshot): handle on the robot's right, blade to its left, edge facing away. Lot B: the knife turned
-# half round about its pivot: handle on the left, blade to the right, edge facing the robot. Lot C: turned a quarter
-# turn from lot A, pivot 10 mm farther out: handle away from the robot, blade pointing at it, edge facing the robot's
-# left. (The button is on one scale only and lies up, so the blade's direction and the edge's side change together.)
+# Lot A (the screenshot): handle on the robot's right, blade to its left, edge facing away. Lot B: lot A's knife turned
+# 40 degrees anticlockwise seen from above, pivot at x 280, y 40 mm. Lot C: turned 60 degrees clockwise, pivot at
+# x 330, y 30 mm. (The button is on one scale only and lies up, so the blade's direction and the edge's side turn
+# together.)
 LOTS = lots.declare(
     OBJECTS,
     lots.Lot("A", place={"knife": (*KNIFE_XY, TOP)}),
-    lots.Lot("B", place={"knife": (*LOT_B_XY, TOP)}, yaw={"knife": KNIFE_YAW + math.pi}),
-    lots.Lot("C", place={"knife": (*LOT_C_XY, TOP)}, yaw={"knife": KNIFE_YAW + math.pi / 2}),
+    lots.Lot("B", place={"knife": (*LOT_B_XY, TOP)}, yaw={"knife": KNIFE_YAW + LOT_B_TURN}),
+    lots.Lot("C", place={"knife": (*LOT_C_XY, TOP)}, yaw={"knife": KNIFE_YAW + LOT_C_TURN}),
 )
 
 EPS = 1e-6
@@ -107,6 +107,8 @@ STRIKE_STEP = math.radians(1.0)  # ...it covered since the last control step, sa
 MOVING = math.radians(0.075)  # the blade is closing: more than 0.075 degrees in one control step (1.5 degrees/s)
 FACE_STEP = 0.003  # gripper hull faces sampled about every 3 mm
 HOLD_S = 1.0
+OPEN_TOL = math.radians(2.0)  # the blade counts as off its open stop beyond 2 degrees (the lock allows 1)
+TABLE_GAP = 0.002  # "on the table": any part of the knife within 2 mm of the table top
 _HAND_LINKS = ("gripper", "tip_left", "tip_right")
 
 
@@ -166,7 +168,7 @@ def _mechanism(sim, k) -> None:
 # checker loads it once and near_misses.py imports it again) reads and writes the same record.
 _rec = parts.__dict__.setdefault("fold_knife_record", {})
 if not _rec:  # a second import keeps the record a running trial has written
-    _rec.update(cut=False, q_prev=None, gap=None, t=None, since=None, held=False)
+    _rec.update(cut=False, table=False, q_prev=None, gap=None, t=None, since=None, held=False)
 
 
 def _grid(lo, hi, step):
@@ -375,7 +377,7 @@ def _hands(sim):
 @parts.on_reset
 def _new_trial(sim) -> None:
     _mech.update(locked=True, limits=None, target=None, seated=False)
-    _rec.update(cut=False, q_prev=None, gap=None, t=None, since=None, held=False)
+    _rec.update(cut=False, table=False, q_prev=None, gap=None, t=None, since=None, held=False)
     _write_limits(sim, LOCK_AT)
     sim.set_target("knife", "button", -BUTTON_PRELOAD)
     sim.set_target("knife", "blade", 0.0)
@@ -417,6 +419,15 @@ def _apply_and_seat(emb) -> bool:
 lots._apply = _apply_and_seat
 
 
+def folded_on_table(k) -> bool:
+    """Is the knife on the table (any part within 2 mm of it) while it is not shut and either its button is held in
+    (1.2 mm or more) or its blade is off its open stop (more than 2 degrees)? The lock must be released and the blade
+    folded in the air."""
+    q, b = float(k.joints["blade"]), float(k.joints["button"])
+    unlocking = b >= PRESSED - EPS or q > OPEN_TOL + EPS
+    return bool(unlocking and q < SHUT - EPS and float(k.low[2]) <= TOP + TABLE_GAP + EPS)
+
+
 def _hold(k, t) -> None:
     """Count the 1 s hold: the knife shut, flat, still and let go at this control step, continuously since `since`."""
     ok = _rec["gap"] is not None and _rec["gap"] > CLEAR + EPS and _shut_and_down({"knife": k})
@@ -437,6 +448,8 @@ def _step(sim) -> None:
             _seat_base(sim.env.unwrapped)
     k = sim.states()["knife"]
     _mechanism(sim, k)
+    if folded_on_table(k):
+        _rec["table"] = True
     hulls = _hands(sim)
     _rec["t"] = float(sim.t)
     if hulls is None:  # the arms could not be read: the edge could not be checked, so the trial counts as unsafe
@@ -461,7 +474,7 @@ def score(objects):
     no gripper ever touched the edge or was in the blade's path while it turned; otherwise 0. The hold and the
     grippers' distance are measured every control step; with no measurement the score is 0."""
     released = _rec["gap"] is not None and _rec["gap"] > CLEAR + EPS
-    ok = _rec["held"] and released and not _rec["cut"] and _shut_and_down(objects)
+    ok = _rec["held"] and released and not _rec["cut"] and not _rec["table"] and _shut_and_down(objects)
     return 1.0 if ok else 0.0
 
 
@@ -475,161 +488,202 @@ def distance(objects):
 
 
 # -- demo --------------------------------------------------------------------------------------------------------------
-TIP = 0.013  # finger tips below the TCP
-PAD_HALF = 0.010  # closed fingers: 10 mm either side of the TCP across their 40 mm side
-PRESS_OVER = 0.040  # the arm is soft (about 190 N/m): commanded 30 mm under the pressed button top for about 4-5 N
-PUSH_U_LATE = 0.060
-RELEASE_DEG = 25  # the pressing arm lets go once the blade is commanded this far round
-PUSH_U = 0.074  # the pushing fingers' middle, along the blade from the pivot
-PUSH_TIPS = 0.003  # finger tips 3 mm above the table, so the fingers' sides meet the blade's spine
-ABOVE = 0.025
-
-
-def _pivot(lot):
-    """The knife's pivot as the trial's cameras show it."""
-    p = lot.pos("knife")
-    return float(p[0]), float(p[1])
+# The right arm (the holder) picks the knife up by the end of its handle, pinching the handle's whole height across its
+# width (safe while the blade is locked open), and tips it in the air, spine side and blade end up. The left arm (the
+# closer) then pinches the handle across its thickness at the button, as a thumb and finger would: one pad on each
+# scale, which pushes the button in. The blade's own weight turns it off its stop, edge first, about 135 degrees, away
+# from both grippers. The holder lets go and moves away; the closer turns the knife upright, blade end up, so the blade
+# falls into the handle and the detent holds it shut; then it lowers the shut knife and lets it tip over onto the table.
+TIP = 0.013  # finger tips below (past) the TCP
+GRIP_Y, GRIP_Z = -0.082, 0.015  # holder: pads centred 82 mm behind the pivot (flush with the butt), tips 2 mm up
+F_HOLD = -0.005  # holder's finger target: 10 mm inside the handle's 30 mm sides (the drive's 50 N limit)
+F_PINCH = 0.0  # closer's finger target: fully closed on the 13 mm handle
+AIR = (0.25, 0.0, 0.16)  # the holder's TCP in the air (x, y, height above the table)
+BLADE_AIR = 90.0  # degrees: where the open blade points in the air (world heading)
+TIP_UP = 55.0  # degrees the holder tips the knife, spine side and blade end up equally
+PHI = 50.0  # degrees: the closer's approach in the knife's plane, from the spine side turned toward the butt
+UPRIGHT = (120.0, 0.0)  # degrees: knife upright, its spine side's heading; and the tilt of its blade end from vertical
+DROP = (120.0, 40.0)  # degrees: as it is let go: spine heading, and the blade end's tilt from vertical
+DROP_GAP = 0.006  # the shut knife's lowest corner is let go this far above the table
+YAW_RANGE = {"left": (math.radians(-145.0), math.radians(55.0)), "right": (math.radians(-55.0), math.radians(145.0))}
+_DOWN = None
 
 
 def _world(lot, xy):
-    """A point in the knife's frame (m) to world x, y, from the knife's pose as the trial's cameras show it."""
-    px, py = _pivot(lot)
+    """A point in the knife's frame (m) to world x, y, at the knife's start pose in the lot."""
+    px, py, _ = lot.pos("knife")
     a = lot.yaw_of("knife")
     c, s = math.cos(a), math.sin(a)
     return (px + c * xy[0] - s * xy[1], py + s * xy[0] + c * xy[1])
 
 
-YAW_RANGE = {"left": (math.radians(-145.0), math.radians(55.0)), "right": (math.radians(-55.0), math.radians(145.0))}
-
-
 def _heading(lot, q) -> float:
-    """World heading of the blade at angle q."""
+    """World heading of the blade at angle q, at the knife's start pose in the lot."""
     return math.atan2(math.cos(q), math.sin(q)) + lot.yaw_of("knife")
 
 
-def _yaw_for(arm, h, prev=None) -> float:
-    """A wrist yaw for fingers lying along heading h (the fingers are symmetric, so h + k*180 degrees), inside the
-    arm's wrist range, nearest the previous yaw."""
+def _rz(a) -> np.ndarray:
+    c, s = math.cos(a), math.sin(a)
+    return np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]])
+
+
+def _aa(axis, ang) -> np.ndarray:
+    axis = np.asarray(axis, float) / np.linalg.norm(axis)
+    k = np.array([[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]])
+    return np.eye(3) + math.sin(ang) * k + (1 - math.cos(ang)) * k @ k
+
+
+def _lean_of(rot, arm):
+    """(yaw, tilt degrees, heading) of a tilt.Waypoint whose TCP rotation is rot, or of the same grip with the fingers
+    swapped (turned 180 degrees about the approach), whichever yaw is inside the arm's wrist range."""
+    global _DOWN
+    if _DOWN is None:
+        _DOWN = tilt.rotation(0.0)
     lo, hi = YAW_RANGE[arm]
-    cands = [h + k * math.pi for k in range(-3, 4) if lo <= h + k * math.pi <= hi]
-    ref = (lo + hi) / 2 if prev is None else prev
-    return min(cands, key=lambda y: abs(y - ref))
+    best = None
+    for r in (rot, rot @ np.diag([-1.0, -1.0, 1.0])):
+        a = r[:, 2]
+        t = math.degrees(math.acos(float(np.clip(-a[2], -1.0, 1.0))))
+        h = math.atan2(a[1], a[0]) if t > 1e-6 else 0.0
+        m = tilt.rotation(0.0, t, h) @ _DOWN.T  # the lean alone
+        rz = m.T @ r @ _DOWN.T
+        yaw = math.atan2(rz[1, 0], rz[0, 0])
+        for y in (yaw - 2 * math.pi, yaw, yaw + 2 * math.pi):
+            if lo <= y <= hi and (best is None or abs(y - (lo + hi) / 2) < abs(best[0] - (lo + hi) / 2)):
+                best = (y, t, h)
+    if best is None:
+        raise ValueError("no yaw in the wrist's range for this grip")
+    return best
 
 
-def _pusher(lot, q_deg, push=0.003):
-    """TCP pushing the blade's spine at angle q_deg (its flat side along the spine, PUSH_U from the pivot), and the
-    blade's heading."""
-    q = math.radians(q_deg)
-    s, c = math.sin(q), math.cos(q)
-    v = SPINE_V - PAD_HALF + push
-    u = PUSH_U if q_deg < 130.0 else PUSH_U_LATE  # nearer the pivot for the last part, within the arms' reach
-    x, y = _world(lot, (u * s + v * c, u * c - v * s))
-    return (x, y, TOP + PUSH_TIPS + TIP), _heading(lot, q)
+def _wp(d, pos, finger, label, arm, rot):
+    yaw, t, h = _lean_of(rot, arm)
+    return tilt.Waypoint(d, tuple(float(v) for v in pos), finger, label, yaw, tilt=t, heading=h)
+
+
+def _knife_rot(spine_deg, blade_tilt_deg) -> np.ndarray:
+    """A knife orientation with its spine side (-x) horizontal at the given heading and its blade end (+y) the
+    given angle from straight up."""
+    sp = np.array([math.cos(math.radians(spine_deg)), math.sin(math.radians(spine_deg)), 0.0])
+    kx = -sp
+    t = math.radians(blade_tilt_deg)
+    up = np.array([0.0, 0.0, 1.0])
+    side = np.cross(up, kx)  # horizontal, perpendicular to the spine
+    ky = math.cos(t) * up + math.sin(t) * side
+    return np.c_[kx, ky, np.cross(kx, ky)]
+
+
+def _closer_grip():
+    """The closer's TCP rotation and position in the knife's frame: closing across the handle's thickness, pads
+    centred on the button, approaching in the knife's plane from the spine side turned PHI toward the butt."""
+    f = math.radians(PHI)
+    ua = np.array([math.cos(f), -math.sin(f), 0.0])  # the approach, toward the finger tips
+    xg = np.array([0.0, 0.0, 1.0])  # the closing axis: across the thickness
+    rot = np.c_[xg, np.cross(ua, xg), ua]
+    pos = np.array([*BUTTON_XY, HANDLE_T / 2]) - 0.005 * ua  # pads' middle about 8 mm from their tips, on the button
+    return rot, pos
+
+
+def _plan_geometry(lot):
+    """The holder's grasp from the knife's start pose as the cameras show it, and the knife's pose in the air."""
+    px, py, _ = lot.pos("knife")
+    a0 = lot.yaw_of("knife")
+    yaw0 = _in_range("right", a0 - math.pi / 2)
+    k0 = (np.array([px, py, TOP]), _rz(a0))
+    t0 = (k0[0] + k0[1] @ np.array([0.0, GRIP_Y, GRIP_Z]), tilt.rotation(float(yaw0)))
+    grasp = (t0[1].T @ k0[1], t0[1].T @ (k0[0] - t0[0]))  # the knife in the holder's TCP frame
+    return yaw0, t0, grasp
+
+
+def _in_range(arm, yaw) -> float:
+    """yaw + k*180 degrees inside the arm's wrist range, nearest the range's middle (the fingers are symmetric)."""
+    lo, hi = YAW_RANGE[arm]
+    cands = [yaw + k * math.pi for k in range(-3, 4) if lo <= yaw + k * math.pi <= hi]
+    return min(cands, key=lambda y: abs(y - (lo + hi) / 2))
+
+
+def _knife_at(tcp, rot, grasp):
+    """The knife's pose (origin, rotation) when the holder's TCP is at tcp with rotation rot."""
+    g_rot, g_pos = grasp
+    return np.asarray(tcp, float) + rot @ g_pos, rot @ g_rot
+
+
+def _air_knife():
+    """The knife's rotation in the air while the closer takes it: blade pointing BLADE_AIR, tipped TIP_UP degrees,
+    spine side and blade end up equally."""
+    r0 = _rz(math.radians(BLADE_AIR) - math.pi / 2)
+    up_dir = r0 @ np.array([-1.0, 1.0, 0.0]) / math.sqrt(2.0)  # spine side and blade end
+    return _aa(np.cross(up_dir, [0.0, 0.0, 1.0]), math.radians(TIP_UP)) @ r0
 
 
 def demo():
-    """One arm presses the lock button on the handle's upper scale and holds it in; the other pushes the blade round
-    by its spine until the detent takes it shut, lifting off once to turn its wrist; both arms then lift clear. The
-    arms are chosen from the side the blade's spine faces, as the cameras show."""
+    """The right arm picks the knife up by its handle's end and tips it; the left arm pinches the handle across its
+    thickness at the lock button, which frees the blade; the right arm lets go; the left arm turns the knife upright
+    so the blade falls shut, then lowers it and lets it tip over onto the table."""
     lot = lots.current()
-    px, py = _pivot(lot)
-    sx, sy = _world(lot, (SPINE_V, 0.05))  # a point on the blade's spine side
-    push_arm = "left" if sy > py else "right"  # the arm on the spine's side pushes
-    press_arm = "right" if push_arm == "left" else "left"
-    sign = 1.0 if press_arm == "left" else -1.0
-    hx, hy = _world(lot, (0.0, -0.05))
-    handle_yaw = _yaw_for(press_arm, math.atan2(hy - py, hx - px))  # the fingers' 40 mm side along the handle
-    bx, by = _world(lot, BUTTON_XY)  # the finger tips' 16 x 8 mm ends centred on the 8 mm button
-    touch = TOP + BUTTON_TOP + TIP
-    press = TOP + HANDLE_T + TIP - PRESS_OVER
-    p_first, _ = _pusher(lot, 0.0)
-    late_press = bx < p_first[0]  # the arm working farther out goes down first
-    far_first = {press_arm: 3.0 if late_press else 0.5, push_arm: 0.5 if late_press else 3.0}
-    aside = {arm: (0.20, (0.18 if arm == "left" else -0.18), TOP + 0.15) for arm in ("left", "right")}
-    presser = [
-        Waypoint(far_first[press_arm], aside[press_arm], FINGER_CLOSED, "aside", handle_yaw),
-        Waypoint(2.0, (bx, by, touch + ABOVE), FINGER_CLOSED, "over the button", handle_yaw),
-        Waypoint(1.5, (bx, by, touch + 0.005), FINGER_CLOSED, "down to the button", handle_yaw),
-        Waypoint(1.5, (bx, by, press), FINGER_CLOSED, "press the button in", handle_yaw),
+    yaw0, (tcp0, rot0), grasp = _plan_geometry(lot)
+    g_rot, g_pos = grasp
+    ax, ay, az = AIR
+    air = np.array([ax, ay, TOP + az])
+    rk_air = _air_knife()
+    r_hold_air = rk_air @ g_rot.T
+    rk_flat = _rz(math.radians(BLADE_AIR) - math.pi / 2)
+    r_hold_flat = rk_flat @ g_rot.T
+    above = tcp0 + np.array([0.0, 0.0, 0.05])
+    hold = [
+        Waypoint(2.0, tuple(above), FINGER_OPEN, "over the handle's end", yaw0),
+        Waypoint(1.5, tuple(tcp0), FINGER_OPEN, "down beside the handle", yaw0),
+        Waypoint(1.0, tuple(tcp0), F_HOLD, "pinch the handle", yaw0),
+        Waypoint(1.2, (tcp0[0], tcp0[1], TOP + 0.10), F_HOLD, "lift", yaw0),
+        _wp(2.0, air, F_HOLD, "carry and turn the knife", "right", r_hold_flat),
+        _wp(1.5, air, F_HOLD, "tip it, spine side and blade end up", "right", r_hold_air),
     ]
-    t_pressed = sum(w.duration for w in presser)
+    t_tipped = sum(w.duration for w in hold)
 
-    p0, h0 = _pusher(lot, 0.0, push=-0.010)
-    yaw = _yaw_for(push_arm, h0)
-    pusher = [
-        Waypoint(far_first[push_arm], aside[push_arm], FINGER_CLOSED, "aside", yaw),
-        Waypoint(2.0, (p0[0], p0[1], p0[2] + ABOVE), FINGER_CLOSED, "over the spine side", yaw),
-        Waypoint(1.5, p0, FINGER_CLOSED, "down beside the spine", yaw),
+    # The closer's grip, with the knife where the holder has it.
+    k_pos, k_rot = _knife_at(air, r_hold_air, grasp)
+    c_rot_k, c_pos_k = _closer_grip()
+    c_rot = k_rot @ c_rot_k
+    c_tcp = k_pos + k_rot @ c_pos_k
+    ua = c_rot[:, 2]
+    c_back = c_tcp - 0.06 * ua
+    close = [
+        Waypoint(max(0.5, t_tipped - 2.0), (0.22, 0.22, TOP + 0.20), FINGER_OPEN, "aside", 0.0),
+        _wp(2.0, c_back, FINGER_OPEN, "line up beside the handle", "left", c_rot),
+        _wp(1.2, c_tcp, FINGER_OPEN, "slide over the handle at the button", "left", c_rot),
+        _wp(1.0, c_tcp, F_PINCH, "pinch the handle across the button", "left", c_rot),
     ]
-    t = sum(w.duration for w in pusher)
-    pusher.append(Waypoint(max(0.5, t_pressed + 0.5 - t), p0, FINGER_CLOSED, "wait for the button", yaw))
-    t_release = None
-    for deg in (0, 10, 20, 25, 35, 45, 60, 75, 90, 105, 120, 135, 150, 160, 170):
-        p, h = _pusher(lot, float(deg))
-        y = _yaw_for(push_arm, h, yaw)
-        if abs(y - yaw) > math.pi / 2:  # out of wrist range: lift off, turn the wrist, come back down
-            prev = float(deg) - (15.0 if deg <= 150 else 10.0)
-            b, _ = _pusher(lot, prev, push=-0.010)
-            pusher += [
-                Waypoint(0.6, b, FINGER_CLOSED, f"off the spine at {prev:.0f}", yaw),
-                Waypoint(0.8, (b[0], b[1], b[2] + 0.04), FINGER_CLOSED, "up", yaw),
-                Waypoint(1.2, (b[0], b[1], b[2] + 0.04), FINGER_CLOSED, "turn the wrist", _yaw_for(push_arm, h, y)),
-                Waypoint(0.8, b, FINGER_CLOSED, "back down beside the spine", y),
-                Waypoint(0.6, _pusher(lot, prev)[0], FINGER_CLOSED, "on the spine again", y),
-            ]
-        yaw = y
-        pusher.append(Waypoint(0.8 if deg == 0 else 0.6, p, FINGER_CLOSED, f"push the spine to {deg}", yaw))
-        if deg == RELEASE_DEG:
-            t_release = sum(w.duration for w in pusher)
-    presser.append(Waypoint(max(0.5, t_release + 0.3 - t_pressed), (bx, by, press), FINGER_CLOSED, "hold the button",
-                            handle_yaw))
-    out = (bx + 0.08 * (bx - px) / math.hypot(bx - px, by - py), by + sign * 0.03)  # back along the handle, low
-    presser += [
-        Waypoint(0.8, (bx, by, touch + 0.02), FINGER_CLOSED, "off the button", handle_yaw),
-        Waypoint(1.2, (*out, touch + 0.04), FINGER_CLOSED, "out to its own side", handle_yaw),
-        Waypoint(1.5, (0.18, sign * 0.28, TOP + 0.12), FINGER_CLOSED, "park", 0.0),
+    t_pinched = sum(w.duration for w in close)
+    # The holder lets go once the closer has the knife and the blade has fallen part way.
+    hold += [
+        _wp(max(0.5, t_pinched + 2.5 - t_tipped), air, F_HOLD, "hold while the other hand takes it", "right",
+            r_hold_air),
+        _wp(0.8, air, FINGER_OPEN, "let go", "right", r_hold_air),
+        _wp(0.8, air - 0.03 * rk_air[:, 1], FINGER_OPEN, "slide off the handle's end", "right", r_hold_air),
+        Waypoint(1.2, tuple(air - 0.03 * rk_air[:, 1] + np.array([0.0, -0.04, 0.03])), FINGER_OPEN, "stand up, clear",
+                 _lean_of(r_hold_air, "right")[0]),
+        Waypoint(1.5, (0.15, -0.25, TOP + 0.15), FINGER_OPEN, "park", 0.0),
     ]
-    t_clear = sum(w.duration for w in presser)
-    i = next(i for i, w in enumerate(pusher) if w.label == f"push the spine to {RELEASE_DEG}") + 1
-    t_at = sum(w.duration for w in pusher[:i])
-    pusher.insert(i, Waypoint(max(0.3, t_clear - t_at), pusher[i - 1].pos, FINGER_CLOSED,
-                              "wait while the other arm clears", pusher[i - 1].yaw))
-    pe, _ = _pusher(lot, 170.0, push=-0.015)
-    pusher += [
-        Waypoint(0.8, pe, FINGER_CLOSED, "back off the spine", yaw),
-        Waypoint(1.0, (pe[0], pe[1], pe[2] + 0.03), FINGER_CLOSED, "lift clear", yaw),
-        Waypoint(1.0, (0.25, -sign * 0.12, TOP + 0.10), FINGER_CLOSED, "back toward its own side", 0.0),
-        Waypoint(1.5, (0.15, -sign * 0.25, TOP + 0.15), FINGER_CLOSED, "park", 0.0),
-        Waypoint(3.0, (0.15, -sign * 0.25, TOP + 0.15), FINGER_CLOSED, "wait", 0.0),
+    t_free = sum(w.duration for w in hold)
+
+    # Upright, blade end up: the blade falls the rest of the way shut. The knife turns about the closer's TCP.
+    c_rot_up = _knife_rot(*UPRIGHT) @ c_rot_k
+    c_rot_drop = _knife_rot(*DROP) @ c_rot_k
+    rk_drop = _knife_rot(*DROP)
+    lowest = float(KNIFE.state(joints={"blade": CLOSED}, pos=(0.0, 0.0, 0.0),
+                               quat_xyzw=tuple(parts._matrix_to_quat(rk_drop))).low[2])
+    knife_from_tcp = -(rk_drop @ c_pos_k)  # the knife's origin relative to the closer's TCP
+    drop_tcp = np.array([0.30, 0.10, 0.0])
+    drop_tcp[2] = TOP + DROP_GAP - (knife_from_tcp[2] + lowest)
+    close += [
+        _wp(max(0.5, t_free - t_pinched), c_tcp, F_PINCH, "hold the knife", "left", c_rot),
+        _wp(2.0, c_tcp + np.array([0.0, 0.0, 0.02]), F_PINCH, "turn it upright, blade end up", "left", c_rot_up),
+        _wp(2.0, c_tcp + np.array([0.0, 0.0, 0.02]), F_PINCH, "let the blade fall shut", "left", c_rot_up),
+        _wp(2.0, (drop_tcp[0], drop_tcp[1], drop_tcp[2] + 0.04), F_PINCH, "over the table", "left", c_rot_drop),
+        _wp(1.2, drop_tcp, F_PINCH, "lower", "left", c_rot_drop),
+        _wp(0.8, drop_tcp, FINGER_OPEN, "let go", "left", c_rot_drop),
+        _wp(1.0, drop_tcp - 0.05 * c_rot_drop[:, 2], FINGER_OPEN, "back off", "left", c_rot_drop),
+        Waypoint(1.5, (0.18, 0.28, TOP + 0.15), FINGER_OPEN, "park", 0.0),
+        Waypoint(3.0, (0.18, 0.28, TOP + 0.15), FINGER_OPEN, "wait", 0.0),
     ]
-    # While the pressing arm is down at the knife, the pushing arm leans its finger tips 30 degrees away from its own
-    # base, which keeps its forearm clear of the other arm's (the tips stay where a straight-down grip puts them).
-    # Once the button is let go it backs off the spine, stands straight and comes back behind the blade.
-    i = next(i for i, w in enumerate(pusher) if w.label == "wait while the other arm clears")
-    back = RELEASE_DEG - 12.0  # open-loop pushes fall short: come back in behind where the blade may be
-    off, _ = _pusher(lot, float(RELEASE_DEG), push=-0.020)
-    b, _ = _pusher(lot, back, push=-0.015)
-    on, _ = _pusher(lot, back)
-    y0 = pusher[i].yaw
-    pusher = [_lean(w, push_arm) for w in pusher[:i + 1]] + [
-        _lean(Waypoint(0.6, off, FINGER_CLOSED, "off the spine to stand up", y0), push_arm),
-        _lean(Waypoint(0.6, (off[0], off[1], off[2] + 0.02), FINGER_CLOSED, "up a little", y0), push_arm),
-        Waypoint(1.0, (b[0], b[1], b[2] + 0.02), FINGER_CLOSED, "straight down again, behind the spine", y0),
-        Waypoint(0.6, b, FINGER_CLOSED, "down beside the spine", y0),
-        Waypoint(0.8, on, FINGER_CLOSED, "back on the spine", y0),
-    ] + pusher[i + 1:]
-    return {press_arm: presser, push_arm: pusher}
-
-
-LEAN = 30.0
-
-
-def _lean(w, arm):
-    """The arm's waypoint with its finger tips leaned LEAN degrees away from its base, the TCP moved so the tips'
-    ends stay where the straight-down waypoint puts them."""
-    x, y, z = w.pos
-    head = tilt.away(arm, (x, y))
-    t = math.radians(LEAN)
-    d = TIP * math.sin(t)
-    pos = (x - d * math.cos(head), y - d * math.sin(head), z - TIP * (1 - math.cos(t)))
-    return tilt.Waypoint(w.duration, pos, w.finger, w.label, yaw=float(w.yaw), tilt=LEAN, heading=head)
+    return {"right": hold, "left": close}

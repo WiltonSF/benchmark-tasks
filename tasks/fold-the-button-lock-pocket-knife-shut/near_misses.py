@@ -13,7 +13,7 @@ import numpy as np
 
 import lots
 import task
-from task import CLOSED, KNIFE, TOP
+from task import CLOSED, KNIFE, PRESSED, TOP
 from yam_arena.analysis import Hull
 
 DEG = math.radians
@@ -46,7 +46,7 @@ def tipped(deg, lift=0.0):
 
 def away():
     """What the step callback records for a still, released end state held 1 s: grippers 50 mm away."""
-    task._rec.update(cut=False, q_prev=None, gap=0.05, t=10.0, since=9.0, held=True)
+    task._rec.update(cut=False, table=False, q_prev=None, gap=0.05, t=10.0, since=9.0, held=True)
 
 
 away()
@@ -116,11 +116,58 @@ def _tilted_cases(bad):
     lots.use(None)
 
 
+def _table_cases(bad):
+    """The lock must be released and the blade folded in the air: the knife on the table (any part within 2 mm of it)
+    while it is not shut and its button is held in or its blade is more than 2 degrees off open zeroes the trial, in
+    every lot."""
+    for lot in ("A", "B", "C"):
+        lots.use(lot)
+        yaw = lots.current().yaw_of("knife")
+        px, py, pz = lots.current().pos("knife")
+        qk = (0.0, 0.0, math.sin(yaw / 2), math.cos(yaw / 2))
+        for label, q_deg, btn, lift, want in [
+            ("folded halfway lying on the table (the old way)", 90.0, 0.0, 0.0, True),
+            ("folded halfway, lowest point exactly 2 mm up", 90.0, 0.0, 0.002, True),
+            ("folded halfway, lowest point 2.1 mm up (in the air)", 90.0, 0.0, 0.0021, False),
+            ("folded halfway, held 80 mm up", 90.0, 0.0, 0.08, False),
+            ("blade nudged 2.5 degrees off open on the table", 2.5, 0.0, 0.0, True),
+            ("blade exactly 2 degrees off open on the table, button out", 2.0, 0.0, 0.0, False),
+            ("blade 1.9 degrees off open on the table, button out (still on its lock)", 1.9, 0.0, 0.0, False),
+            ("button held in 1.2 mm on the table, blade still open", 0.0, PRESSED, 0.0, True),
+            ("button in 1.1 mm on the table (not released)", 0.0, PRESSED - 0.0001, 0.0, False),
+            ("button held in, knife 2.1 mm up", 0.0, PRESSED, 0.0021, False),
+            ("blade 6 degrees short of shut, put down on the table", 174.0, 0.0, 0.0, True),
+            ("blade exactly 5 degrees short of shut on the table", 175.0, 0.0, 0.0, False),
+            ("shut on the table with the button held in", 180.0, PRESSED, 0.0, False),
+        ]:
+            st = KNIFE.state(joints={"blade": DEG(q_deg), "button": btn}, pos=(px, py, pz), quat_xyzw=qk)
+            st = KNIFE.state(joints={"blade": DEG(q_deg), "button": btn}, pos=(px, py, pz + (TOP - st.low[2]) + lift),
+                             quat_xyzw=qk)
+            if task.folded_on_table(st) != want:
+                bad.append(f"lot {lot}: {label}: on-table rule {task.folded_on_table(st)}, expected {want}")
+        # Tilted 30 degrees in the air with one corner 1 mm off the table, half folded: on the table.
+        qt = qmul(qk, quat((0, 1, 0), 30.0))
+        st = KNIFE.state(joints={"blade": DEG(90.0)}, pos=(px, py, pz + 0.05), quat_xyzw=qt)
+        st = KNIFE.state(joints={"blade": DEG(90.0)}, pos=(px, py, pz + 0.05 + (TOP + 0.001 - st.low[2])), quat_xyzw=qt)
+        if not task.folded_on_table(st):
+            bad.append(f"lot {lot}: tilted half-folded knife with a corner 1 mm off the table was not on the table")
+    lots.use(None)
+    # Folded on the table earlier, then shut, let go and still for 1 s: 0.
+    shut = knife()["knife"]
+    task._rec.update(cut=False, table=True, gap=0.05, since=None, held=False)
+    for t in (0.0, 1.0):
+        task._rec.update(gap=0.05, t=t)
+        task._hold(shut, t)
+    if task.score({"knife": shut}) != 0.0:
+        bad.append("blade folded on the table earlier, then shut and let go: scored")
+    task._rec.update(table=False)
+
+
 def _run():
     bad = []
 
     def fresh():
-        task._rec.update(cut=False, q_prev=None, gap=None, t=None, since=None, held=False)
+        task._rec.update(cut=False, table=False, q_prev=None, gap=None, t=None, since=None, held=False)
 
     def at(lot, q):
         lots.use(lot)
@@ -253,6 +300,7 @@ def _run():
         task._hold(shut, t)
     if task.score({"knife": shut}) != 0.0:
         bad.append("edge touched earlier, then shut and let go: scored")
+    _table_cases(bad)
     _tilted_cases(bad)
     away()
     if bad:
