@@ -26,15 +26,16 @@ def reset():
  global objects,finger_effort
  finger_effort=np.zeros((1,2))
  objects={o.name:o.state(pos=m.lots.current().pos(o.name)) for o in m.OBJECTS}
- m._history=m.native_history.History(expected={n:m.lots.current().pos(n) for n in ('bowl','plate')})
+ m._history=m.native_history.History(expected={n:m.lots.current().pos(n) for n in ('bowl','plate')});m._safety=m.native_history.Safety()
  m._food=m.Food();m._food.deposits=[[np.array((-.020,-.025,.006)),17e-6],[np.array((.020,.025,.006)),17e-6]]
  m._food.source*=1-m._food.served()/m._food.source.sum()
  m._state=dict(known=False,invalid=False,held=0.,t=None,hands=None,corners=None,stamp=None)
  asset.data.body_com_pos_w[0,0]=objects['disher'].pos
  m._state.update(tier=0.,finger_force=None,peak_finger_force=0.)
  sim.t=0.
-def native_tick(contact=None,dt=1/240):
- m._food.ticks+=1;m._history.observe(dt,{n:(objects[n].pos,m.rotation(objects[n])) for n in ('bowl','plate')},np.tile(finger_effort[0],2),np.zeros((4,3)) if contact is None else contact)
+def native_tick(contact=None,dt=1/240,food_clear=True):
+ m._food.ticks+=1;m._history.observe(dt,{n:(objects[n].pos,m.rotation(objects[n])) for n in ('bowl','plate')},food_clear)
+ m._safety.observe(np.tile(finger_effort[0],2),np.zeros((4,3)) if contact is None else contact)
 def tick(n=1):
  for i in range(n):
   sim.t+=.05
@@ -56,8 +57,8 @@ reset();m._food.deposits[0][1]=20e-6;m._food.deposits[1][1]=13.998e-6;m._food.so
 m._food.deposits[1][1]+=.004e-6;m._food.source*=1-.004e-6/m._food.source.sum();tick();row('partial to full restarts hold');assert m._state['held']==0 and m.score(objects)==0
 tick(40);row('full tier after fresh 2s');assert m.score(objects)==1
 reset();finger_effort=np.full((1,2),40.01);tick(45);row('exact force limit');assert m.score(objects)==1
-reset();finger_effort=np.full((1,2),40.02);tick();finger_effort[:]=0;tick(45);row('over force then restored');assert m._state['invalid'] and m.score(objects)==0
-reset();finger_effort=np.full((1,2),np.nan);tick();row('unknown force');assert m._state['invalid'] and m.score(objects)==0
+reset();finger_effort=np.full((1,2),40.02);tick();finger_effort[:]=0;tick(45);row('force alarm is independent of primary score');assert not m._state['invalid'] and m.score(objects)==1 and m._safety.overload
+reset();finger_effort=np.full((1,2),np.nan);tick();tick(45);row('unknown force is independent of primary score');assert not m._state['invalid'] and m.score(objects)==1 and m._safety.error
 reset();sim.t=.05;m.step(sim);row('missing physics substeps');assert m._state['invalid'] and m.score(objects)==0
 print('CPU scorer controls passed; explicit native physics/contact/sensor stubs, no robot evidence.')
 
@@ -71,11 +72,13 @@ for lot in m.LOTS:
  reset();pose=m.parts._matrix_to_quat(m.parts._rot((1,0,0),np.deg2rad(10)));objects['bowl']=replace(objects['bowl'],quat_xyzw=pose);native_tick();assert not m._history.invalid
  pose=m.parts._matrix_to_quat(m.parts._rot((1,0,0),np.deg2rad(10.002)));objects['bowl']=replace(objects['bowl'],quat_xyzw=pose);native_tick();objects['bowl']=m.BOWL.state(pos=m.lots.current().pos('bowl'));tick(45);assert m._history.invalid and m.score(objects)==0
  reset();native_tick(contact=np.array([[0.,0.,40.01]]*4));tick(45);assert m.score(objects)==1
- reset();native_tick(contact=np.array([[0.,0.,40.02]]*4));tick(45);assert m._history.invalid and m.score(objects)==0
- reset();native_tick(contact=np.full((4,3),np.nan));assert m._history.invalid
+ reset();native_tick(contact=np.array([[0.,0.,40.02]]*4));tick(45);assert not m._history.invalid and m.score(objects)==1 and m._safety.overload
+ reset();native_tick(contact=np.full((4,3),np.nan));tick(45);assert not m._history.invalid and m.score(objects)==1 and m._safety.error
  reset();native_tick(dt=.11);assert m._history.invalid
+ reset();native_tick(food_clear=False);tick(45);assert m._history.hand_food_contact and m._history.invalid and m.score(objects)==0
+ reset();native_tick(food_clear=None);tick(45);assert m._history.invalid and m.score(objects)==0
  reset();tick(45);m._history.ticks-=1;assert m.score(objects)==0
- print('Portable native-history boundary/out-and-back/force/NaN/gap/coverage controlsPASS',lot.name)
+ print('Native motion/contact history and independent force/unknown-monitor scoring controls PASS',lot.name)
 print('All runtime/control/contact data in this CPU script are explicit stubs. These results are scorer logic only.')
 
 # Volume/spill boundaries and full-face separation, with the same explicit stubs.

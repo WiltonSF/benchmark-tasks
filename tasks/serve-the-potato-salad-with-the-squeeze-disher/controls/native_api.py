@@ -1,5 +1,7 @@
-"""Independent API/reset/callback contract tests. Native backend is mocked."""
-import pathlib,sys,types,numpy as np,hashlib
+"""Independent reset/callback contracts. Native backend is explicitly mocked.
+These controls do not demonstrate robot motion, a native API call or food calibration.
+"""
+import pathlib,sys,types,numpy as np,hashlib,itertools
 from types import SimpleNamespace as NS
 T=pathlib.Path(__file__).resolve().parents[1];sys.path.insert(0,str(T));import task as m
 h=m.native_history;rt=m.material_runtime
@@ -12,7 +14,7 @@ for name in ('isaaclab','isaaclab.app','isaaclab_physx','omni'):
 settings=types.ModuleType('isaaclab.app.settings_manager');settings.get_settings_manager=lambda:NS(set_bool=lambda *a:None);sys.modules[settings.__name__]=settings
 subscriptions=[];physx=types.ModuleType('omni.physx');physx.get_physx_interface=lambda:NS(subscribe_physics_on_step_events=lambda fn,**kw:subscriptions.append((fn,kw)) or object());sys.modules['omni.physx']=physx;sys.modules['omni'].physx=physx
 robotmodule=types.ModuleType('yam_arena.robot');robotmodule.asset_link_paths=lambda:{'tip_left':'/base_link/gripper/tip_left','tip_right':'/base_link/gripper/tip_right'};sys.modules['yam_arena.robot']=robotmodule
-projected=np.zeros((1,2));contacts=np.zeros((4,3));creation=[];force_failure=False
+projected=np.zeros((1,8));contacts=np.zeros((4,3));creation=[];force_failure=False
 class Contact:
  def get_net_contact_forces(self,dt):
   if force_failure:raise RuntimeError('native force read unavailable')
@@ -34,39 +36,58 @@ class View:
  def get_dof_positions(self):return Raw(self.joints)
  def get_dof_velocities(self):return Raw(self.joints*0)
  def apply_forces_and_torques_at_position(self,*args):pass
+class Drive:
+ def __init__(self):self.caps=np.array([[27.,27.,27.,7.,7.,7.,50.,35.]],np.float32);self.ignore_write=False
  def get_dof_projected_joint_forces(self):return Raw(projected)
+ def get_dof_max_forces(self):return Raw(self.caps)
+ def set_dof_max_forces(self,data,ids):
+  assert ids.numpy().tolist()==[0]
+  if not self.ignore_write:self.caps=data.numpy().copy()
 class Scene(dict):__getattr__=dict.__getitem__
 scene=Scene(env_origins=np.zeros((1,3)),env_prim_paths=['/World/envs/env_0'])
 for spec in m.OBJECTS:scene[spec.name]=NS(root_view=View(spec),body_names=['base']+[j.name for j in spec.joints],joint_names=[j.name for j in spec.joints],permanent_wrench_composer=NS(reset=lambda:None))
-robot=NS(root_view=NS(get_dof_projected_joint_forces=lambda:Raw(projected)),joint_names=['joint7','joint8']);scene['left_robot']=scene['right_robot']=robot
+for name in ('left_robot','right_robot'):scene[name]=NS(root_view=Drive(),joint_names=[f'joint{i}' for i in range(1,9)])
 base=NS(scene=scene,device='cuda:0',sim=NS(get_physics_dt=lambda:1/240));sim=NS(env=NS(unwrapped=base),set_target=lambda *a:None)
+verts=np.array(list(itertools.product((-.003,.003),repeat=3)));hand_center=np.array((3.,3.,3.))
+m.native_hand_hulls=lambda sim:[('test_hand',NS(vertices=verts+hand_center))]
 def pair():rt._physics(1/240);h._physics(1/240)
 def reset():
- global projected,contacts,force_failure
- projected[:]=0;contacts[:]=0;force_failure=False
+ global projected,contacts,force_failure,hand_center
+ projected[:]=0;contacts[:]=0;force_failure=False;hand_center=np.array((3.,3.,3.))
  for spec in m.OBJECTS:scene[spec.name].root_view.poses[0,:3]=spec.pos
+ for name in ('left_robot','right_robot'):scene[name].root_view.caps=np.array([[27.,27.,27.,7.,7.,7.,50.,35.]],np.float32)
  m.lots.use('A');m.reset(sim)
 reset();assert len(subscriptions)==2 and subscriptions[0][1]['pre_step'] is False and subscriptions[1][1]['pre_step'] is True
+for name in ('left_robot','right_robot'):
+ assert scene[name].root_view.caps.tolist()==[[27.,27.,27.,7.,7.,7.,40.,35.]]
+ assert m._safety.drive_caps[name]==[40.,35.]
 for _ in range(5):
- pair()
- if m._history.invalid or m._history.ticks!=m._food.ticks:print('diagnostic',m._history,m._food.error,m._food.ticks)
- assert m._history.ticks==m._food.ticks and not m._history.invalid
+ pair();assert m._history.ticks==m._food.ticks and not m._history.invalid
 assert len(creation)==1 and len(creation[0][0])==4
-contacts[2,2]=40.02;pair();assert m._history.invalid and m._history.peak_contact==40.02 and m._history.peak_event['index']==2
-contacts[:]=0;pair();assert m._history.invalid and m._history.ticks==m._food.ticks
+contacts[2,2]=40.02;pair();assert not m._history.invalid and m._safety.overload and m._safety.peak_contact==40.02 and m._safety.peak_event['index']==2
+contacts[:]=0;pair();assert not m._history.invalid and m._history.ticks==m._food.ticks
 old=m._history;reset();assert m._history is not old and not m._history.invalid and len(subscriptions)==2 and h._contact_view is None
 pair();assert len(creation)==2 and m._history.ticks==m._food.ticks==1
-projected[0,0]=40.02;pair();assert m._history.invalid and m._history.peak_projected==40.02
+projected[0,6]=40.02;pair();assert not m._history.invalid and m._safety.overload
+reset();force_failure=True;pair();assert not m._history.invalid and m._history.ticks==m._food.ticks==1 and 'unavailable' in m._safety.error
+reset();projected[0,6]=np.nan;pair();assert not m._history.invalid and m._safety.error
+reset();scene['left_robot'].root_view.caps[0,6]=50.;pair();assert not m._history.invalid and 'cap changed' in m._safety.error
 reset();scene['bowl'].root_view.poses[0,0]+=.031;pair();assert m._history.invalid
 scene['bowl'].root_view.poses[0,0]-=.031;pair();assert m._history.invalid
-reset();force_failure=True;pair();assert m._history.invalid and m._history.ticks==0 and m._food.ticks==1 and 'unavailable' in m._history.error
-reset();projected[0,0]=np.nan;pair();assert m._history.invalid and m._history.ticks==0
-# Direct dataclass boundary and transient cases on both published starts.
+# Contact for one physics step, then restored before the next control observation.
+reset();objs={n:rt._state(n)[0] for n in ('disher','bowl','plate')};hand_center=m.food_boxes(objs)[0][1].copy();pair();assert m._history.invalid and m._history.hand_food_contact
+hand_center=np.array((3.,3.,3.));pair();assert m._history.invalid and m._history.ticks==m._food.ticks
+# A failed readback is an operational startup failure, not a fabricated passing cap.
+reset();scene['left_robot'].root_view.caps[0,6]=50.;scene['left_robot'].root_view.ignore_write=True
+try:h._configure_drive_caps()
+except ValueError as e:assert 'readback' in str(e)
+else:raise AssertionError('failed safety cap was accepted')
+scene['left_robot'].root_view.ignore_write=False
 for lot in m.LOTS:
  starts={n:np.array(lot.pos(n)) for n in ('bowl','plate')};v={n:(p.copy(),np.eye(3)) for n,p in starts.items()}
- hist=h.History(expected=starts);v['plate']=(starts['plate']+(.030,0,0),np.eye(3));hist.observe(1/240,v,np.full(4,40.01),np.tile((0,0,40.01),(4,1)));assert not hist.invalid
- v['plate']=(starts['plate']+(.030002,0,0),np.eye(3));hist.observe(1/240,v,np.zeros(4),np.zeros((4,3)));assert hist.invalid
+ hist=h.History(expected=starts);v['plate']=(starts['plate']+(.030,0,0),np.eye(3));hist.observe(1/240,v,True);assert not hist.invalid
+ v['plate']=(starts['plate']+(.030002,0,0),np.eye(3));hist.observe(1/240,v,True);assert hist.invalid
  for deg,bad in ((10.,False),(10.001,True)):
-  hist=h.History(expected=starts);v={n:(p.copy(),np.eye(3)) for n,p in starts.items()};v['bowl']=(starts['bowl'],m.parts._rot((1,1,0),np.deg2rad(deg)));hist.observe(1/240,v,np.zeros(4),np.zeros((4,3)));assert hist.invalid==bad
-print('PASS: actual reset path, pre/post registration flags+one reused subscription each, current task refs, all four tip paths, per-step count equality, net/projected transient latching, fresh reset/contact-view recreation, vessel excursion restoration, native read failure/NaN failclosed, bothlot force/displacement/angle boundaries. Backend explicitlymocked; native13stillrequired.')
+  hist=h.History(expected=starts);v={n:(p.copy(),np.eye(3)) for n,p in starts.items()};v['bowl']=(starts['bowl'],m.parts._rot((1,1,0),np.deg2rad(deg)));hist.observe(1/240,v,True);assert hist.invalid==bad
+print('PASS: actual reset/callback contracts under mocked backend, preserved other/lower drive caps, readback failure, separate overload/NaN/unavailable/cap-drift safety alarms, primary vessel and transient convex hand-food latching. No native success claimed.')
 for f in ('task.py','native_history/__init__.py','material_runtime/__init__.py'):print(f,hashlib.sha256((T/f).read_bytes()).hexdigest())

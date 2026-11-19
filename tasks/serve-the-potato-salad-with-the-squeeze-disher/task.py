@@ -127,6 +127,7 @@ class Food:
     deposits:list=field(default_factory=list)
     flying:list=field(default_factory=list)
     spill:float=0.
+    spilled:list=field(default_factory=list)
     wiped:float=0.
     captured:float=0.
     invalid:bool=False
@@ -262,7 +263,7 @@ class Food:
                     if bb[2]<=surface and local_points(bowl,old)[2]>=surface-.002:
                         self.source[j]+=amount;amount=0.;break
                 if position[2]<TOP+.003:
-                    self.spill+=amount;amount=0.;break
+                    self.spill+=amount;self.spilled.append([position.copy(),amount]);amount=0.;break
             if amount:remaining.append([position,velocity,amount])
         self.flying=remaining
         self.last_q=q;self.last_vel=np.asarray(tool.lin_vel).copy()
@@ -279,6 +280,7 @@ class Food:
 
 _food=Food()
 _history=native_history.History()
+_safety=native_history.Safety()
 _state={}
 _supports={}
 _support_signals={}
@@ -292,7 +294,8 @@ def signature(objects):
             *[np.r_[p,q] for _,(p,q) in sorted(objects[name].links.items())]])
     material=tuple(float(x) for x in np.r_[_food.source,_food.cap,_food.spill,
         *[np.r_[p,v] for p,v in _food.deposits],
-        *[np.r_[p,v,a] for p,v,a in _food.flying]])
+        *[np.r_[p,v,a] for p,v,a in _food.flying],
+        *[np.r_[p,v] for p,v in _food.spilled]])
     return geometry+material
 
 def force(sim,name,body,value,torque=(0,0,0),reset=True):
@@ -309,7 +312,10 @@ def force(sim,name,body,value,torque=(0,0,0),reset=True):
         env_ids=env_ids,is_global=True)
 
 def all_boxes(objects):
-    result=[b for spec in OBJECTS for b in release.boxes(spec,objects[spec.name])]
+    return [b for spec in OBJECTS for b in release.boxes(spec,objects[spec.name])]+food_boxes(objects)
+
+def food_boxes(objects):
+    result=[]
     for xy,v in zip(GRID,_food.source):
         if v<=0:continue
         h=float(v/AREA);o=objects['bowl']
@@ -320,6 +326,15 @@ def all_boxes(objects):
     if _food.cap.sum()>0:
         o=objects['disher']
         result.append(('food',points(o,HEAD+(0,0,D/2)),rotation(o),np.array((2*R,2*R,D))))
+    for pos,vel,v in _food.flying:
+        if not np.isfinite(v) or v<=0:raise ValueError('unknown flying food volume')
+        result.append(('food',np.asarray(pos),np.eye(3),np.full(3,max(float(v),1e-15)**(1/3))))
+    for pos,v in _food.spilled:
+        if not np.isfinite(v) or v<=0:raise ValueError('unknown spilled food volume')
+        side=max(float(v),1e-15)**(1/3)
+        result.append(('food',np.array((pos[0],pos[1],TOP+side/2)),np.eye(3),np.full(3,side)))
+    for _,c,r,size in result:
+        if not np.isfinite(np.r_[c,r.ravel(),size]).all() or np.any(size<=0):raise ValueError('unknown native food geometry')
     return result
 
 def plate_cells():
@@ -346,6 +361,21 @@ def progress():
     heaps=portions()
     if not heaps or heaps[0]<14e-6-EPS:return 0.
     return 1. if len(heaps)>=2 and heaps[1]>=14e-6-EPS and _food.served()>=34e-6-EPS else .5
+
+def native_hand_hulls(sim):
+    """Actual post-physics transforms of every convex hand/fingertip collision hull."""
+    from yam_arena import analysis
+    base=sim.env.unwrapped;origin=release.array(base.scene.env_origins)[0];hulls=[]
+    for arm in ('left_robot','right_robot'):
+        robot=base.scene[arm];poses=release.array(robot.root_view.get_link_transforms())[0];frames={}
+        for name in ('gripper','tip_left','tip_right'):
+            p=poses[robot.body_names.index(name)]
+            if p.shape!=(7,) or not np.isfinite(p).all() or abs(np.linalg.norm(p[3:])-1)>1e-4:raise ValueError('unknown native hand pose')
+            mat=np.eye(4);mat[:3,:3]=parts._quat_to_matrix(p[3:]);mat[:3,3]=p[:3]-origin;frames[name]=mat
+        posed=analysis.world_hulls(frames)
+        if any(not any(n==name for n,h in posed) for name in frames):raise ValueError('missing native hand collision hull')
+        hulls.extend(posed)
+    return hulls
 
 def other_links_clear(sim,bs):
     from yam_arena import analysis
@@ -390,7 +420,7 @@ def visual(sim,objects):
     stage=get_current_stage();origin=release.array(sim.env.unwrapped.scene.env_origins)[0]
     if _visuals is None:
         _visuals=[]
-        count=len(GRID)+1+len(GRID)+80
+        count=len(GRID)+1+len(GRID)+160
         for i in range(count):
             cube=UsdGeom.Cube.Define(stage,f'/World/disher_food_proxy/f{i}');cube.CreateSizeAttr(1.)
             cube.CreateDisplayColorAttr([Gf.Vec3f(*FOOD)])
@@ -411,16 +441,18 @@ def visual(sim,objects):
     for _ in range(max(0,len(GRID)-len(cells))):boxes.append(((0,0,TOP-1),(.00001,)*3))
     for pos,vel,v in _food.flying[:80]:
         a=max(.0001,float(v)**(1/3));boxes.append((pos,(a,a,a)))
+    for pos,v in _food.spilled[:80]:
+        a=max(.0001,float(v)**(1/3));boxes.append(((pos[0],pos[1],TOP+a/2),(a,a,a)))
     while len(boxes)<len(_visuals):boxes.append(((0,0,TOP-1),(.00001,)*3))
     for (tr,sc),(pos,size) in zip(_visuals,boxes):
         tr.Set(Gf.Vec3d(*(np.asarray(pos)+origin)));sc.Set(Gf.Vec3f(*map(float,size)))
 
 @parts.on_reset
 def reset(sim):
-    global _food,_history,_state,_supports,_support_signals,_visuals
-    _food=Food();_history=native_history.History(expected={n:lots.current().pos(n) for n in ('bowl','plate')});_supports={};_support_signals={};_visuals=None
+    global _food,_history,_safety,_state,_supports,_support_signals,_visuals
+    _food=Food();_history=native_history.History(expected={n:lots.current().pos(n) for n in ('bowl','plate')});_safety=native_history.Safety();_supports={};_support_signals={};_visuals=None
     _state=dict(known=False,invalid=False,held=0.,t=None,hands=None,corners=None,stamp=None,
-        tier=0.,finger_force=None,peak_finger_force=0.)
+        tier=0.)
     from isaaclab.app.settings_manager import get_settings_manager
     get_settings_manager().set_bool('/physics/disableContactProcessing',False)
     for name in ('disher','bowl','plate'):
@@ -460,15 +492,6 @@ def step(sim):
         if _history.invalid:s['invalid']=True
         s['history_ticks']=_history.ticks
         s['physics_ticks']=_food.ticks
-        measured=[]
-        for arm in ('left_robot','right_robot'):
-            robot=base.scene[arm]
-            efforts=release.array(robot.root_view.get_dof_projected_joint_forces())[0]
-            measured.extend(float(efforts[robot.joint_names.index(j)]) for j in ('joint7','joint8'))
-        if not np.isfinite(measured).all():raise ValueError('unknown finger force')
-        s['finger_force']=measured
-        s['peak_finger_force']=max(s['peak_finger_force'],max(map(abs,measured)))
-        if s['peak_finger_force']>40.01:s['invalid']=True
         bs=all_boxes(objects);clouds,hands=release.hand_geometry(sim)
         corners=np.array([c+np.asarray(sgn)*size/2@r.T for _,c,r,size in bs
             for sgn in itertools.product((-1.,1.),repeat=3)])
@@ -493,7 +516,7 @@ def step(sim):
     path=os.environ.get('TRACE_OUT')
     if path and round(sim.t*20)%5==0:
         row={k:v for k,v in s.items() if k not in ('hands','corners','stamp')}
-        row.update(native_history=dict(ticks=_history.ticks,invalid=_history.invalid,error=_history.error,peak_projected=_history.peak_projected,peak_contact=_history.peak_contact,max_excursion_m=_history.max_excursion,min_vertical=_history.min_vertical,peak_event=_history.peak_event),t=float(sim.t),lot=lots.current().name,source_ml=float(_food.source.sum()*1e6),
+        row.update(native_history=dict(ticks=_history.ticks,invalid=_history.invalid,error=_history.error,hand_food_contact=_history.hand_food_contact,max_excursion_m=_history.max_excursion,min_vertical=_history.min_vertical),safety=dict(ticks=_safety.ticks,error=_safety.error,overload=_safety.overload,peak_projected=_safety.peak_projected,peak_contact=_safety.peak_contact,peak_event=_safety.peak_event,drive_caps=_safety.drive_caps),t=float(sim.t),lot=lots.current().name,source_ml=float(_food.source.sum()*1e6),
             cap_ml=float(_food.cap.sum()*1e6),served_ml=float(_food.served()*1e6),spill_ml=_food.spill*1e6,
             captured_ml=_food.captured*1e6,wiped_ml=_food.wiped*1e6,food_invalid=_food.invalid,
             error=_food.error,contact_force=_food.contact_force,wipe_torque=_food.wipe_torque,
