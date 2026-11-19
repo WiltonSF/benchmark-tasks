@@ -83,7 +83,7 @@ pins moved more than 0.7 mm off their sockets while in them count as bent. The a
 fingertips (measured: closed fingertips pressed on a sprung platen gave 27 N with the arm 52 mm short of its target),
 so the demo commands the press 60 mm past the seated position.
 
-## Scoring (exact definitions)
+## Simulation scoring (exact definitions)
 
 The board's pose is measured in the header's frame: x across the rows, y along them.
 
@@ -97,7 +97,7 @@ The board's pose is measured in the header's frame: x across the rows, y along t
   within 5 mm of the board. This is measured in the simulator every control step. Until it is measured, or if any link
   cannot be read, the board counts as held (fail closed).
 - **Still:** the board's pose within 0.2 mm and 0.2 degrees of the previous step's, for 20 steps in a row (1 s).
-- **Bent (whole trial):** pins at least 0.5 mm into the sockets with the board tilted over 3.4 degrees, or not over
+- **Simulation-only bent proxy (whole trial):** pins at least 0.5 mm into the sockets with the board tilted over 3.4 degrees, or not over
   sockets. Or pins standing on the entry face but not over sockets, pushed with 12 N or more (an estimate: the tips
   on the lead-in chamfers are forced sideways). From then on the trial scores 0. The record is cleared only by a scene
   reset: the board back within 0.5 mm of its start, at rest, after a jump of over 20 mm in one control step.
@@ -127,12 +127,62 @@ seated), eases back to 3 mm past seated, opens and moves away. The left arm stay
 only) runs the same plan with the board carried half a pitch across (`half_pitch_press`), one row across
 (`one_row_over`) or one pin along (`one_pin_along`), or let go above the header (`drop`).
 
-## Real trial
+## Real trial and measurable pin-damage rule
 
-Use a 2 x 20 socket header controller and an add-on board with matching 0.64 mm pins on a carrier plate, with the
-board in an antistatic foam holder. Check seating with a 0.3 mm feeler gauge at the four corners. Check alignment
-with a photo along each row against a 1 mm grid: every pin in a socket, none past the ends, pin 1 marks together.
-Check for bent pins with a 10x loupe and a straight edge after removing the board with a puller.
+Use the true-size boards, carrier and antistatic foam holder specified above. The simulator's 12 N trigger and
+pose-history bending rules are proxies only. Real-trial photographs do not measure force, and the real score does
+not depend on reconstructing a force threshold. Instead, every positive tier requires the following permanent-damage
+inspection. The 0.20 mm limit is an operational inspection criterion, not a measured yield limit for these pins.
+
+1. **Save the baseline before the trial.** Secure the unpowered board by its PCB edges in a repeatable inspection
+   cradle, with its pins accessible. Index the two rows A/B and positions 1-20 from the pin-1 end. Use a 10x loupe
+   with a 0.10 mm reticle, photographed through the loupe. Put the reticle in the inspected pin's plane, normal to
+   the viewing direction; do not scale a pin from a grid behind it. Register the views to the PCB edge and pin-root
+   positions, rather than recentering each tip. Check calibration against the reticle in every image.
+2. **Make both rows visible.** Save an indexed tip-end view of all 40 pins and overlapping magnified side-view
+   tiles spanning each pin's exposed 6 mm. Use two oblique horizontal viewing directions, `(2, +1)` and `(2, -1)`
+   in the board's x-across/y-along coordinates: a cradle with stops at +26.565 and -26.565 degrees from the row
+   normal fixes these directions. Exact end-on views would hide pins behind their neighbours and are not used.
+   At either oblique angle, the nominal minimum projected centre spacing is 2.54/sqrt(5) = 1.136 mm; a 0.64 mm square
+   pin projects to 1.92/sqrt(5) = 0.859 mm, leaving a visible gap. Index every tile by row, pin number and view.
+   Focus and calibrate the reticle at the pin being measured, retaining PCB/root fiducials for registration.
+   Reject a blocked, blurred or missing profile until it is retaken; an uninspectable pin earns no credit.
+   Start only with 40 complete, straight pins; replace a board with existing damage before a fresh baseline.
+3. **Record the outcome before extraction.** Continuous trial video shows the release and one second of rest, and
+   that no pin is straightened or replaced during the trial. Photograph seating with a 0.3 mm feeler gauge at all
+   four corners. Photograph both rows against a 1 mm grid to establish the correct sockets, no pins past either
+   end, and matching pin-1 marks. For the 0.5 tier record at least 2 mm engagement at each corner. Finish these
+   outcome measurements before removing the board: inspection extraction does not erase the recorded outcome.
+4. **Extract straight and repeat the inspection.** With the controller fixed, use the board puller symmetrically
+   along the header axis; record the extraction and immediately repeat exactly the baseline pin-indexed views in
+   the same cradle. Do not straighten pins for the inspection. If extraction itself leaves damage, the trial
+   still receives zero; there is no attempt to subtract an unmeasured extraction load.
+5. **Apply the damage veto to both tiers.** Compare the registered centreline profiles before and after at
+   corresponding heights along every pin. Call the horizontal displacement in the two oblique image planes
+   `u_plus` and `u_minus`, positive along image axes `(-1, 2)/sqrt(5)` and `(1, 2)/sqrt(5)` respectively.
+   A worksheet converts these measured millimetres into the two lateral components:
+   `dx = sqrt(5) * (u_minus - u_plus) / 2` and `dy = sqrt(5) * (u_plus + u_minus) / 4`.
+   Include before/after readout, calibration and registration uncertainty in each measured projection range and
+   propagate those ranges through both formulas. A 0.10 mm reticle spacing alone does not establish accuracy.
+   Any missing/broken pin, or a permanent change of **0.20 mm or more in either lateral direction at any height**,
+   makes the whole trial zero. A tip returned to its original position does not hide a kink farther down the pin:
+   both full side profiles must pass. If a measurement's uncertainty straddles 0.20 mm, a deformed pin obscures
+   another pin, or inspection evidence is missing, give no credit until a clearer calibrated view resolves it.
+   A straightened or replaced pin during the trial also makes it zero. Otherwise use the same seating,
+   correct-socket, release and stillness tiers above. Transient elastic deflection that leaves no inspectable
+   permanent change is not a separate real-trial damage penalty.
+
+This is an outcome inspection after the trial, not an estimate of peak force throughout it. The simulator retains
+its conservative irreversible damage proxy because its pins are rigid. The existing simulator videos demonstrate
+that unchanged simulation, not a measured real-board trial or a validation of the new inspection criterion.
+
+## Revision of TK-CGQ5KP
+
+The review requested an inspectable real bent-pin outcome or a practical whole-trial force measurement. The real
+protocol above now defines calibrated before/after residual pin displacement, full pin visibility and a zero-credit
+rule for damaged or uninspectable pins. It requires no inferred 12 N measurement. The 12 N/pose-history proxy is
+explicitly confined to simulation. No executable file, scene, simulator scorer, demo waypoint or media changed.
+The results below remain the original simulation evidence, not a new run or a real-board damage experiment.
 
 ## Results
 
