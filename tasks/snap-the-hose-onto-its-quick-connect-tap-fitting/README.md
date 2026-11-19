@@ -10,16 +10,19 @@ checks: by pulling on it.
 
 ## Credit
 
-This idea was first submitted by GuraseesWasNotAvailable as PR 1868 (TK-GD5BJP, revised as TK-LP9ERQ: connect a
-garden hose to a tap through a quick-connect coupler and let it lock). Its first review asked that full credit need
-the 10 N pull test (or an equivalent engagement check in simulation) and that no rung call an unchecked fitting
-locked. Its second review was "Video demo should show more detail, it is currently challenging to clearly discern the
-operation". No revision arrived within the 48-hour hold, and the task board then lets another team take the idea on
-if it credits the original. This version was written from scratch; no code or text was reused. How each point is met:
+This task builds on PR 1868 (TK-LP9ERQ), the idea of connecting a garden hose to a tap through a quick-connect
+coupler and letting it lock. Its earlier review required the 10 N pull test and rejected a rung that called an
+unchecked fitting locked. Its latest review asked for a clearer view of the coupling operation.
+
+The [latest revisable verdict on PR 1868](https://github.com/robocurve/benchmark-tasks/pull/1868#issuecomment-6908740688)
+was posted November 16, 2026 at 06:03:25 UTC. Its 48-hour hold ended November 18 at 06:03:25 UTC. This
+[claim PR](https://github.com/robocurve/benchmark-tasks/pull/2597) was created at 06:04:29 UTC, 64 seconds later,
+and [received](https://github.com/robocurve/benchmark-tasks/pull/2597#issuecomment-6970586277) at 06:04:38 UTC.
+The original public timeline contains no later received revision after that verdict. This version was written
+from scratch; no source code or text from the original task was reused. How the earlier feedback is met:
 
 - **Locking is scored by a pull.** Full credit needs the connector to stay home under a 10 N pull along the bore,
-  applied by the scorer with nothing touching it (section "Scoring as implemented"). There is no rung for a fitting
-  that only looks seated.
+  applied by the scorer with nothing touching it (section "Scoring as implemented"). No rung calls a fitting locked without the pull test.
 - **The pins cannot miss the groove.** The bore leaves 0.5 mm of clearance round the shaft, and the pins stand 2.0 mm
   into it (section "The mechanism").
 - **The videos show the coupling closely.** Besides the top and wrist cameras, the demo and Dream-1 videos show two
@@ -31,6 +34,10 @@ Lab-Arena), on the `station` scene. It needs `parts.py` (multi-shape parts with 
 tilted grip for the scripted demo), both in this folder; they import only NumPy and `yam_arena`. `near_misses.py`
 lists near-successes and wrong outcomes with the score each must get; they are plain-Python checks of `score()` and
 `success()` and need no simulator.
+
+The real-trial hardware is the named standard pair below. The numerical two-pin geometry in `task.py` is a
+full-size functional simulation proxy; its dimensions, springs, friction and force response are model parameters.
+The existing native runs validate that proxy. No measured trial of the commercial hardware or robot is claimed.
 
 ## Run a trial
 
@@ -126,10 +133,90 @@ All of it is ordinary contact physics between rigid shapes; nothing is switched 
 - **0:** the hose end's body more than 2 cm below the table top at the end (dropped off), whatever was reached.
 - **Success** is the 1.0 state, and must hold 1 s. History is cleared by the simulator's reset, and also when the
   hose end is back within 0.5 mm of its start, at rest, after a jump of over 20 mm in one control step.
-- **Real trial:** a rule along the bore for the depths and the collar; a spring scale hooked on the ferrule, pulled
-  along the bore up to 10 N and held for half a second, with a rule to read the movement.
+- **Real trial:** the commercial pair and visible S/W/H calibration below implement the same beyond-obstruction,
+  home and released pull-test milestones. The 14.5 mm depth belongs to the simulated geometry. The simulator's
+  minimum 0.02 mm response is a diagnostic that its force callback ran; no real ruler must resolve that movement.
 
-## Checked on the GPU (Isaac Sim 6.1)
+## Real-trial hardware, assembly and reset
+
+Use these matching **Foster FH, nominal 1/2 inch, non-valved** parts:
+
+| Part | Use |
+| --- | --- |
+| [FHS4B](https://www.foster-mfg.com/fhs4b.html) | Brass straight-through socket, 1/2 inch female pipe thread. Fixed on the tap. |
+| [FH44FB](https://www.foster-mfg.com/fh44fb.html) | Brass unvalved matching plug, 1/2 inch female pipe thread. On the loose hose end. |
+| [Dixon 5031208SS](https://dixonvalve.com/en/products/rigid-female-ght-x-male-nptf-adapter/5031208ss) | Rigid 3/4-11.5 female garden-hose thread to 1/2 inch male NPT; washer included. Joins the tap's male garden-hose outlet to the socket. |
+| [Parker 125HBL-12-8](https://www.parker.com/content/dam/parker/lam/catalogs/pdf/4---conectores---mangueiras---v%C3%A1lvulas---instrumentos-para-flu%C3%ADdos/4---conex%C3%B5es-e-adaptadores/3580-Core-Brass.pdf) | 1/2 inch male pipe to 3/4 inch hose-ID barb. Threads into the plug. Manufacturer table: 7/8 inch hex, 1.97 inch overall length. |
+| Hose and clamp | 480 mm of flexible PVC hose, 19.05 mm ID and 25 mm nominal OD, with a 9 mm wide worm-drive clamp whose adjustment range includes 20-32 mm. Record actual ID, OD and assembled mass. |
+
+The [manufacturer's FH description](https://www.foster-mfg.com/fh-and-fih-series.html) specifies manual sleeve
+retraction for connection and disconnection. Its [catalog](https://www.foster-mfg.com/mm5/graphics/literature/docs/ZF-Catalog-ZSI-Foster-08-19-R17.pdf),
+pages 341 and 343, identifies the manual operation and this same-size socket/plug pair; page 387 gives their
+full-size profiles. Use the plain **FHS4B**, without the optional `BL` sleeve-rotation lock. An automatic/push-to-connect
+socket changes the ability tested and is not this hardware.
+
+1. Isolate the tap from any supply and leave the fixture empty and unpressurised. Fix its post/foot to the bench.
+   Join the 3/4-11.5 male GHT tap outlet to the Dixon adapter using its washer, and the adapter's 1/2 inch male NPT
+   to FHS4B. Hold the fixed hex body when tightening; keep the sliding sleeve free. Use thread sealant as specified
+   for the pipe-thread joint, not on the GHT washer. No robot turns these mounting threads.
+2. Thread the Parker adapter into FH44FB. Push the 19.05 mm-ID hose fully over the barb and secure the clamp over
+   the barbed length. Keep the clamp behind the rigid plug body's grasp area; it must not contact the socket or
+   sleeve in the home position. Use the rigid plug body for grasping and later pull measurement.
+3. Adjust the fixed tap/post position so the **socket mouth centre** is 300 mm ahead of the arm-base line, 10 mm
+   to the robot's right and 70 mm above the table, facing the robot's left. These coordinates locate the mouth,
+   independently of the commercial socket/adapter lengths. Leave the full sleeve stroke unobstructed. Use side
+   and overhead views that show the sleeve, fixed socket body, plug-body datum and axial ruler.
+4. Lay the free plug/hose in the published layout: the plug body's datum at 270 mm ahead and 150 mm left, nose
+   pointing right and 23 degrees away from the robot, hose straight back toward the left. Set its natural resting
+   height from the assembled hardware; do not force the real plug to match the proxy's 12.5 mm centre height.
+   Record the assembled dimensions/mass, sleeve travel and the start reference photo. The spring force, plug
+   profile, sleeve diameter/material and mass of this commercial pair have not been equated to simulation values.
+
+### Visible calibration and scoring
+
+The calibration operator sets references before a real trial; the robot still receives only the published goal.
+Use a millimetre ruler fixed parallel to the bore and an ink fiducial on the rigid plug body. Use a fixed socket-body
+reference plane, not the movable sleeve. Let `d` be the axial separation of that plane and the plug fiducial,
+increasing as the plug moves out. Keep the same datum and camera/ruler plane for every measurement.
+
+- With the sleeve fully forward, insert the plug gently to its repeatable mechanical obstruction. Record `S`,
+  the blocked separation. Check that the sleeve itself was not pushed or held back.
+- Retract and hold the sleeve, insert the matching plug fully, let the sleeve spring forward and confirm retention
+  with the 10 N test below. Record `H`, the fully coupled separation. Repeat both reference measurements three
+  times; each must agree within 1 mm. The closed-sleeve obstruction must remain visibly outside the home datum.
+- Define the beyond-obstruction witness `W = (S + H) / 2`. Require `S - H >= 6 mm`, so W is at least 3 mm beyond
+  the closed-sleeve stop and 3 mm short of home. Photograph the three readings and mark W on the ruler. Confirm
+  that forward-sleeve insertion cannot pass W. If the selected assembly lacks that distinct reproducible span,
+  do not run/scoring-claim the physical partial tiers from this protocol; resolve the mapping before a trial.
+  These are setup checks to perform, not measurements already made on a purchased pair.
+
+| Score | Real observation |
+| --- | --- |
+| 0.25 | At some time the rigid plug fiducial passes W toward H, with the connector centreline within 2 mm radially of the bore axis and its axis within 6 degrees of the bore axis. Merely touching the forward-sleeve stop gives no credit. |
+| 0.5 | At some time the plug is within 2 mm of H, 1.5 mm of the axis and 5 degrees of it. This is home progress, not a claim that it is locked. |
+| 1.0 | Sleeve forward within 1 mm of its recorded forward reference, robot clear by more than 5 mm and still for 1 s; then the axial 10 N pull test passes and the plug remains home, released and still for 1 s. |
+
+For the pull, attach a yoke or scale hook to the **rigid plug body/adapter behind its shoulder**, after the robot
+has let go. Do not hook or brace the sliding socket sleeve, use the hose alone as the force datum, or let a hand
+support the coupling. Keep the scale pull coaxial: ramp to 10 N over 0.5 s, hold 10 N for 0.5 s, release and observe
+for 0.5 s. Record force/video and movement against the fixed ruler. Outward movement must not exceed 1.5 mm; the
+plug must remain within 2 mm of H with the sleeve forward and nothing from the robot supporting it. No positive
+minimum movement is required in the real test. A connector that pulls out is not locked, even if it reached home.
+The original dropped-hose zero condition and released/still success requirement continue to apply.
+
+The simulation's 14.5 mm insertion mark is a beyond-obstruction witness in its declared two-pin geometry. W is the
+corresponding visible functional milestone for this named commercial pair; it is calibrated from its actual stop
+and home, not obtained by assigning the model's 24 mm nose or 11 mm sleeve stroke to the product. No force-response
+or dimensional identity with the model is claimed.
+
+**Reset a real trial:** with the tap still isolated, retract and hold FHS4B's sleeve, withdraw FH44FB straight and
+let the sleeve return. Inspect the visible mating surfaces and sleeve for damage/debris; confirm free spring return
+and the recorded S/H calibration. Do not dismantle the socket or attempt to inspect two exposed simulated pins.
+Remove the pull instrument, lay the plug/hose back on the recorded start marks with its far end free, check the
+fixture and cameras, and start with the robot ready. Nothing is consumed. The simulator reset remains the declared
+pin/collar/pose reset above; it does not operate commercial parts.
+
+## Existing native evidence for the unchanged simulator (Isaac Sim 6.1)
 
 - **Final demo** (`--epochs 2`, task_score 1.0, both trials succeeded), with the arms' clearance measured over
   their hulls' faces: the collar went back to its 11 mm stop, the connector went home at about 14 s, the pins
