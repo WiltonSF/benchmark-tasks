@@ -2,7 +2,7 @@
 
 The scripted expert scored **1.0 in both layouts** on the current native Isaac Lab-Arena scene, reaching full score in 15.60 and 15.65 seconds. Dream-1 scored **0 in both layouts** and hit the 1,200-step limit. These are simulation results, not hardware measurements. Expert and Dream runs used the same source snapshot and instruction.
 
-This independently implemented claim credits [PR 2013, TK-Y97RFJ](https://github.com/robocurve/benchmark-tasks/pull/2013), preceded by TK-WYFJHJ and TK-H5595Z, and the earlier gantry proposal [PR 419, TK-RWRT5A](https://github.com/robocurve/benchmark-tasks/pull/419). The captured profile prevents a lift-and-carry shortcut. Current rail engagement, bounded stop gaps, both-sided height checks and executed counterexamples address the original scoring feedback. Fresh expert/Dream videos and a setup screenshot belong to this captured scene. Publication must wait until the original hold lapses and a fresh lapse check permits the claim.
+This independently implemented claim credits [PR 2013, TK-Y97RFJ](https://github.com/robocurve/benchmark-tasks/pull/2013), preceded by TK-WYFJHJ and TK-H5595Z, and the earlier gantry proposal [PR 419, TK-RWRT5A](https://github.com/robocurve/benchmark-tasks/pull/419). The captured profile prevents a lift-and-carry shortcut. Current rail engagement, bounded stop gaps, both-sided height checks and executed counterexamples address the original scoring feedback. Fresh expert/Dream videos and a setup screenshot belong to this captured scene. The claim was submitted after the original hold lapsed. This revision supplies fabrication drawings/files for the same contact geometry; it does not claim a new physical or simulated result.
 
 Squaring the ends of a small Cartesian gantry is a real printer adjustment. [Prusa's procedure](https://help.prusa3d.com/article/adjusting-belt-tension-core-one-core-one-indx-core-one-l_845048) describes disabled motors, loosened belts and counter-force at the gantry ends. This scene isolates captured sliding and end-stop alignment. It does not represent a complete printer calibration, measured bearing dynamics or proof that every one-handed strategy fails.
 
@@ -24,7 +24,11 @@ Release uses full collision-face samples at 3 mm spacing with 2 mm voxel thinnin
 
 The native expert kept both carriages engaged at every recorded step, with zero off-rail travel, and ended with all stop gaps within about ±0.6 micrometres and top-height errors below 0.253 mm. The 17 CPU scorer controls plus the reset case reject off-rail, below-rail, carried, one-end-home, beyond-stop, stale and nonfinite observations. An independent flat-face hover probe verifies that face sampling rejects contact missed by vertices alone. These checks do not measure hardware fidelity.
 
-The physical counterpart uses the dimensioned captured sliding fixture below. Measure progress and lateral position with a ruler/caliper, seated height with a dial indicator, stop contact using a 0.05 mm feeler at both face corners, and engagement/release/stillness on video. The build has not been fabricated or measured.
+The physical counterpart uses the [fabrication-ready captured sliding fixture](fabrication/README.md). The packet includes original dimensioned SVG drawings, millimetre DXF cut/drill profiles, a cut list, complete editable OpenSCAD source, stock/manufacture routes, rigid beam fixings, tolerances and inspection/reset notes. Its three-part acetal carriage has the same unholed capture profile as the existing simulation; manufacturing holes/hollows and flush fixings are explicit omitted details. No task runtime, instruction, scoring, media or native result is changed.
+
+![Fabrication drawing overview](fabrication/preview.png)
+
+The dimensions below summarise that packet. Measure progress and lateral position with a ruler/caliper, seated height with a dial indicator, stop contact using a 0.05 mm feeler at both face corners, and engagement/release/stillness on video. The build has not been fabricated or measured.
 
 | Part | Material and dimensions | Assembly coordinates |
 |---|---|---|

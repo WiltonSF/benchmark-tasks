@@ -1,0 +1,11 @@
+part,qty,material,finished_mm,secondary_operations
+track_foot,2,1018 steel,250x12x3,fixing/dowel holes; finish running edges
+track_neck,2,1018 steel,250x8x2,same hole datums
+track_head,2,1018 steel,250x12x3,head seats flush; same hole datums
+cheek,4,POM-C,45.4x9.25x10 integral profile,top/bottom inner2 relief; M2 clearance/seats
+cap,2,POM-C,45.4x12.5x4.75,M2 side taps; M3 underside countersinks
+beam,1,aluminium tube,20x20x400 nominal2wall,bottom M3 holes; side M4/sleeves
+nut_block,2,aluminium,15.5x12x6,two M3 taps through
+ballast,1,low-carbon steel,40x50x40,two M4 blind taps
+stop,2,low-carbon steel,10x30x20,slotted flush mounting; plane finish
+crush_spacer,2,aluminium or steel,OD8 ID4.5 length16,left entry90deg relief5.3 to4.5 depth0.40; inspect orientation/received tube fit

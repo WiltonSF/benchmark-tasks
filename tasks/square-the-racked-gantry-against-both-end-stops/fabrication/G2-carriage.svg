@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220mm" height="300mm" viewBox="0 0 1100 1500">
+<rect width="1100" height="1500" fill="white"/>
+<rect x="30" y="30" width="1040" height="1440" fill="none" stroke="#18232c" stroke-width="2"/>
+<text x="65" y="91" font-family="Arial,sans-serif" font-size="27" fill="#18232c">G2  |  Captured acetal carriage and integral lips</text>
+<text x="65" y="127" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">GANTRY / G1  |  ORIGINAL DESIGN  |  dimensions mm unless stated</text>
+<text x="65" y="1436" font-family="Arial,sans-serif" font-size="16" fill="#ba3434">Unbuilt fixture. Dimension labels govern; do not scale this engineering sheet.</text>
+<text x="65" y="1461" font-family="Arial,sans-serif" font-size="14" fill="#18232c">MIT original assets. No vendor CAD. Tolerances and manufacture in fabrication/README.md.</text>
+<text x="80" y="204" font-family="Arial,sans-serif" font-size="19" fill="#18232c">Three bolted pieces per carriage. Length along X=45.40. Profile coordinates are absolute Z.</text>
+<polygon points="406.0,650.0 694.0,650.0 694.0,578.0 646.0,578.0 646.0,530.0 694.0,530.0 694.0,458.0 406.0,458.0 406.0,530.0 454.0,530.0 454.0,578.0 406.0,578.0" fill="#e6e9eb" stroke="#707980" stroke-width="2"/>
+<polygon points="652.0,572.0 700.0,572.0 700.0,578.0 874.0,578.0 874.0,338.0 700.0,338.0 700.0,536.0 652.0,536.0" fill="#bfd9e8" stroke="#176b9a" stroke-width="2"/>
+<polygon points="448.0,572.0 400.0,572.0 400.0,578.0 226.0,578.0 226.0,338.0 400.0,338.0 400.0,536.0 448.0,536.0" fill="#bfd9e8" stroke="#176b9a" stroke-width="2"/>
+<rect x="400.0" y="338" width="300.0" height="114.0" fill="#cbe3d6" stroke="#187251" stroke-width="2"/>
+<line x1="226.0" y1="298" x2="874.0" y2="298" stroke="#176b9a" stroke-width="1"/>
+<line x1="222.0" y1="293" x2="230.0" y2="303" stroke="#176b9a" stroke-width="1"/>
+<line x1="870.0" y1="293" x2="878.0" y2="303" stroke="#176b9a" stroke-width="1"/>
+<text x="555.0" y="290.0" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">27 total</text>
+<text x="90" y="728" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Main cheeks: |Y|6.25..13.5,Z3..13. Integral toes: |Y|4.25..6.25,Z3.25..4.75.</text>
+<text x="90" y="768" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Centre cap: Y-6.25..6.25,Z8.25..13. Nominal top/side/lip running gaps0.25.</text>
+<text x="90" y="808" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Cheek operations: inner2 mm top cut down toZ4.75; bottom cut0.25 deep after flip.</text>
+<text x="90" y="848" font-family="Arial,sans-serif" font-size="18" fill="#18232c">No separate glued lip. Both cheeks identical: rotate180 about Z for opposite side.</text>
+<rect x="280" y="940" width="544.8" height="150.0" fill="#d9e9df" stroke="#187251" stroke-width="2"/>
+<circle cx="492.4" cy="1015.0" r="20.4" stroke="#18232c" stroke-width="2" fill="none"/>
+<circle cx="612.4" cy="1015.0" r="20.4" stroke="#18232c" stroke-width="2" fill="none"/>
+<line x1="280" y1="905" x2="824.8" y2="905" stroke="#176b9a" stroke-width="1"/>
+<line x1="276" y1="900" x2="284" y2="910" stroke="#176b9a" stroke-width="1"/>
+<line x1="820.8" y1="900" x2="828.8" y2="910" stroke="#176b9a" stroke-width="1"/>
+<text x="557.4" y="897.0" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">45.40</text>
+<text x="90" y="1158" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Cap bottom plan: beam holes atX+/-5,Y0; dia3.4 and90-degree underside seats.</text>
+<text x="90" y="1198" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Cheek-to-cap: X+/-16,Z10.625, M2x12; cheeks dia2.2, cap tappedM2 x5 deep.</text>
+<text x="90" y="1238" font-family="Arial,sans-serif" font-size="18" fill="#ba3434">Keep screw heads recessed. Profile finish +/-0.025; inspect gaps0.20..0.30.</text>
+<text x="90" y="1298" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Verify capture at reset yaw+/-0.45 degrees; no lift-out, loose joint or filed-away toe.</text>
+</svg>

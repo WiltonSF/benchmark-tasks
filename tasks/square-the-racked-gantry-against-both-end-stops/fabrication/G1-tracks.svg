@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220mm" height="300mm" viewBox="0 0 1100 1500">
+<rect width="1100" height="1500" fill="white"/>
+<rect x="30" y="30" width="1040" height="1440" fill="none" stroke="#18232c" stroke-width="2"/>
+<text x="65" y="91" font-family="Arial,sans-serif" font-size="27" fill="#18232c">G1  |  Steel track section, strip plan and fixing datums</text>
+<text x="65" y="127" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">GANTRY / G1  |  ORIGINAL DESIGN  |  dimensions mm unless stated</text>
+<text x="65" y="1436" font-family="Arial,sans-serif" font-size="16" fill="#ba3434">Unbuilt fixture. Dimension labels govern; do not scale this engineering sheet.</text>
+<text x="65" y="1461" font-family="Arial,sans-serif" font-size="14" fill="#18232c">MIT original assets. No vendor CAD. Tolerances and manufacture in fabrication/README.md.</text>
+<text x="80" y="205" font-family="Arial,sans-serif" font-size="20" fill="#18232c">All dimensions mm. Upper mounting surface Z=0. Rails are THREE bolted steel strips.</text>
+<polygon points="370.0,580.0 730.0,580.0 730.0,490.0 670.0,490.0 670.0,430.0 730.0,430.0 730.0,340.0 370.0,340.0 370.0,430.0 430.0,430.0 430.0,490.0 370.0,490.0" fill="#cfdae0" stroke="#176b9a" stroke-width="2"/>
+<line x1="370" y1="305" x2="730" y2="305" stroke="#176b9a" stroke-width="1"/>
+<line x1="366" y1="300" x2="374" y2="310" stroke="#176b9a" stroke-width="1"/>
+<line x1="726" y1="300" x2="734" y2="310" stroke="#176b9a" stroke-width="1"/>
+<text x="555.0" y="297.0" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">12.00 +/-0.025</text>
+<line x1="430" y1="460" x2="670" y2="460" stroke="#176b9a" stroke-width="1"/>
+<line x1="426" y1="455" x2="434" y2="465" stroke="#176b9a" stroke-width="1"/>
+<line x1="666" y1="455" x2="674" y2="465" stroke="#176b9a" stroke-width="1"/>
+<text x="555.0" y="452.0" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">8.00 +/-0.025</text>
+<text x="160" y="640" font-family="Arial,sans-serif" font-size="20" fill="#18232c">Z0..3 foot 12 x3; Z3..5 neck8 x2; Z5..8 head12 x3. Length250.</text>
+<rect x="150" y="760" width="750" height="36" fill="#cfdae0" stroke="#176b9a" stroke-width="2"/>
+<circle cx="225" cy="778" r="5.1" stroke="#18232c" stroke-width="2" fill="none"/>
+<circle cx="525" cy="778" r="5.1" stroke="#18232c" stroke-width="2" fill="none"/>
+<circle cx="825" cy="778" r="5.1" stroke="#18232c" stroke-width="2" fill="none"/>
+<circle cx="375" cy="778" r="3" stroke="#187251" stroke-width="2" fill="none"/>
+<circle cx="675" cy="778" r="3" stroke="#187251" stroke-width="2" fill="none"/>
+<line x1="150" y1="730" x2="900" y2="730" stroke="#176b9a" stroke-width="1"/>
+<line x1="146" y1="725" x2="154" y2="735" stroke="#176b9a" stroke-width="1"/>
+<line x1="896" y1="725" x2="904" y2="735" stroke="#176b9a" stroke-width="1"/>
+<text x="530.0" y="722.0" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">250.00 +/-0.10</text>
+<text x="207" y="837" font-family="Arial,sans-serif" font-size="17" fill="#18232c">25</text>
+<text x="357" y="837" font-family="Arial,sans-serif" font-size="17" fill="#18232c">75</text>
+<text x="507" y="837" font-family="Arial,sans-serif" font-size="17" fill="#18232c">125</text>
+<text x="657" y="837" font-family="Arial,sans-serif" font-size="17" fill="#18232c">175</text>
+<text x="807" y="837" font-family="Arial,sans-serif" font-size="17" fill="#18232c">225</text>
+<text x="130" y="893" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Black: fixing dia3.4 at25/125/225. Green: registration dia2 at75/175.</text>
+<text x="130" y="933" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Head only: 90-degree seats, nominal dia6.8, finish to actual screw head.</text>
+<text x="130" y="974" font-family="Arial,sans-serif" font-size="19" fill="#ba3434">Heads/pins flush to0.05 BELOW Z8; nothing proud in the carriage path.</text>
+<text x="130" y="1033" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Mounting coordinates: strip start X30, end X280, centre Y=+/-170.</text>
+<text x="130" y="1073" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Gang-drill/ream after centring neck; registration pins stop layer drift.</text>
+<text x="130" y="1113" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Finish width/thickness +/-0.025; straightness0.03 over250, edge break&lt;=0.10.</text>
+<text x="130" y="1173" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Stock route: six260 blanks from1018 1/8 x1/2 in flat stock, finish-machine.</text>
+<text x="130" y="1213" font-family="Arial,sans-serif" font-size="18" fill="#ba3434">Nominal stock is3.175 x12.7, NOT the finished drawing tolerance.</text>
+<text x="130" y="1273" font-family="Arial,sans-serif" font-size="18" fill="#18232c">The custom sliding profile is not a HIWIN bearing or manufacturer CAD.</text>
+<text x="130" y="1313" font-family="Arial,sans-serif" font-size="18" fill="#18232c">No physical friction, stock availability, fabrication cost or hardware result measured.</text>
+</svg>

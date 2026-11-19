@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220mm" height="300mm" viewBox="0 0 1100 1500">
+<rect width="1100" height="1500" fill="white"/>
+<rect x="30" y="30" width="1040" height="1440" fill="none" stroke="#18232c" stroke-width="2"/>
+<text x="65" y="91" font-family="Arial,sans-serif" font-size="27" fill="#18232c">G4  |  Assembly mounting plan, stops and reset datums</text>
+<text x="65" y="127" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">GANTRY / G1  |  ORIGINAL DESIGN  |  dimensions mm unless stated</text>
+<text x="65" y="1436" font-family="Arial,sans-serif" font-size="16" fill="#ba3434">Unbuilt fixture. Dimension labels govern; do not scale this engineering sheet.</text>
+<text x="65" y="1461" font-family="Arial,sans-serif" font-size="14" fill="#18232c">MIT original assets. No vendor CAD. Tolerances and manufacture in fabrication/README.md.</text>
+<text x="80" y="205" font-family="Arial,sans-serif" font-size="20" fill="#18232c">Plan: Y horizontal, X upward. Drawing shows square contact for datum reference only.</text>
+<rect x="198" y="430.0" width="24" height="625.0" fill="#cbd5da" stroke="#707980" stroke-width="2"/>
+<rect x="180" y="405.0" width="60" height="25.0" fill="#f0cbc9" stroke="#ba3434" stroke-width="2"/>
+<rect x="183.0" y="430.0" width="54" height="113.5" fill="none" stroke="#176b9a" stroke-width="2"/>
+<circle cx="210" cy="992.5" r="3" stroke="#18232c" stroke-width="2" fill="none"/>
+<circle cx="210" cy="742.5" r="3" stroke="#18232c" stroke-width="2" fill="none"/>
+<circle cx="210" cy="492.5" r="3" stroke="#18232c" stroke-width="2" fill="none"/>
+<rect x="878" y="430.0" width="24" height="625.0" fill="#cbd5da" stroke="#707980" stroke-width="2"/>
+<rect x="860" y="405.0" width="60" height="25.0" fill="#f0cbc9" stroke="#ba3434" stroke-width="2"/>
+<rect x="863.0" y="430.0" width="54" height="113.5" fill="none" stroke="#176b9a" stroke-width="2"/>
+<circle cx="890" cy="992.5" r="3" stroke="#18232c" stroke-width="2" fill="none"/>
+<circle cx="890" cy="742.5" r="3" stroke="#18232c" stroke-width="2" fill="none"/>
+<circle cx="890" cy="492.5" r="3" stroke="#18232c" stroke-width="2" fill="none"/>
+<rect x="150" y="461.75" width="800" height="50.0" fill="#d1dadd" stroke="#18232c" stroke-width="2"/>
+<line x1="210" y1="1200" x2="890" y2="1200" stroke="#176b9a" stroke-width="1"/>
+<line x1="206" y1="1195" x2="214" y2="1205" stroke="#176b9a" stroke-width="1"/>
+<line x1="886" y1="1195" x2="894" y2="1205" stroke="#176b9a" stroke-width="1"/>
+<text x="555.0" y="1192.0" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">340.00 +/-0.03 centre pitch</text>
+<text x="410" y="381.0" font-family="Arial,sans-serif" font-size="18" fill="#ba3434">stop faces X280</text>
+<text x="100" y="1263" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Mount rails X30..280,Y+/-170; stops X280..290,Y rail+/-15,Z0..20.</text>
+<text x="100" y="1298" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Reset A: centre(216,0,23),yaw-0.45 deg. B:(205,0,23),yaw+0.45 deg.</text>
+<text x="100" y="1333" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Remove setup jig. Both lips captured; permit0.25 top-clearance settling.</text>
+</svg>

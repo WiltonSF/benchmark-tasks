@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220mm" height="300mm" viewBox="0 0 1100 1500">
+<rect width="1100" height="1500" fill="white"/>
+<rect x="30" y="30" width="1040" height="1440" fill="none" stroke="#18232c" stroke-width="2"/>
+<text x="65" y="91" font-family="Arial,sans-serif" font-size="27" fill="#18232c">G3  |  Beam, internal nut blocks and ballast attachment</text>
+<text x="65" y="127" font-family="Arial,sans-serif" font-size="17" fill="#176b9a">GANTRY / G1  |  ORIGINAL DESIGN  |  dimensions mm unless stated</text>
+<text x="65" y="1436" font-family="Arial,sans-serif" font-size="16" fill="#ba3434">Unbuilt fixture. Dimension labels govern; do not scale this engineering sheet.</text>
+<text x="65" y="1461" font-family="Arial,sans-serif" font-size="14" fill="#18232c">MIT original assets. No vendor CAD. Tolerances and manufacture in fabrication/README.md.</text>
+<text x="80" y="205" font-family="Arial,sans-serif" font-size="20" fill="#18232c">Beam20 x20 x400, nominal2 wall. Smooth tube, not an unreported slotted profile.</text>
+<rect x="260" y="378.25" width="260" height="260" fill="#d2d9dd" stroke="#18232c" stroke-width="2"/>
+<rect x="286" y="404.25" width="208" height="208" fill="white" stroke="#18232c" stroke-width="2"/>
+<rect x="289.25" y="534.25" width="201.5" height="78" fill="#f3e2ba" stroke="#18232c" stroke-width="2"/>
+<rect x="308.75" y="638.25" width="162.5" height="61.75" fill="#cbe3d6" stroke="#187251" stroke-width="2"/>
+<line x1="325" y1="700.0" x2="325" y2="544.0" stroke="#176b9a" stroke-width="4"/>
+<line x1="455" y1="700.0" x2="455" y2="544.0" stroke="#176b9a" stroke-width="4"/>
+<text x="680" y="373" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Tube Z13..33</text>
+<text x="680" y="413" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Nut block Z15..21</text>
+<text x="680" y="453" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Cap Z8.25..13</text>
+<text x="100" y="773" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Two M3x12 countersunk bolts from below each cap, axes X+/-5,Y+/-170.</text>
+<text x="100" y="813" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Cap4.75 + tube bottom2 leaves about5.25 engagement in a6-thick nut block.</text>
+<text x="100" y="853" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Nut blocks15.5 x12 x6; M3 tap through. Inspect actual tube cavity fit before assembly.</text>
+<text x="100" y="913" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Ballast outer envelope40 x50 x40: X10..50,Y+/-25,Z13..53 at beam centre.</text>
+<text x="100" y="953" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Two M4x30 bolts from beam faceX-10 into ballast atY+/-15,Z23.</text>
+<text x="100" y="993" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Ballast tap M4 x12 deep; beam clearance dia4.5 and flush90-degree head seats.</text>
+<text x="100" y="1033" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Sleeves dia8/dia4.5 x16, X-8..8. AtX-8:90-deg entry relief dia5.3 x0.40.</text>
+<text x="100" y="1093" font-family="Arial,sans-serif" font-size="18" fill="#187251">No pivot connects beam/carriages: seat and inspect rigid fixings against340 mm jig.</text>
+<text x="100" y="1133" font-family="Arial,sans-serif" font-size="18" fill="#18232c">Carriage pitch340 +/-0.03; relative yaw&lt;=0.02 deg; top coplanarity&lt;=0.03.</text>
+<text x="100" y="1193" font-family="Arial,sans-serif" font-size="18" fill="#ba3434">The0.8 kg mass and0.2 friction remain model estimates. Weigh/test the physical assembly.</text>
+<text x="100" y="1232" font-family="Arial,sans-serif" font-size="17" fill="#18232c">Holes/hollows/flush fixings are manufacturing detail omitted from enclosing native solids.</text>
+<text x="100" y="1293" font-family="Arial,sans-serif" font-size="18" fill="#187251">No simulation score, evidence hash, instruction or runtime parameter is changed.</text>
+</svg>
