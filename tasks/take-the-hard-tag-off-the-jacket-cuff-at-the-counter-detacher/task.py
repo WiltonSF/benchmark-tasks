@@ -188,14 +188,12 @@ OBJECTS = [COUNTER, TAG, CUFF]
 # --- scoring ------------------------------------------------------------------------------------------------------
 DEPTH0 = TAG_H - (PIN_TIP + HZ)  # 16 mm of pin inside the tag at the start
 SEAT_XY, SEAT_Z, SEAT_TILT = 0.0045, 0.0025, 8.0  # dome in the well: axis, height over the floor, lean
-LATERAL = 0.003  # the pin tip counts as in the tag's channel within 3 mm of its axis
-OUT_GAP = 0.0005  # "out": the tip at least 0.5 mm above the tag's top face
-FULL_TOL = 0.0005
+REMOVAL_GAP = 0.005  # the WHOLE visible pin must clear the tag's outside outline by a readable 5 mm
 STEP1 = 0.005
 CLEAR_TAG = 0.010  # set aside: the tip 10 mm or more from the tag's pin hole
 CLEAR = 0.005  # let go: no hand point within 5 mm
 STILL_S, STILL_MM = 1.0, 0.002
-OFF = B - 0.03  # anything lower than this has left the counter
+OFF = TOP + 0.005  # 20 mm below the counter, 5 mm ABOVE the lower tabletop: a fall onto it must fail
 
 
 def _rot(q) -> np.ndarray:
@@ -227,22 +225,74 @@ def tip_in_tag(tag_st, cuff_st) -> np.ndarray:
 
 
 def pin_depth(tag_st, cuff_st) -> float:
-    """How far the pin's tip is inside the tag, below its top face (0 once it is out of the channel)."""
+    """Diagnostic axial depth only. The scorer never uses this concealed measurement."""
     t = tip_in_tag(tag_st, cuff_st)
-    if math.hypot(t[0], t[1]) > LATERAL + EPS:
-        return 0.0
     return float(max(0.0, TAG_H - t[2]))
 
 
+def visible_head_rise(tag_st, cuff_st) -> float:
+    """Rise of the exposed silver head's top along the tag's axis, relative to its inserted position."""
+    p, q = cuff_st.links["hem"]
+    head_top = 0.0015 + HEAD_T + 0.0015
+    world = np.asarray(p, float) + _rot(q) @ np.array([0.0, 0.0, head_top])
+    local = _rot(tag_st.quat_xyzw).T @ (world - np.asarray(tag_st.pos, float))
+    return float(local[2] - (HZ + head_top))
+
+
+def whole_pin_gap(tag_st, cuff_st) -> float:
+    """Conservative whole-pin/whole-tag clearance, including the shaft, head, tilt and visible rim.
+
+    Bounding envelopes in the tag frame must separate. Unlike an endpoint or channel-axis test, this cannot
+    call a sideways tip 'removed' while another shaft segment still intersects the tag's outer body.
+    """
+    signs = np.array([[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)], float)
+    hp, hq = cuff_st.links["hem"]
+    hr, tr = _rot(hq), _rot(tag_st.quat_xyzw)
+    pin = np.concatenate([
+        (np.asarray(s.at) + signs * s.half) @ hr.T + np.asarray(hp)
+        for s in HEM.shapes[1:]  # all pin/head shapes, excluding the cloth hem
+    ])
+    pin = (pin - np.asarray(tag_st.pos)) @ tr
+    tag = (corners(TAG, tag_st) - np.asarray(tag_st.pos)) @ tr
+    separation = np.maximum(tag.min(0) - pin.max(0), pin.min(0) - tag.max(0))
+    return float(np.linalg.norm(np.maximum(separation, 0.0)))
+
+
 def pin_out(tag_st, cuff_st) -> bool:
-    t = tip_in_tag(tag_st, cuff_st)
-    return bool(math.hypot(t[0], t[1]) > LATERAL + EPS or t[2] >= TAG_H + OUT_GAP - EPS)
+    return bool(whole_pin_gap(tag_st, cuff_st) >= REMOVAL_GAP - EPS)
 
 
 def pin_clear(tag_st, cuff_st) -> bool:
-    """The pin set aside: its tip 10 mm or more from the tag's pin hole (centre of the top face)."""
-    hole = np.asarray(tag_st.pos, float) + _rot(tag_st.quat_xyzw) @ np.array([0.0, 0.0, TAG_H])
-    return bool(np.linalg.norm(pin_tip(cuff_st) - hole) >= CLEAR_TAG - EPS)
+    """The whole exposed pin set at least 10 mm clear of the tag's outside outline."""
+    return bool(whole_pin_gap(tag_st, cuff_st) >= CLEAR_TAG - EPS)
+
+
+def pin_in_channel(tag_st, cuff_st) -> bool:
+    """Does the actual shaft return into the pin channel? A small free gap is not reinsertion.
+
+    Intersect the shaft centre segment with the square channel expanded only by its oriented radial extents.
+    The head is excluded. This preserves history when a removed pin merely approaches the tag's outside.
+    """
+    hp, hq = cuff_st.links["hem"]
+    tr, hr = _rot(tag_st.quat_xyzw), _rot(hq)
+    ends = (np.asarray([[0.0, 0.0, PIN_TIP], [0.0, 0.0, 0.0015]]) @ hr.T
+            + np.asarray(hp) - np.asarray(tag_st.pos)) @ tr
+    axis = tr.T @ hr[:, 2]
+    radial = PIN_R * np.sqrt(np.maximum(0.0, 1.0 - axis * axis))
+    low = np.array([-CH, -CH, FLOOR]) - radial
+    high = np.array([CH, CH, TAG_H]) + radial
+    a, d = ends[0], ends[1] - ends[0]
+    enter, leave = 0.0, 1.0
+    for i in range(3):
+        if abs(d[i]) < 1e-12:
+            if a[i] < low[i] - EPS or a[i] > high[i] + EPS:
+                return False
+        else:
+            t0, t1 = sorted(((low[i] - a[i]) / d[i], (high[i] - a[i]) / d[i]))
+            enter, leave = max(enter, t0), min(leave, t1)
+            if enter > leave + 1e-12:
+                return False
+    return bool(leave - enter > 1e-12)  # touching the mouth without entering does not revoke removal
 
 
 def part_boxes(part, st):
@@ -255,6 +305,23 @@ def part_boxes(part, st):
 def corners(part, st) -> np.ndarray:
     k = np.array([[sx, sy, sz] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)], float)
     return np.concatenate([c + (k * (s / 2)) @ r.T for _, c, r, s in part_boxes(part, st)])
+
+
+def on_counter(part, st) -> bool:
+    """A body's real lower face rests on the raised counter, not suspended or on the table below it.
+
+    The tag's first shape is its floor (the dome legitimately extends into the well); the cuff's first shape
+    is its quilted body. A near-plane lower corner must also lie over the actual counter footprint.
+    """
+    shape = part.shapes[0]
+    signs = np.array([[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)], float)
+    pts = (np.asarray(shape.at) + signs * shape.half) @ _rot(st.quat_xyzw).T + np.asarray(st.pos)
+    if abs(float(pts[:, 2].min()) - B) > 0.002 + EPS:
+        return False
+    x0, x1, y0, y1 = BOARD
+    return bool(np.any((np.abs(pts[:, 2] - B) <= 0.002 + EPS)
+                       & (pts[:, 0] >= x0 - EPS) & (pts[:, 0] <= x1 + EPS)
+                       & (pts[:, 1] >= y0 - EPS) & (pts[:, 1] <= y1 + EPS)))
 
 
 def gap_to(hand_pts, boxes) -> float:
@@ -270,7 +337,9 @@ _REC: dict = sys.modules.setdefault("_hard_tag_record", type(sys)("_hard_tag_rec
 def reset_record() -> None:
     _REC.clear()
     _REC.update(t=0.0, steps=0, known=True, reason="", failed="", drawn=0.0, credited=0.0, seated=False,
-                ever_seated=False, out=False, clear=False, tag_free=False, cuff_free=False, still=False, hist=[],
+                ever_seated=False, out=False, clear=False, removal_episode=False, removal_valid=False, removal_visible=False,
+                tag_free=False, cuff_free=False,
+                tag_supported=False, cuff_supported=False, still=False, hist=[],
                 last_t=None)
 
 
@@ -287,9 +356,11 @@ def record(states, hand_pts, dt: float) -> None:
         tag, cuff = states["tag"], states["cuff"]
         if "hem" not in cuff.links:
             raise ValueError("pin state unknown")
-        depth = pin_depth(tag, cuff)
+        rise = visible_head_rise(tag, cuff)
+        out = pin_out(tag, cuff)
+        inserted = pin_in_channel(tag, cuff)
         tc, cc = corners(TAG, tag), corners(CUFF, cuff)
-        if not (math.isfinite(depth) and np.isfinite(tc).all() and np.isfinite(cc).all()):
+        if not (math.isfinite(rise) and np.isfinite(tc).all() and np.isfinite(cc).all()):
             raise ValueError("state not finite")
         g_tag, g_cuff = gap_to(hand_pts, part_boxes(TAG, tag)), gap_to(hand_pts, part_boxes(CUFF, cuff))
     except (KeyError, ValueError, AttributeError, TypeError) as e:
@@ -298,27 +369,48 @@ def record(states, hand_pts, dt: float) -> None:
         _REC["t"] += dt
         _REC["steps"] += 1
         return
-    if tc[:, 2].min() < OFF or cc[:, 2].min() < OFF:
+    if tc[:, 2].min() < OFF - EPS or cc[:, 2].min() < OFF - EPS:
         _REC["failed"] = _REC["failed"] or "tag or cuff off the counter"
-    drawn = DEPTH0 - depth
-    step = drawn - _REC["drawn"] if _REC["steps"] > 0 else 0.0
+    drawn = float(max(0.0, rise))
+    if _REC["steps"] == 0:
+        step = 0.0  # an already extracted initial pin cannot manufacture a withdrawal history
+    elif _REC["removal_episode"] and not inserted:
+        # After the actual shaft exits, free lowering beside the tag is not reinsertion, even before 5 mm clearance.
+        drawn, step = _REC["drawn"], 0.0
+    else:
+        step = drawn - _REC["drawn"]
     s = seated(tag)
     # Pin travel counts only on steps the dome sits in the well; pushing the pin back in always counts against it.
-    _REC["credited"] = float(min(DEPTH0, max(0.0, _REC["credited"] + (step if s else min(step, 0.0)))))
+    _REC["credited"] = float(max(0.0, _REC["credited"] + (step if s else min(step, 0.0))))
+    if _REC["removal_episode"] and inserted:
+        _REC["removal_episode"] = _REC["removal_valid"] = _REC["removal_visible"] = False
+    if not inserted and not _REC["removal_episode"]:
+        # Preserve provenance at ACTUAL channel exit, before the larger visible clearance threshold.
+        # Otherwise outside extraction followed by free exterior lowering could manufacture a new reference.
+        _REC["removal_episode"] = True
+        _REC["removal_valid"] = bool(_REC["steps"] > 0 and s and _REC["credited"] >= STEP1 - EPS
+                                      and _REC["credited"] >= drawn - EPS)
+    if out and not _REC["removal_visible"]:
+        # The first readable whole-pin clearance event also has to occur while engaged.
+        _REC["removal_visible"] = True
+        _REC["removal_valid"] = bool(_REC["removal_valid"] and s)
     _REC["drawn"] = drawn
     _REC["seated"] = s
     _REC["ever_seated"] = _REC["ever_seated"] or s
-    _REC["out"] = pin_out(tag, cuff)
+    _REC["out"] = out
     _REC["clear"] = pin_clear(tag, cuff)
     _REC["tag_free"] = bool(g_tag > CLEAR + EPS)
     _REC["cuff_free"] = bool(g_cuff > CLEAR + EPS)
+    _REC["tag_supported"] = on_counter(TAG, tag)
+    _REC["cuff_supported"] = on_counter(CUFF, cuff)
     snap = np.concatenate([tc.ravel(), cc.ravel()])
     hist = _REC["hist"]
     hist.append((_REC["t"], snap))
     while hist and hist[0][0] < _REC["t"] - STILL_S - 1e-9:
         hist.pop(0)
     _REC["still"] = bool(hist[0][0] <= _REC["t"] - STILL_S + 1e-9 + dt
-                         and max(float(np.abs(h - snap).max()) for _, h in hist) <= STILL_MM + EPS)
+                         and max(float(np.linalg.norm((h - snap).reshape(-1, 3), axis=1).max())
+                                 for _, h in hist) <= STILL_MM + EPS)
     _REC["t"] += dt
     _REC["steps"] += 1
 
@@ -330,11 +422,11 @@ def _ok() -> bool:
 def tier() -> float:
     if not _ok() or _REC["credited"] < STEP1 - EPS:
         return 0.0
-    if not (_REC["out"] and _REC["credited"] >= DEPTH0 - FULL_TOL - EPS):
+    if not (_REC["out"] and _REC["removal_visible"] and _REC["removal_valid"]):
         return 0.25
-    if not (_REC["clear"] and _REC["cuff_free"]):
+    if not (_REC["clear"] and _REC["cuff_free"] and _REC["cuff_supported"]):
         return 0.5
-    if not (_REC["tag_free"] and _REC["still"]):
+    if not (_REC["tag_free"] and _REC["tag_supported"] and _REC["still"]):
         return 0.75
     return 1.0
 
@@ -344,9 +436,9 @@ def success(objects):
 
 
 def score(objects):
-    """0.25: the pin drawn 5 mm or more while the tag's dome sat in the detacher's well. 0.5: the pin all the way out
-    of the tag, all of it drawn while the dome sat in the well. 0.75: also the cuff let go with the pin's tip 10 mm or
-    more from the tag's pin hole. 1.0: also no hand near the tag, and tag and cuff still for 1 s. 0 for the whole
+    """0.25: at least 5 mm of exposed head withdrawal while engaged. 0.5: complete seated withdrawal history
+    and the entire pin visibly 5 mm clear of the tag. 0.75: cuff released on the counter, whole pin 10 mm clear.
+    1.0: tag also released on the counter, both still for 1 s. 0 for the whole
     trial if the tag or cuff leaves the counter or the hand or object state is unknown at any step."""
     return tier()
 
@@ -464,6 +556,9 @@ def _on_step(sim) -> None:
         row = dict(t=round(_REC["t"], 3), known=_REC["known"], reason=_REC["reason"], failed=_REC["failed"],
                    seated=_REC["seated"], magnet=_MAG["on"], drawn_mm=round(_REC["drawn"] * 1000, 2),
                    credited_mm=round(_REC["credited"] * 1000, 2), out=_REC["out"], clear=_REC["clear"],
+                   removal_episode=_REC["removal_episode"], removal_valid=_REC["removal_valid"],
+                   removal_visible=_REC["removal_visible"], tag_supported=_REC["tag_supported"],
+                   cuff_supported=_REC["cuff_supported"],
                    tag_free=_REC["tag_free"], cuff_free=_REC["cuff_free"], still=_REC["still"], score=tier())
         try:
             tg, cf = states["tag"], states["cuff"]
