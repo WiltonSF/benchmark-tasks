@@ -20,17 +20,29 @@ from scratch.
 
 ## Real objects (full size)
 
-- **Screen:** 406 x 356 mm (16 x 14 in), for a small window, 0.22 kg (estimate). Frame: roll-formed
-  aluminium, 7/16 x 3/4 in profile (11.1 mm thick, 19.1 mm face); charcoal fibreglass mesh.
-- **Spring latches:** two, near the bottom corners, on the room-side face: a black nylon housing (45 x 65 mm,
-  3 mm thick) with a fixed lug and a sliding tab (each 30 mm proud, 6 mm thick, 28 mm tall, 45 mm above the bottom
-  edge; the tab's travel 11.5 mm). The tab drives a steel bolt along the bottom of the side rail. The bolt follows the
-  common plunger-latch size (7/32 in, 5.6 mm bolt, with a 3/8 in, 9.5 mm, nose, as on Prime-Line screen plunger latches), here standing
-  9.5 mm proud of the screen's side when out. The way it is worked (squeeze both tabs toward the screen's middle,
-  set the screen in, let go) follows published how-to guides for squeeze-tab replacement screens. Unlike a sash
-  whose spring latches are pushed home by the frame, here the bolts cannot be pushed in by the jamb face: both tabs
-  must be held squeezed while the screen is carried in, then released in place. Spring 250 N/m with a
-  4 mm preload (about 1 N out, 3.9 N squeezed): an estimate, not measured on a product.
+- **Screen:** 406 x 356 mm (16 x 14 in), for a small window, 0.22 kg (estimate). It is made from a bought kit,
+  Prime-Line MP8239: roll-formed aluminium frame, 7/16 x 3/4 in profile (11.1 mm thick, 19.05 mm face), mill finish,
+  square-cut plastic corners, vinyl spline and charcoal fibreglass mesh, cut down from 36 x 36 in.
+- **Spring latches:** two, near the bottom corners, on the room-side face: a black printed housing plate (45 x 65 mm,
+  3 mm thick) with a fixed lug and a sliding tab (each 30 mm proud, 6 mm thick, 28 mm tall, centred 45 mm above the
+  bottom edge; the tab's travel 11.5 mm). The tab drives a steel bolt through the side rail (stile), 45 mm above the
+  bottom edge. The bolt is 7/32 in (5.56 mm) wire, the diameter of common screen plunger bolts (for example
+  Prime-Line PL 14660); it stands 9.5 mm (3/8 in) proud of the screen's side when out, the projection this design uses. The
+  way it is worked (draw both bolts in toward the screen's middle, set the screen in, let go) is how a screen with
+  spring plunger bolts is fitted. Unlike a sash whose spring latches are pushed home by the frame, here the bolts
+  cannot be pushed in by the jamb face: both tabs must be held squeezed while the screen is carried in, then
+  released in place. The spring is a stock part, Lee Spring LC 016C 12 M (0.263 N/mm): 1.0 N on the tab at rest
+  and 4.0 N squeezed (the model: 250 N/m with 4 mm preload, 1.0 N and 3.9 N).
+- **The latch is a custom part with a fabrication package.** No commercial screen latch was found that is worked
+  by pinching a tab toward a fixed lug. Commercial plunger bolts (for example PL 14660) are drawn in by the cap on
+  the bolt; this latch is drawn in by squeezing a tab toward a lug, the squeezing that the review of TK-M74T74
+  pointed to. It keeps the plunger bolt's diameter and its place in the frame.
+  [`fabrication/`](fabrication/README.md) supplies, for making the two latches and fitting them to the kit's
+  frame: three dimensioned drawing sheets (SVG and PNG), STL files for
+  the three printed parts of each latch and for a gauge card, a parts list with part numbers for the frame kit, the
+  bolt wire and the spring, 17 numbered assembly and checking steps, and how each scoring condition is read on the
+  real fixture. The dimensions the drawings share with the model (`fabrication/dimensions.json`) are checked
+  against it by `near_misses.py`. The package is a design; no physical copy has been built yet.
 - **Window section:** painted wood, fixed to the table. Wall below the window 70 mm tall, its top the stool
   (projecting 60 mm into the room) and the opening's sill. Jambs 40 mm wide (cropped), their inner faces 3 mm beyond
   the screen's sides, 45 mm deep in front of the seated screen. Head 366 mm above the sill (10 mm above the seated
@@ -38,6 +50,8 @@ from scratch.
   10 mm wide (front to back), 8 mm tall and 12 mm deep, centred on the seated screen's bolt. Glass behind the stop.
 - **Crop:** the jambs and head are cropped to 40 mm out from the opening, the head 35 mm above it, and the section
   ends 10 mm behind the glass; the wall below runs 0.37 m either side and the rest of the wall is left out. Every part that touches the screen is full size.
+
+![The latch, assembled](fabrication/sheet-1-latch-assembly.png)
 
 Why the screen is this size: the latches sit low on the screen, so the robot's grip stays under 0.20 m above the
 table (the pinch is 45 mm above the screen's bottom edge, 115 mm above the table with the screen seated). The
@@ -96,8 +110,25 @@ collision hull's vertices and its faces sampled every 3 mm) more than 5 mm from 
 corner of the screen or latch moving more than 1 mm, for 1 s. Doing nothing or refusing scores 0. Trials are run on
 lots A, B and C and averaged.
 
-With a ruler: the screen's back is against the stop all round, its bottom on the sill, and both bolts are in their
-holes; nobody is touching it, and it stays put for a second.
+### Reading a real trial
+
+The simulator reads the bolt directly. On the real fixture nothing inside the jamb needs to be seen: each tab and its
+bolt are one rigid piece, with the bolt's end 25.5 mm beyond the tab's outer face (sheet 1 of the drawings), so the
+bolt's reach is read from the tab.
+
+| Condition | How it is read | Tool |
+|---|---|---|
+| A bolt is latched (its end 3 mm or more past the jamb's face, in the hole) | The distance from that tab's outer face to the jamb's inner face, taken at the tab's root on the latch plate, is 22.5 mm or less. The readings fall in separate bands: a tab that has sprung fully back reads 16.0 to 22.0 mm wherever the screen sits in its 6 mm of side play (19.0 mm centred); a bolt that missed its hole stops on the jamb's face and reads 25.5 mm or more; a tab squeezed onto the lug reads 27.5 mm or more. A reading between 22.0 and 25.5 mm means a tab stuck part-way, and the 22.5 mm limit decides it | Ruler or calipers from the room side; a square-on photo with the ruler or the card in view; or, as the go/no-go, the printed gauge card laid flat on the latch plate: the card's 22.5 mm width drops in between tab and jamb only when the bolt is not latched |
+| Seated against the stop on all four sides (every back corner within 2 mm) | The screen's room-side face is 43 mm or more behind the jambs' room-side faces at each corner (45 mm hard against the stop); 40 mm or more where the 3 mm latch plate covers the corner | Depth rod or ruler; or the gauge card's 43 mm and 40 mm edges |
+| Bottom on the sill (no corner more than 1.5 mm up) | A 1.5 mm feeler does not enter under either bottom corner | Feeler gauge, or the gauge card's 1.5 mm thickness |
+| Upright within 2 degrees | Follows from the four corner depths and the sill reading | none |
+| Let go and still for 1 s | Every part of both grippers more than 5 mm from the screen and its latches, and nothing moving, for 1 s | Video |
+| Dropped at any time (0 for the trial) | The screen falls with both grippers 20 mm or more from it; the rule's 0.5 m/s is reached after about 13 mm of free fall | Video |
+
+1.0: seated and both tabs read 22.5 mm or less. 0.5: seated and one tab does. 0: anything else. The rule that no
+side edge is more than 0.5 mm past a jamb's face only guards against bodies passing through each other in the
+simulator. `near_misses.py` checks, over the screen's whole side play and the tab's whole travel, that the 22.5 mm
+reading and the simulator's 3 mm bolt depth give the same answer.
 
 ## Scripted demo
 
@@ -122,21 +153,27 @@ in between the jambs with its bottom sliding on the sill, and after the fingers 
 5.9 mm into their holes, with the screen 0.3 mm off the stop and 0.6 mm off centre; success held from step 490 (24.5 s).
 Dream-1 scored 0 in each lot (mean 0), reaching the 700-step limit in all three trials.
 
+This revision adds the fabrication package, the real-trial readings and offline checks for them. The scene, the
+scorer and the demo (`task.py`, `parts.py`, `lots.py` and `tilt.py`) are unchanged from the first submission, so
+no run was repeated: the results above and the videos and screenshot are those of the first submission.
+
 ## Files
 
 | File | What |
 |---|---|
 | `task.py` | Scene, scoring, the trial record and the scripted demo |
-| `near_misses.py` | Every tier's limits on both sides, unintended outcomes and the whole-trial rules, checked offline |
+| `near_misses.py` | Every tier's limits on both sides, unintended outcomes and the whole-trial rules, checked offline; also that the 22.5 mm real-trial reading agrees with the scorer and that the dimensions in `fabrication/dimensions.json` are the model's |
+| `fabrication/` | The real fixture: build instructions and parts list (`README.md`), three drawing sheets, STL files, `dimensions.json`, and the script that writes them |
 | `parts.py` | Kit for articulated parts (the screen's latches) |
 | `lots.py` | Per-trial layouts |
 | `tilt.py` | Tilted grips for the scripted demo |
 
 ## Real-world trials
 
-Clamp the window section to the table. The screen weighs about 0.22 kg; a dropped screen ends the trial with 0 and
-is not a hazard. The latch springs are weak (under 4 N). The only pinch point is between the tab and the lug, as
-for a person.
+Build the screen and latches from [`fabrication/README.md`](fabrication/README.md) and the window section from the
+setup in `task.json`; clamp the window section to the table. Score each trial with the readings under "Reading a
+real trial" above. The screen weighs about 0.22 kg; a dropped screen ends the trial with 0 and is not a hazard. The
+latch springs are weak (about 4 N squeezed). The only pinch point is between the tab and the lug, as for a person.
 
 ## Runtime
 
