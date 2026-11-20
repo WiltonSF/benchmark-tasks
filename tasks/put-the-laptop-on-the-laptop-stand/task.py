@@ -1,5 +1,5 @@
 """A desk (the station table). On the left, an open 13 inch laptop lies propped on three stacked hardcover books, its
-screen showing an upload in progress. On the right stands an empty wooden laptop stand. Both supports are narrower
+screen showing a static illustrative upload image. On the right stands an empty wooden laptop stand. Both supports are narrower
 than the laptop, so its base overhangs them at the sides. Where the laptop lies on the books changes between
 trials. Nobody is in the scene.
 """
@@ -294,7 +294,7 @@ def over_stand(st) -> bool:
 
 
 def on_desk(st) -> bool:
-    """Down on the bare desk: the base's lowest corner within 5 mm of the desk top."""
+    """On the padded desk: the lowest base corner is within 5 mm of the contact plane."""
     return base_low(st) <= TOP + 0.005 + EPS
 
 
@@ -321,19 +321,22 @@ def off_books(st) -> bool:
 
 
 # -- the trial record ---------------------------------------------------------------------------------------------------
-TOUCH = 0.001  # a point of the forearm or hand within 1 mm of the lid counts as touching it
+TOUCH = 0.001  # geometric contact tolerance; a lid brush alone is allowed
+PINCH_SPAN = 0.010  # opposite-face contact witnesses must be within one 10 mm patch
 CLEAR = 0.030  # let go: every sampled hand point at least 30 mm from the laptop
 HOLD_S = 1.0
 STILL_M = 0.001
 TIP_MAX = D(25.0)
-DROP_V = 0.35  # m/s: the laptop's middle falling faster than this means it was dropped or let go in the air
+FALL_V = 0.02  # m/s: downward motion during an observed unsupported, unheld interval
+FALL_M = 0.002  # m: position noise allowance for the same interval
+SUPPORT_GAP = 0.003  # m: support contact tolerance, including contact give
 _rec = parts.__dict__.setdefault("laptop_record", {})
 
 
 def reset_record() -> None:
     _rec.clear()
     _rec.update(steps=0, known=True, reason="", zero=False, why="", gaps=None, snap=None, since=None, held=False,
-                t=0.0, lifted=False, prev=None)
+                t=0.0, lifted=False, prev=None, lid_anchor=None, contacts=None)
 
 
 if not _rec:
@@ -342,69 +345,157 @@ if not _rec:
 
 def _snapshot(objects) -> np.ndarray:
     st = objects["laptop"]
-    return np.concatenate([np.asarray(st.pos, float), [tilt_of(st) * 0.1, lid_angle(st) * 0.1]])
+    o, r = lid_pose(st)
+    lid = []
+    for shape in LID_COLLIDE:
+        c = o + r @ (np.asarray(shape.at) - np.asarray(PIVOT))
+        rr = r @ shape.R
+        h = np.asarray(shape.size) / 2
+        lid.extend(c + rr @ (h * np.array([x, y, z]))
+                   for x in (-1, 1) for y in (-1, 1) for z in (-1, 1))
+    return np.concatenate([base_corners(st), np.asarray(lid)])
 
 
 def end_state(objects) -> bool:
     return bool(on_stand(objects["laptop"]))
 
 
-def observe(objects, gaps, t) -> None:
-    """One control step. ``gaps``: (closest hand point to the lid, closest hand point to the laptop), m; None if the
-    arms could not be read, which costs the trial its credit."""
+def _clip_bottom(poly, axis, bound, sign):
+    """Clip a 3-D bottom-face polygon by one vertical half-plane."""
+    out = []
+    if len(poly) == 0:
+        return np.empty((0, 3))
+    for a, b in zip(poly, np.roll(poly, -1, axis=0)):
+        da, db = sign * (a[axis] - bound), sign * (b[axis] - bound)
+        ina, inb = da <= EPS, db <= EPS
+        if ina:
+            out.append(a)
+        if ina != inb:
+            out.append(a + (b - a) * da / (da - db))
+    return np.asarray(out).reshape((-1, 3))
+
+
+def _support_at(st, centre, half_x, half_y, height):
+    """Some bottom-face area touches this actual horizontal support, not just its infinite plane."""
+    poly = base_corners(st)[[0, 2, 6, 4]]
+    for axis, c, h in ((0, centre[0], half_x), (1, centre[1], half_y)):
+        poly = _clip_bottom(poly, axis, c + h, 1)
+        poly = _clip_bottom(poly, axis, c - h, -1)
+    if not len(poly):
+        return False
+    low = float(poly[:, 2].min())
+    return height - 0.002 - EPS <= low <= height + SUPPORT_GAP + EPS
+
+
+def supported(st):
+    """Contact with the books, stand or padded desk, regardless of whether it is a target placement."""
+    from yam_arena import station
+
+    return any((_support_at(st, BOOKS_C, BOOK_L / 2, BOOK_W / 2, BOOKS_TOP),
+                _support_at(st, STAND_C, STAND_D / 2, STAND_W / 2, STAND_TOP),
+                _support_at(st, station.TABLE_CENTER[:2], station.TABLE_SIZE[0] / 2,
+                            station.TABLE_SIZE[1] / 2, TOP)))
+
+
+def observe(objects, contacts, t) -> None:
+    """One measured control step. Missing or malformed observations fail closed permanently.
+
+    contacts comes from contact_observation(), not an action target or a policy-declared grasp.
+    A sampled lid pinch or unsupported lid hold is a zero; a brush alongside base support is allowed.
+    An observed unheld/unsupported descent is a drop. Inter-frame release/landing is unresolved at 20 Hz.
+    """
     _rec["steps"] += 1
-    _rec["t"] = float(t)
     try:
-        snap = _snapshot(objects)
-        if not np.all(np.isfinite(snap)):
-            raise ValueError("object state unknown")
-        if gaps is None or not all(math.isfinite(g) for g in gaps):
-            raise ValueError("arm state unknown")
+        t = float(t)
+        if not math.isfinite(t) or (_rec["prev"] is not None and t <= _rec["prev"][0]):
+            raise ValueError("missing or non-increasing observation time")
         st = objects["laptop"]
+        for name in ("books", "stand"):
+            fixed = objects.get(name)
+            for field, shape in (("pos", (3,)), ("quat_xyzw", (4,)), ("lin_vel", (3,)), ("ang_vel", (3,))):
+                value = np.asarray(getattr(fixed, field, None), float)
+                if value.shape != shape or not np.isfinite(value).all():
+                    raise ValueError("fixed support state unknown: " + name)
+            if np.linalg.norm(fixed.quat_xyzw) <= EPS:
+                raise ValueError("fixed support rotation unknown: " + name)
+        p, q = np.asarray(st.pos, float), np.asarray(st.quat_xyzw, float)
+        v, w = np.asarray(st.lin_vel, float), np.asarray(st.ang_vel, float)
+        if p.shape != (3,) or q.shape != (4,) or v.shape != (3,) or w.shape != (3,) or \
+                not all(np.isfinite(a).all() for a in (p, q, v, w)) or np.linalg.norm(q) <= EPS or \
+                "lid" not in st.joints or not math.isfinite(float(st.joints["lid"])):
+            raise ValueError("object pose, velocity or lid joint unknown")
+        if "lid" not in st.links or len(st.links["lid"]) != 2:
+            raise ValueError("lid link pose unknown")
+        lp, lq = (np.asarray(a, float) for a in st.links["lid"])
+        if lp.shape != (3,) or lq.shape != (4,) or not np.isfinite(lp).all() or \
+                not np.isfinite(lq).all() or np.linalg.norm(lq) <= EPS:
+            raise ValueError("lid link pose unknown")
+        if contacts is None or not all(k in contacts for k in
+                ("lid_gap", "hand_gap", "lid_contact", "base_support", "display_pinch")):
+            raise ValueError("arm contact state unknown")
+        if not all(math.isfinite(float(contacts[k])) for k in ("lid_gap", "hand_gap")) or \
+                not all(isinstance(contacts[k], (bool, np.bool_)) for k in
+                        ("lid_contact", "base_support", "display_pinch")):
+            raise ValueError("arm contact state malformed")
+        snap = _snapshot(objects)
+        if not np.isfinite(snap).all():
+            raise ValueError("object state unknown")
+        gaps = (float(contacts["lid_gap"]), float(contacts["hand_gap"]))
+        surface = supported(st)
+        free = not surface and not contacts["base_support"]
+        if contacts["base_support"]:
+            _rec["lid_anchor"] = None
+        elif contacts["lid_contact"]:
+            _rec["lid_anchor"] = float(p[2]) if _rec["lid_anchor"] is None else min(_rec["lid_anchor"], float(p[2]))
+        elif surface or contacts["base_support"]:
+            _rec["lid_anchor"] = None
+        display_lift = contacts["lid_contact"] and not contacts["base_support"] and \
+            (free or (_rec["lid_anchor"] is not None and float(p[2]) > _rec["lid_anchor"] + 0.005 + EPS))
+        prev = _rec["prev"]
+        falling = float(v[2]) < -FALL_V or (prev is not None and float(p[2]) < prev[1] - FALL_M - EPS)
+        # Preserve an observed free-flight interval through its landing; support at impact cannot erase it.
+        dropped = falling and (free or (prev is not None and prev[2]))
         if not _rec["zero"]:
-            if gaps[0] <= TOUCH + EPS:
-                _rec.update(zero=True, why="a gripper touched the display lid")
+            if contacts["display_pinch"]:
+                _rec.update(zero=True, why="opposing fingertips gripped the display")
+            elif display_lift:
+                _rec.update(zero=True, why="the laptop was lifted or supported by the display without base-hand support")
             elif abs(lid_angle(st)) > LID_LIMIT + EPS:
                 _rec.update(zero=True, why="the lid turned more than 25 degrees")
             elif tilt_of(st) > TIP_MAX:
                 _rec.update(zero=True, why="the laptop tilted more than 25 degrees")
-            elif float(st.pos[2]) < TOP - 0.02:
+            elif float(p[2]) < TOP - 0.02:
                 _rec.update(zero=True, why="the laptop left the desk")
-            elif on_desk(st):
-                _rec.update(zero=True, why="the laptop came down on the bare desk")
-            elif _rec["prev"] is not None and float(t) > _rec["prev"][0] + EPS and \
-                    (float(st.pos[2]) - _rec["prev"][1]) / (float(t) - _rec["prev"][0]) < -DROP_V:
-                _rec.update(zero=True, why="the laptop was dropped (falling faster than 0.35 m/s)")
-        _rec["prev"] = (float(t), float(st.pos[2]))
+            elif dropped:
+                _rec.update(zero=True, why="observed unsupported descent without base-hand support")
+        _rec["contacts"] = dict(contacts, surface_support=surface, free=free, falling=falling)
+        _rec["t"] = t
+        _rec["prev"] = (t, float(p[2]), free)
         if off_books(st):
             _rec["lifted"] = True
         done = end_state(objects) and gaps[1] >= CLEAR - EPS
     except (KeyError, ValueError, TypeError, AttributeError, IndexError) as e:
         _rec.update(known=False, reason=str(e), since=None, held=False)
         return
-    _rec["gaps"] = tuple(float(g) for g in gaps)
-    if _rec["snap"] is None or float(np.abs(snap - _rec["snap"]).max()) > STILL_M + EPS:
+    _rec["gaps"] = gaps
+    if _rec["snap"] is None or float(np.linalg.norm(snap - _rec["snap"], axis=1).max()) > STILL_M + EPS:
         _rec["snap"] = snap
-        _rec["since"] = float(t) if done else None
+        _rec["since"] = t if done else None
     elif not done:
         _rec["since"] = None
     elif _rec["since"] is None:
-        _rec["since"] = float(t)
-    _rec["held"] = _rec["since"] is not None and float(t) - _rec["since"] >= HOLD_S - EPS
+        _rec["since"] = t
+    _rec["held"] = _rec["since"] is not None and t - _rec["since"] >= HOLD_S - EPS
 
 
 # -- scoring ------------------------------------------------------------------------------------------------------------
 def score(objects):
-    """0 for the whole trial once any part of an arm from the forearm out has touched the display lid (screen, bezel
-    or back), the lid has turned more than 25 degrees from where it started, the laptop has tilted more than 25
-    degrees, been dropped (its middle falling faster than 0.35 m/s), come down on the bare desk or left it (and if
-    the scene or the arms could not be read at any step). Otherwise, by the end state: 0 still on or partly on the
-    books, or lifted less than 10 mm off them; 0.25 lifted clear of the books but not over the stand; 0.5 with its
-    middle over the stand's top outline and no lower than its top, but not meeting 0.75; 0.75 on the stand the
-    right way round, held or let go: turned at most 15 degrees, front edge 20 to 90 mm in front of the stand's front
-    edge, middle within 25 mm side to side, the middle of its underside 0 to 3 mm above the stand's top (2 mm of
-    contact give allowed), level within 5 degrees, lid within 25 degrees; 1.0 as 0.75 with every hand point 30 mm
-    or more from the laptop and the laptop not moving more than 1 mm for 1 s."""
+    """Whole-trial zeros: opposing fingertips gripping the display; a display-only hold unsupported by a surface;
+    a display-only lift of more than 5 mm while contact persists; lid movement or base tilt over 25 degrees;
+    observed unheld unsupported descent; leaving the desk; unknown
+    observations. Incidental lid contact and controlled padded-desk set-downs are allowed. End-state scores and
+    the 30 mm clearance / 1 s stillness requirement remain unchanged. A laptop left on the desk scores 0.
+    """
     try:
         if not _rec["known"] or _rec["zero"] or _rec["steps"] == 0 or _rec["gaps"] is None:
             return 0.0
@@ -486,17 +577,49 @@ def hand_points(link_poses: dict, links=HAND_LINKS) -> np.ndarray:
                            for (_, name), m in link_poses.items() if name in links])
 
 
-def hand_gaps(objects, hands, arms=None):
-    """(closest arm point to the lid, closest hand point to the laptop's base or lid), m. ``arms``: the points of
-    every link from the forearm out (for the lid rule); ``hands``: the hand's (for the let-go distance)."""
+def contact_observation(objects, clouds):
+    """Contact proxies from measured link hull points, retaining arm and fingertip identity.
+
+    Front/back mean the two broad faces of the articulated display slab, including its free rim.
+    A base-side graze is not base support. No force or damage measurement is claimed.
+    """
+    expected = {(arm, link) for arm in ("left_robot", "right_robot") for link in ARM_LINKS}
+    if clouds is None or set(clouds) != expected:
+        return None
+    if any(np.asarray(p).ndim != 2 or np.asarray(p).shape[1] != 3 or len(p) == 0 or
+           not np.isfinite(p).all() for p in clouds.values()):
+        return None
     st = objects["laptop"]
-    arms = hands if arms is None else arms
-    near_a = arms[np.linalg.norm(arms - np.asarray(st.pos, float), axis=1) < 0.50]
-    near = hands[np.linalg.norm(hands - np.asarray(st.pos, float), axis=1) < 0.45]
-    g_lid = lid_gap(near_a, st) if len(near_a) else 0.50
-    g_hand_lid = lid_gap(near, st) if len(near) else 0.45
-    g_base = base_gap(near, st) if len(near) else 0.45
-    return g_lid, min(g_hand_lid, g_base)
+    hands = np.concatenate([p for (_, link), p in clouds.items() if link in HAND_LINKS])
+    arms = np.concatenate(list(clouds.values()))
+    lid_g = lid_gap(arms, st)
+    hand_g = min(lid_gap(hands, st), base_gap(hands, st))
+    local = (hands - np.asarray(st.pos, float)) @ _rot(st.quat_xyzw)
+    under = (np.abs(local[:, 0]) <= LAP_D / 2 + EPS) & (np.abs(local[:, 1]) <= LAP_W / 2 + EPS) & \
+            (np.abs(local[:, 2]) <= SUPPORT_GAP + EPS)
+    o, r = lid_pose(st)
+    sides = []
+    for (_, link), points in clouds.items():
+        if link not in ("tip_left", "tip_right"):
+            continue
+        face = [[], []]
+        for shape in LID_COLLIDE:
+            c = o + r @ (np.asarray(shape.at, float) - np.asarray(PIVOT, float))
+            local = (points - c) @ (r @ shape.R)
+            h = np.asarray(shape.size, float) / 2
+            inside = (np.abs(local[:, 0]) <= h[0] + TOUCH + EPS) & \
+                     (np.abs(local[:, 1]) <= h[1] + TOUCH + EPS)
+            for i, sign in enumerate((-1, 1)):
+                hit = inside & (np.abs(local[:, 2] - sign * h[2]) <= TOUCH + EPS)
+                face[i].extend(local[hit, :2])
+        sides.append([np.asarray(f).reshape((-1, 2)) for f in face])
+    def opposing(a, b):
+        return bool(len(a) and len(b) and np.any(
+            np.linalg.norm(a[:, None, :] - b[None, :, :], axis=2) <= PINCH_SPAN + EPS))
+    pinch = any(opposing(a[0], b[1]) or opposing(a[1], b[0])
+                for i, a in enumerate(sides) for b in sides[i + 1:])
+    return dict(lid_gap=lid_g, hand_gap=hand_g, lid_contact=bool(lid_g <= TOUCH + EPS),
+                base_support=bool(np.any(under)), display_pinch=bool(pinch))
 
 
 def _arm_poses(sim):
@@ -508,6 +631,8 @@ def _arm_poses(sim):
         poses = parts._np(asset.data.body_link_pose_w)[0]
         for i, n in enumerate(asset.body_names):
             if n in ARM_LINKS:
+                if not np.isfinite(poses[i]).all() or np.linalg.norm(poses[i, 3:]) <= EPS:
+                    return None
                 m = np.eye(4)
                 m[:3, :3] = _rot(poses[i, 3:])
                 m[:3, 3] = poses[i, :3] - origin
@@ -538,8 +663,6 @@ lots._apply = _apply_lot
 
 @parts.on_step
 def _step(sim) -> None:
-    if _rec.get("last_t") == sim.t:
-        return
     _rec["last_t"] = sim.t
     try:
         objects = sim.states()
@@ -549,13 +672,15 @@ def _step(sim) -> None:
     try:
         poses = _arm_poses(sim)
         if poses is not None:
-            g = hand_gaps(objects, hand_points(poses), hand_points(poses, ARM_LINKS))
+            clouds = {(arm, link): link_points(link, STEP[link]) @ m[:3, :3].T + m[:3, 3]
+                      for (arm, link), m in poses.items()}
+            g = contact_observation(objects, clouds)
     except Exception:  # noqa: BLE001
         g = None
     observe(objects, g, float(sim.t))
     log = (str(pathlib.Path(os.environ["TRACE_OUT"]).with_name("laptop.jsonl")) if os.environ.get("TRACE_OUT")
            else os.environ.get("LAPTOP_LOG"))
-    if log and _rec["steps"] % 5 == 0 and objects:
+    if log and objects:
         try:
             st = objects["laptop"]
             r = _rot(st.quat_xyzw)
@@ -565,7 +690,8 @@ def _step(sim) -> None:
                        lid=round(math.degrees(lid_angle(st)), 1), low=round(base_low(st) - TOP, 4),
                        on_stand=on_stand(st), over=over_stand(st), off_books=off_books(st),
                        gaps=None if _rec["gaps"] is None else [round(v, 4) for v in _rec["gaps"]],
-                       held=_rec["held"], known=_rec["known"], reason=_rec["reason"])
+                       held=_rec["held"], known=_rec["known"], reason=_rec["reason"],
+                       contacts=_rec["contacts"], velocity=np.round(st.lin_vel, 4).tolist())
             base = sim.env.unwrapped
             origin = parts._np(base.scene.env_origins[0])
             for arm in ("left_robot", "right_robot"):
