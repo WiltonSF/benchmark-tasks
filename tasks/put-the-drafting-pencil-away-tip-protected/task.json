@@ -1,0 +1,21 @@
+{
+  "title": "Put the drafting pencil away with its tip protected",
+  "category": "Societal relevance",
+  "keywords": [
+    "bimanual",
+    "desk",
+    "mechanical pencil",
+    "retractable tip",
+    "pocket clip",
+    "storage"
+  ],
+  "instruction": "Put the drafting pencil in the tray with its tip protected, then let go.",
+  "context": "A drafting pencil's thin lead-guide sleeve bends if the pencil is put away with it sticking out. On the Pentel GraphGear 1000 the sleeve slides back into the nose only when the pocket clip is opened; pressing the rear button again advances lead and does not stow it. The clip opens only when its raised back end is pressed towards the barrel, and that press tips a loose pencil up off its rest.",
+  "setup": "Station table. Coordinates: x forward from the line through the two arm bases, y to the robot's left, from the midpoint between the bases; table top 0 mm. Drafting mechanical pencil modelled on the Pentel GraphGear 1000 (0.5 mm), 150 mm long with its sleeve out, about 20 g. From the tip: a 1.2 mm metal lead-guide sleeve sticking 4 mm out of a stepped silver nose cone 14 mm long (3 to 7 mm across); a silver knurled grip 10 mm across and 40 mm long; a dark barrel 9 mm across and 83 mm long; a silver push button 6 mm across and 9 mm long. A silver pocket clip 3.5 mm wide lies on top of the barrel's back half: a 36 mm blade from 81 mm behind the nose, a hinge knuckle at 117 mm, then a 16 mm press end that rises at 13 degrees away from the barrel. Pressing the press end down (about 4 mm, to the barrel) turns the clip about its hinge and lifts its front jaw; a spring shuts it again. The pencil lies across a two-post pen rest (light grey, 66 x 36 x 5 mm base, 0.15 kg, loose), its axis 25 mm above the table in a 90-degree V notch in each post; the posts are 50 mm apart, the front one 61 mm behind the nose. Pen tray: light grey plastic, inner 190 x 40 mm, walls 3 mm thick and 15 mm high, floor 3 mm, 0.12 kg, loose. Pencil and rest are the same in both lots: pencil centre (75 mm from either end) at x 340, y 0 mm, lying left-right with the tip to the robot's left and the clip on top; rest centre x 340, y -15 mm. Lot A (screenshot): tray centre x 250, y 0 mm, its length left-right. Lot B: tray centre x 290, y 200 mm (to the robot's left), its length pointing away from the robot. Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "Per trial: 0.5 if the guide sleeve is back inside the nose (no more than 0.3 mm sticking out); plus 0.5 if the whole pencil lies inside the tray's inner walls, on its floor (axis no more than 9 mm above the floor), within 10 degrees of level, with the tray flat (within 5 degrees). Either half counts only after both grippers have been more than 5 mm from the pencil and the tray, with both still, for 1 s. The score is 0 if the pencil leaves the table at any time during the trial. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "600 steps (30 s at 20 Hz)",
+  "reset_notes": "1. Press the rear button until the guide sleeve is fully out (4 mm) and let the clip spring shut. 2. Set the pen rest with its centre at x 340, y -15 mm, posts left-right, and lay the pencil in its notches, clip on top, tip to the robot's left, pencil centre at x 340, y 0 mm. 3. Lot A: tray centre at x 250, y 0 mm, length left-right. Lot B: tray centre at x 290, y 200 mm, length pointing away from the robot. 4. Move both arms to their start pose. After the trial, check the video for the pencil leaving the table.",
+  "fidelity": "Rigid shapes at the listed length, width and about 20 g mass (split 11/5/4 g between barrel, tip carrier and clip is estimated). The internal catch (a tooth on the clip holding the sleeve's carrier), the springs and the clip's travel are estimates; the maker confirms that opening the clip stows the tip. The rear button is rigid: lead feed is not modelled. Two lots stop a fixed habit, not a memorised replay.",
+  "scores": "Dream-1 run: 0.0 in each of lots A and B (each ran the full 30 s); demo: 1.0 in each lot",
+  "media": "M-ZZQ8RW"
+}
