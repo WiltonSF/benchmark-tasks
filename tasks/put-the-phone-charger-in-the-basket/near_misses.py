@@ -48,10 +48,71 @@ def states(charger=None, cq=None, plug=None, pq=None, basket=None, cover=0.0):
             BASKET.name: BASKET.state(pos=basket, quat_xyzw=quat(yaw_deg=math.degrees(lot.yaw_of(BASKET.name))))}
 
 
-def grade(objs, held=1.0, known=True, invalid=False, dropped=False, cord_held=False, yanked=False, stale=False):
-    task.REC.update(known=known, invalid=invalid, dropped=dropped, cord_held=cord_held, yanked=yanked, held=held)
+def grade(objs, held=1.0, known=True, invalid=False, dropped=False, yanked=False, stale=False):
+    task.REC.update(known=known, invalid=invalid, dropped=dropped, yanked=yanked, held=held)
     task.REC["stamp"] = () if stale else task._stamp(objs)
     return task.score(objs)
+
+
+# -- whole trials played through the task's own step hook (20 Hz), hand points given per step ----------------------
+FAR = np.array([[0.0, 0.0, 2.0]])
+AWAY = [FAR, FAR, FAR, FAR, FAR, FAR]  # both grippers far from everything
+
+
+class FakeSim:
+    t = 0.0
+    now = None
+
+    def states(self):
+        return self.now
+
+
+def trial(frames, still=25):
+    """Play (states, hand clouds) frames through task._step, then ``still`` frames of the last state with both hands
+    away; return task.score of that end state."""
+    frames = list(frames) + [(frames[-1][0], AWAY)] * still
+    task.REC.clear()
+    task.REC.update(task._fresh())
+    sim, real = FakeSim(), task.observation.hand_state
+    try:
+        for st, clouds in frames:
+            sim.t += 0.05
+            sim.now = st
+            task.observation.hand_state = lambda _sim, c=clouds: (c, 0.0)
+            task._step(sim)
+    finally:
+        task.observation.hand_state = real
+    return task.score(frames[-1][0])
+
+
+def pinch(box, arm="left", clear=0.0015, axis=1):
+    """Both fingertips of one gripper either side of ``box`` (centre, rotation, half size), ``clear`` off its faces
+    along its own ``axis``."""
+    c, r, h = box
+    d = np.zeros(3)
+    d[axis] = h[axis] + clear
+    tips = [np.array([c + r @ d]), np.array([c - r @ d])]
+    return [FAR, *tips, FAR, FAR, FAR] if arm == "left" else [FAR, FAR, FAR, FAR, *tips]
+
+
+def one_tip(box, arm="left"):
+    """One fingertip against ``box``, the other far off it (a push or a hook)."""
+    c, r, h = box
+    tip = np.array([c + r @ np.array((0.0, h[1] + 0.001, 0.0))])
+    return [FAR, tip, FAR + 0.1, FAR, FAR, FAR] if arm == "left" else [FAR, FAR, FAR, FAR, tip, FAR + 0.1]
+
+
+def on_body(plug_state, arm="left"):
+    return pinch(task.plug_grip(plug_state)[0], arm)
+
+
+def on_cord(plug_state, arm="right", link=3):
+    """Both fingertips on one link of the wall plug's free cord (well clear of its body)."""
+    return pinch(task.boxes(PLUG, plug_state, links=True)[link], arm, axis=2)
+
+
+def on_strain_relief(plug_state, arm="left"):
+    return pinch(task.boxes(PLUG, plug_state)[-1], arm, axis=2)
 
 
 # check.py runs these against the task's own history, which is unobserved before any simulator step: all score 0.
@@ -146,7 +207,6 @@ def run():
             states(charger_lying(bx, by, TOP + task.BASKET_OUT[2] + 0.010), ON_SIDE)[CH.name],
             BASKET.state(pos=(bx, by, TOP)))))
         # whole-trial rules and fail closed
-        r.append(("a gripper held the cord at any time: 0", grade(full, cord_held=True) == 0.0))
         r.append(("the wall plug came out with no hand on its body (pulled by its cord or knocked out): 0",
                   grade(full, yanked=True) == 0.0))
         r.append(("a handled part left the floor area at any time: 0", grade(full, dropped=True) == 0.0))
@@ -156,28 +216,88 @@ def run():
         bad = dict(full)
         bad[CH.name] = parts.PartState(**{**full[CH.name].__dict__, "pos": np.array([math.nan, 0.0, 0.0])})
         r.append(("NaN charger position: 0", grade(bad) == 0.0))
-        # the cord-holding rule: both fingertips of one gripper within 2 mm of the same cord link
-        links = [b for p in task.CORDS for b in task.boxes(p, p.state(), links=True)]
-        c, rr, h = links[2]
-        top_pt, bot = c + rr @ np.array((0.0, 0.0, h[2] + 0.0015)), c - rr @ np.array((0.0, 0.0, h[2] + 0.0015))
-        far = np.array([[0.0, 0.0, 2.0]])
-        pinch = [far, np.array([top_pt]), np.array([bot]), far, far, far]
-        r.append(("both left fingertips 1.5 mm from one cord link: holding the cord", task.holds_cord(pinch, links)))
-        one = [far, np.array([top_pt]), far + 0.1, far, far, far]
-        r.append(("one fingertip on a cord link: not holding it", not task.holds_cord(one, links)))
-        wide = [far, np.array([c + rr @ np.array((0.0, 0.0, h[2] + 0.0025))]),
-                np.array([c - rr @ np.array((0.0, 0.0, h[2] + 0.0025))]), far, far, far]
-        r.append(("fingertips 2.5 mm off a cord link: not holding it", not task.holds_cord(wide, links)))
-        right = [far, far, far, far, np.array([top_pt]), np.array([bot])]
-        r.append(("right gripper pinching a cord link: holding the cord", task.holds_cord(right, links)))
-        # the plug-body rule: both fingertips of one gripper within 3 mm of the plug's body when it leaves the wall
-        pb = task.boxes(PLUG, full[PLUG.name])
-        c1, r1, h1 = pb[0]
-        sides = [c1 + r1 @ np.array((0.0, s * (h1[1] + 0.0025), 0.0)) for s in (1, -1)]
+        # holding the plug's body: both fingertips of one gripper within 3 mm of its moulding or ribbed grip
+        seated = PLUG.state(pos=in_wall(W1))
+        pb = task.plug_grip(seated)
         r.append(("both left fingertips 2.5 mm off the plug body's sides: holding it",
-                  task.holds_body([far, np.array([sides[0]]), np.array([sides[1]]), far, far, far], pb)))
+                  task.holds_body(pinch(pb[0], clear=0.0025), pb)))
+        r.append(("both fingertips 3.5 mm off the plug body's sides: not holding it",
+                  not task.holds_body(pinch(pb[0], clear=0.0035), pb)))
         r.append(("one fingertip on the plug body only (a push or a hook): not holding it",
-                  not task.holds_body([far, np.array([sides[0]]), far + 0.1, far, far, far], pb)))
+                  not task.holds_body(one_tip(pb[0]), pb)))
+        r.append(("both fingertips on the strain relief behind the grip: not holding the body",
+                  not task.holds_body(on_strain_relief(seated), pb)))
+        r.append(("both fingertips on the cord: not holding the body", not task.holds_body(on_cord(seated), pb)))
+
+        # whole trials through the step hook: holding the cord is not penalised; drawing the wall plug out
+        # without a hand on its body is (2 mm or more out from the deepest it has been since a hand last held it)
+        def end(plug=None, pq=None, charger=in_b, cover=0.0):
+            return states(charger, ON_SIDE, plug, pq, cover=cover)
+
+        def drawn(gaps, hands, **kw):
+            """The wall plug drawn through ``gaps`` (face off the outlet's face, m), ``hands(plug_state)`` each step."""
+            out = []
+            for g in gaps:
+                st = end(in_wall(W1, g), **kw)
+                out.append((st, hands(st[PLUG.name])))
+            return out
+
+        def carried(hands, **kw):
+            """The unplugged plug lifted and moved about the floor (it swings on its cord), ``hands`` each step."""
+            out = []
+            for k in range(12):
+                st = end((PLUG_OUT[0] - 0.004 * k, PLUG_OUT[1] - 0.006 * k, PLUG_OUT[2] + 0.002 * min(k, 6)),
+                         PLUG_OUT_Q, **kw)
+                out.append((st, hands(st[PLUG.name])))
+            return out
+
+        set_down = end(PLUG_OUT, PLUG_OUT_Q)
+        floor_ch = charger_lying(0.120, 0.090, TOP)
+        out_by_body = drawn(np.linspace(0.0002, 0.030, 15), on_body) + [(set_down, on_body(set_down[PLUG.name]))]
+        r.append(("end state check: charger in the basket, plug out = 1.0 when nothing else happened",
+                  grade(set_down) == 1.0))
+        # (1) the cord held after unplugging: scored as the end state says
+        r.append(("plug drawn out by its body, then the cord held and the plug carried by it: 1.0",
+                  trial(out_by_body + carried(on_cord)) == 1.0))
+        r.append(("same, the charger left on the floor: 0.6 (as the end state says)",
+                  trial(drawn(np.linspace(0.0002, 0.030, 15), on_body, charger=floor_ch)
+                        + carried(on_cord, charger=floor_ch)) == 0.6))
+        last = carried(on_cord)[-1][0]
+        r.append(("same, a gripper still holding the cord at the end (everything still): 1.0",
+                  trial(out_by_body + carried(on_cord) + [(last, on_cord(last[PLUG.name]))] * 25, still=0) == 1.0))
+        # (2) the cord held while the wall plug stays in the wall
+        shut = math.pi / 2
+        r.append(("cord held while the plug stays seated (drawn 1.5 mm by it); cover at CLOSE, charger in the basket: 1.0",
+                  trial(drawn(np.linspace(0.0002, 0.0017, 6), on_cord, cover=shut)) == 1.0))
+        r.append(("the outlet end's cord held, wall plug seated; cover at CLOSE, charger in the basket: 1.0",
+                  trial([(end(cover=shut), pinch(task.boxes(END, END.state(joints={"a_cover": shut}),
+                                                            links=True)[2], "right", axis=2))] * 10) == 1.0))
+        # (3) the wall plug drawn out without a hand on its body: 0 for the trial, whatever the end state
+        r.append(("plug pulled out of the wall by its cord, no gripper on its body; then charger in the basket: 0",
+                  trial(drawn(np.linspace(0.0002, 0.030, 15), on_cord) + carried(on_cord)) == 0.0))
+        r.append(("plug drawn 2.2 mm out by its cord, then pushed back fully in; cover at CLOSE: 0",
+                  trial(drawn(np.linspace(0.0002, 0.0024, 5), on_cord, cover=shut)
+                        + drawn(np.linspace(0.0024, 0.0002, 5), lambda p: one_tip(task.plug_grip(p)[0]),
+                                cover=shut)) == 0.0))
+        r.append(("plug drawn 15 mm by its cord, then gripped by its body for the last of it: 0",
+                  trial(drawn(np.linspace(0.0002, 0.015, 8), on_cord)
+                        + drawn(np.linspace(0.015, 0.030, 5), on_body) + [(set_down, AWAY)]) == 0.0))
+        r.append(("plug hooked out by one fingertip on its body: 0",
+                  trial(drawn(np.linspace(0.0002, 0.030, 15), lambda p: one_tip(task.plug_grip(p)[0]))
+                        + [(set_down, AWAY)]) == 0.0))
+        r.append(("plug pulled out by both fingertips on its strain relief: 0",
+                  trial(drawn(np.linspace(0.0002, 0.030, 15), on_strain_relief) + [(set_down, AWAY)]) == 0.0))
+        r.append(("plug knocked out with no hand near it: 0",
+                  trial(drawn(np.linspace(0.0002, 0.030, 4), lambda p: AWAY) + [(set_down, AWAY)]) == 0.0))
+        # (4) the wall plug drawn out by its body: normal credit
+        r.append(("plug drawn out by its body and set down; charger in the basket: 1.0", trial(out_by_body) == 1.0))
+        r.append(("plug drawn 5 mm by its body and let go, then pushed back in with one fingertip; cover at CLOSE: 1.0",
+                  trial(drawn(np.linspace(0.0002, 0.0052, 5), on_body, cover=shut)
+                        + drawn(np.linspace(0.0052, 0.0002, 5), lambda p: one_tip(task.plug_grip(p)[0]),
+                                cover=shut)) == 1.0))
+        r.append(("plug drawn 5 mm by its body, let go, then drawn on by its cord: 0",
+                  trial(drawn(np.linspace(0.0002, 0.0052, 5), on_body)
+                        + drawn(np.linspace(0.0052, 0.030, 8), on_cord) + [(set_down, AWAY)]) == 0.0))
         # stillness and the let-go rule
         bxs = [b for p in task.WATCHED for b in task.boxes(p, full[p.name])]
         c0, r0, h0 = task.boxes(CH, full[CH.name])[0]

@@ -433,15 +433,20 @@ def _wall_blades():
 _PB, _PC, _PS = PLUG_BODY, PLUG_COLLAR, PLUG_STUB
 _PLUG_TAIL = np.array(PLUG_POS) - (_PB[0] + _PC[0] + _PS[0], 0.0, 0.0)
 PLUG_CORD = _lay(_PLUG_TAIL, [(180, -65), (180, -85), (180, -85), (180, -10), (270, 0), (270, 0)])
+_PLUG_MOULD = parts.box(_PB, at=(-_PB[0] / 2, 0.0, 0.0), color=WHITE)
+_PLUG_RIBS = [parts.box((0.0015, _PC[1] + 0.001, _PC[2] + 0.001), at=(-_PB[0] - 0.002 - 0.0035 * k, 0.0, 0.0),
+                        color=COVER_C) for k in range(3)]  # the ribbed grip (look and feel)
+_PLUG_COLLAR = parts.box(_PC, at=(-_PB[0] - _PC[0] / 2, 0.0, 0.0), color=WHITE)
+# The plug's body for the wall-plug rule: its moulding and ribbed grip (not its blades, strain relief or cord).
+PLUG_GRIP = (_PLUG_MOULD, *_PLUG_RIBS, _PLUG_COLLAR)
 CORD_PLUG = parts.Part(
     "cord_plug", pos=PLUG_POS, mass=0.025, friction=PLUG_MU, contact_offset=0.001, self_collision=False,
     shapes=[
-        parts.box(_PB, at=(-_PB[0] / 2, 0.0, 0.0), color=WHITE),
+        _PLUG_MOULD,
         *_wall_blades(),
-        *[parts.box((0.0015, _PC[1] + 0.001, _PC[2] + 0.001), at=(-_PB[0] - 0.002 - 0.0035 * k, 0.0, 0.0),
-                    color=COVER_C) for k in range(3)],  # the ribbed grip (look and feel)
-        parts.box(_PC, at=(-_PB[0] - _PC[0] / 2, 0.0, 0.0), color=WHITE),
-        parts.box(_PS, at=(-_PB[0] - _PC[0] - _PS[0] / 2, 0.0, 0.0), color=WHITE),
+        *_PLUG_RIBS,
+        _PLUG_COLLAR,
+        parts.box(_PS, at=(-_PB[0] - _PC[0] - _PS[0] / 2, 0.0, 0.0), color=WHITE),  # the strain relief
     ],
     joints=_cord("cord_plug_cord", PLUG_POS, PLUG_CORD))
 
@@ -574,8 +579,8 @@ SEAT_GAP = 0.002  # fully in: the plug face within 2 mm of the outlet face
 SQUARE_DEG = 5.0
 IN_AT = 0.0005  # a blade counts as in an outlet once its tip is 0.5 mm past the face, inside a slot mouth
 CLEAR = 0.005  # let go: every sampled gripper and fingertip point more than 5 mm from every handled part
-CORD_HOLD = 0.002  # a gripper holds the cord when both of its fingertips are within 2 mm of the same cord link
-PLUG_HOLD = 0.003  # the wall plug comes out held by its body: both fingertips of one gripper within 3 mm of it
+PLUG_HOLD = 0.003  # a gripper holds the wall plug's body: both of its fingertips within 3 mm of it
+PULL_OUT = 0.002  # the wall plug drawn this far out of the wall while no gripper holds its body: 0 for the trial
 CLOSE_TOL = math.radians(10.0)  # the cover counts as at CLOSE within 10 degrees of it
 HOLD_S = 1.0
 STILL_V, STILL_W = 0.005, 0.05  # m/s, rad/s
@@ -742,22 +747,35 @@ def hand_gap(clouds, box_list) -> float:
     return best
 
 
-def holds_cord(clouds, link_boxes) -> bool:
-    """Either gripper has both fingertips within 2 mm of the same cord link (it is holding the cord). ``clouds`` is
-    observation.hand_state's list: gripper, left tip, right tip for the left arm, then the same for the right arm."""
-    for k in (0, 3):
-        for b in link_boxes:
-            if hand_gap([clouds[k + 1]], [b]) <= CORD_HOLD and hand_gap([clouds[k + 2]], [b]) <= CORD_HOLD:
-                return True
-    return False
+def plug_grip(s) -> list:
+    """(centre, rotation, half size) of the wall plug's body (moulding and ribbed grip; not blades, strain relief or
+    cord), world."""
+    p, r = _pose(s)
+    return [(p + r @ np.asarray(sh.at), r @ sh.turn, sh.own_half) for sh in PLUG_GRIP]
 
 
 def holds_body(clouds, body_boxes) -> bool:
-    """Either gripper has both fingertips within 3 mm of the given body (it is holding it)."""
+    """Either gripper has both fingertips within 3 mm of the given body (it is holding it). ``clouds`` is
+    observation.hand_state's list: gripper, left tip, right tip for the left arm, then the same for the right arm."""
     for k in (0, 3):
         if hand_gap([clouds[k + 1]], body_boxes) <= PLUG_HOLD and hand_gap([clouds[k + 2]], body_boxes) <= PLUG_HOLD:
             return True
     return False
+
+
+def watch_plug(clouds, plug) -> None:
+    """The wall-plug rule, once per control step. While no gripper holds the plug's body, the plug must not come 2 mm
+    or more further out of the wall than the deepest it has been since a gripper last held its body (drawn out by its
+    cord, hooked or knocked out): if it does, the trial scores 0. Holding the cord is not checked: a cord held while
+    the plug stays in, or while it is out of the wall (no blade tip in a slot, depth 0), never trips this rule; a plug
+    put back into an outlet is watched again."""
+    depth = max(wall_depth(plug, o) for o in WALL_OUTLETS)  # 0 once no blade tip is in a slot mouth
+    if REC["plug_ref"] is None or holds_body(clouds, plug_grip(plug)):
+        REC["plug_ref"] = depth
+        return
+    if REC["plug_ref"] - depth >= PULL_OUT - EPS:
+        REC["yanked"] = True
+    REC["plug_ref"] = max(REC["plug_ref"], depth)
 
 
 def motion(prev, s, dt):
@@ -782,7 +800,7 @@ REC = {}
 
 
 def _fresh():
-    return dict(known=False, invalid=False, dropped=False, cord_held=False, yanked=False, plug_in=True, held=0.0,
+    return dict(known=False, invalid=False, dropped=False, yanked=False, plug_ref=None, held=0.0,
                 time=0.0, prev=None, gap=math.inf, stamp=(), poses=None, peak=0.0)
 
 
@@ -808,13 +826,8 @@ def _step(sim):
         clouds, force = observation.hand_state(sim)
         gap = hand_gap(clouds, [b for p in WATCHED for b in boxes(p, st[p.name])])
         REC["known"] = math.isfinite(gap) and len(clouds) == 6
-        if REC["known"] and holds_cord(clouds, [b for p in CORDS for b in boxes(p, st[p.name], links=True)]):
-            REC["cord_held"] = True  # a plug or the cord end pulled by its cord: zero for the rest of the trial
-        plug_in = not plug_out(st[CORD_PLUG.name])
-        if REC["known"] and REC["plug_in"] and not plug_in and not holds_body(clouds, boxes(CORD_PLUG,
-                                                                                            st[CORD_PLUG.name])):
-            REC["yanked"] = True  # the wall plug came out without a hand on its body (by its cord, or knocked out)
-        REC["plug_in"] = plug_in
+        if REC["known"]:
+            watch_plug(clouds, st[CORD_PLUG.name])  # the wall plug drawn out without a hand on its body: 0
     except (ValueError, AttributeError, KeyError, IndexError, TypeError):
         gap, REC["known"] = -math.inf, False
     if not REC["known"] or not 0 < dt <= 0.100001:
@@ -843,7 +856,7 @@ def _step(sim):
 def _trace(sim, st, moves, gap, force):
     row = dict(t=round(REC["time"], 2), lot=lots.current().name, gap_mm=round(gap * 1000, 1),
                finger_N=None if not math.isfinite(force) else round(float(force), 2), held=round(REC["held"], 2),
-               cord_held=REC["cord_held"], yanked=REC["yanked"], dropped=REC["dropped"], invalid=REC["invalid"],
+               yanked=REC["yanked"], dropped=REC["dropped"], invalid=REC["invalid"],
                score=score(st))
     try:
         ch, end, plug = (st[p.name] for p in WATCHED)
@@ -873,14 +886,15 @@ def _trace(sim, st, moves, gap, force):
 
 
 def score(objects) -> float:
-    """0 for the whole trial once a gripper has held the cord, the wall plug has come out without a hand on its body,
-    or a handled part has left the floor area. Otherwise, once the arms have let go and everything has been still for
-    1 s: 1.0 with the charger in the basket and the cord unplugged at the wall or the freed outlet's cover at CLOSE;
+    """0 for the whole trial once the wall plug has come 2 mm or more out of the wall without a hand on its body (see
+    watch_plug; holding the cord alone never scores 0), or a handled part has left the floor area. Otherwise, once
+    the arms have let go and everything has been still for 1 s: 1.0 with the charger in the basket and the cord
+    unplugged at the wall or the freed outlet's cover at CLOSE;
     0.6 with the cord made safe that way and the charger out of the cord end but not in the basket; 0.3 with the cord
     unplugged and the charger still in the cord end; 0 with the charger's outlet left open on a live cord, with
     nothing done, or with a plug part-way out of the wall."""
     try:
-        if (not REC["known"] or REC["invalid"] or REC["dropped"] or REC["cord_held"] or REC["yanked"]
+        if (not REC["known"] or REC["invalid"] or REC["dropped"] or REC["yanked"]
                 or REC["stamp"] != _stamp(objects)):
             return 0.0
         if REC["held"] < HOLD_S - 1e-9:
