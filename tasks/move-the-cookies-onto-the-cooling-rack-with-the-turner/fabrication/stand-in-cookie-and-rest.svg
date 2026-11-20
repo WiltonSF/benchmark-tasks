@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="460" viewBox="0 0 820 460" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <rect width="820" height="460" fill="#ffffff"/>
+  <text x="20" y="28" font-size="16" font-weight="bold">Stand-in cookie (make 3) and turner rest posts (make 2). Dimensions in mm. Scale 3:1 for the cookie section.</text>
+  <!-- cookie section, 3x scale: 76.2 wide -> 228.6 px, 12.7 tall -> 38.1 px -->
+  <g transform="translate(60,120)">
+    <text x="0" y="-40" font-weight="bold">Cookie, section through the middle (3:1)</text>
+    <polygon points="18,38.1 210.6,38.1 228.6,33.6 228.6,9 219.6,0 9,0 0,9 0,33.6" fill="#d9b38c" stroke="#000" stroke-width="1.2"/>
+    <line x1="0" y1="60" x2="228.6" y2="60" stroke="#000"/><text x="80" y="76">76.2 (3 in) across</text>
+    <line x1="250" y1="0" x2="250" y2="38.1" stroke="#000"/><text x="256" y="24">12.7 (1/2 in)</text>
+    <text x="150" y="104">underside bevel: 6 wide x 1.5 high, all round</text>
+    <line x1="210.6" y1="38.1" x2="190" y2="92" stroke="#000"/>
+    <text x="150" y="-14">top edge rounded R3</text>
+    <text x="0" y="132">Material: 3 in x 1/2 in birch disc, cut with a 3 in hole saw from a 1/2 in birch panel (Walnut Hollow, Home Depot 322634074).</text>
+    <text x="0" y="150">Sand the underside bevel with 120 grit on a flat block; round the top edge; oil the top and sides only.</text>
+    <text x="0" y="168">Accept 75 to 78 mm across, 12 to 13.5 mm thick, 32 to 40 g (kitchen scale). Mass estimate 37 g (birch 0.65 g/cm3).</text>
+    <text x="0" y="186">Paint five dark chips 6 x 7 mm on the top with food-safe paint (looks only).</text>
+  </g>
+  <!-- rest posts -->
+  <g transform="translate(560,110)">
+    <text x="0" y="-30" font-weight="bold">Turner rest (1:1 plan, 2:1 elevation)</text>
+    <rect x="0" y="0" width="16" height="72" fill="#c8a070" stroke="#000"/>
+    <rect x="0" y="192" width="16" height="72" fill="#c8a070" stroke="#000" transform="translate(40,-192)"/>
+    <text x="70" y="20">two hardwood posts</text>
+    <text x="70" y="38">8 (along the handle) x 16 x 36 tall</text>
+    <text x="70" y="56">centres 96 apart, glued to the</text>
+    <text x="70" y="74">counter mat under the handle's ends</text>
+    <text x="0" y="110">Height 36 = handle underside above the</text>
+    <text x="0" y="128">counter when the blade lies flat.</text>
+    <text x="0" y="160">Tape marks on the counter: the handle's</text>
+    <text x="0" y="178">middle and its direction (pointing left).</text>
+  </g>
+</svg>
