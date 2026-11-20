@@ -23,7 +23,7 @@ def record(released=True, torn=(), held=True, gap=0.05, blind=False):
     task.fresh()
     task._rec.update(released=[bool(released)] * N_CELLS, torn=[i in torn for i in range(N_CELLS)],
                      freed=bool(released), blind=blind, gap=gap, t=30.0, since=29.0 if held else None,
-                     held=held, hook_v=0.0)
+                     held=held, hook_v=0.0,released_held=bool(held and gap is not None and np.isfinite(gap) and gap>task.CLEAR and not blind),released_since=29.0 if held else None)
 
 
 def in_tray(dx=0.0, dy=0.0, dz=0.0, lot="A"):
@@ -56,13 +56,13 @@ record()  # the checker scores every case below with this record: strip let go c
 CASES = [
     ("strip fully let go clean, hook in the tray, let go, still 1 s", panel(in_tray()), 1.0, True),
     ("same, plate's edge 0 mm from the tray's wall", panel(in_tray(dx=0.05 - 0.012)), 1.0, True),
-    ("plate overlapping the tray's wall line by 1 mm", panel(in_tray(dx=0.05 - 0.011)), 0.5, False),
+    ("plate overlapping the tray's wall line by 1 mm", panel(in_tray(dx=0.05 - 0.011)), 0.0, False),
     ("hook's upper end 0 mm from the tray's end wall", panel(in_tray(dy=0.075 - 0.031)), 1.0, True),
-    ("hook's upper end 1 mm over the tray's end wall line", panel(in_tray(dy=0.075 - 0.030)), 0.5, False),
-    ("plate's lowest point exactly 4 mm above the tray floor", panel(in_tray(dz=0.004)), 1.0, True),
-    ("hook held 5 mm above the tray floor", panel(in_tray(dz=0.005)), 0.5, False),
+    ("hook's upper end 1 mm over the tray's end wall line", panel(in_tray(dy=0.075 - 0.030)), 0.0, False),
+    ("plate's lowest point exactly 2 mm above the tray floor", panel(in_tray(dz=0.002)), 1.0, True),
+    ("hook held 3 mm above the tray floor", panel(in_tray(dz=0.003)), 0.0, False),
     ("strip let go clean, hook left lying on the panel", panel({"bz": 0.0}), 0.5, False),
-    ("strip let go clean, hook dropped on the table beside the tray", panel(in_tray(dy=0.10, dz=-0.003)), 0.5, False),
+    ("strip let go clean, hook dropped on the table beside the tray", panel(in_tray(dy=0.20, dz=-0.003)), 0.5, False),
     ("lot B layout: hook in the tray, let go, still", panel(in_tray(lot="B"), lot="B"), 1.0, True),
 ]
 lots.use(None)
@@ -90,7 +90,7 @@ def _stretch(state_joints, upto, e, lift_deg):
     for i in range(upto):
         j[CELLS[i]] = E_REL
     j[CELLS[upto]] = e
-    j["tab"] = math.pi / 2 + DEG(lift_deg)
+    j["tab"] = DEG(lift_deg)
     return j
 
 
@@ -170,7 +170,7 @@ def _run():
             bad.append(f"lot {lot}: 1 s let go in the tray did not count")
         task._rec["gap"] = 0.004
         task._hold(st, 1.05)
-        if task._rec["held"] or task.score({"panel": st}) != 0.5:
+        if task._rec["held"] or task.score({"panel": st}) != 0.0:
             bad.append(f"lot {lot}: gripper back within 5 mm still scored 1")
         record(held=False)
         task._rec.update(since=None, hook_v=0.02)
@@ -190,10 +190,10 @@ def _run():
             ("paint torn under one cell", dict(torn=(0,)), 0.0),
             ("hook pulled off (all cells torn)", dict(torn=tuple(range(N_CELLS))), 0.0),
             ("grippers could not be measured", dict(blind=True), 0.0),
-            ("a gripper face within 5 mm", dict(gap=0.004), 0.5),
-            ("a gripper exactly 5 mm away", dict(gap=0.005), 0.5),
-            ("not yet let go and still for 1 s", dict(held=False), 0.5),
-            ("gripper distance never measured", dict(gap=None), 0.5),
+            ("a gripper face within 5 mm", dict(gap=0.004), 0.0),
+            ("a gripper exactly 5 mm away", dict(gap=0.005), 0.0),
+            ("not yet let go and still for 1 s", dict(held=False), 0.0),
+            ("gripper distance never measured", dict(gap=None), 0.0),
             ("bond not let go", dict(released=False), 0.0),
         ):
             record(**rec)
@@ -215,3 +215,77 @@ if __name__ == "__main__":
     for label, states, want, _ in CASES:
         print(f"{task.score(states):.2f} (want {want:.2f})  {label}")
     print("rule checks passed")
+
+# Revision regression: the tab is the strip's own unbonded end (same width, same 1/20 in thickness, no grip
+# adapter), it lies flat on an uninterrupted face throughout release, and the whole of it shows below the plate.
+assert abs(task.N_CELLS*task.CELL+task.TAB_LEN-.070)<1e-9, "strip must total 70 mm"
+assert task.TAB_T == task.STRIP_T == 0.00127, "tab is the strip's own thickness, 1/20 in"
+assert task.TAB.shapes[0].size[0] == task.STRIP_W == 0.019, "tab is the strip's own width"
+assert task.TAB.lower == 0.0 and task.TAB.spring == 0.0, "tab starts flat with nothing holding it up"
+assert task.PLATE_Y0 == task.BOND_Y0 == task.TAB_PIVOT_Y, "plate ends where the bond ends; the tab is not under it"
+assert task.PANEL_Y / 2 - (abs(task.TAB_PIVOT_Y) + task.TAB_LEN + task.N_CELLS * task.E_REL) > 0.100, \
+    "the face continues at least 100 mm past the tab's end at full stretch"
+for lot in ("A","B"):
+    for stretched in (False,True):
+        j={f"s{i+1}":task.E_REL if stretched else 0. for i in range(task.N_CELLS)}
+        j["tab"]=0.
+        p=panel(j,lot)["panel"]
+        tab=[b for b in task._hook_boxes(p) if b[0]=="tab"]
+        assert len(tab)==1
+        _,c,r,size=tab[0];half=np.abs(r)@(size/2)
+        lo,hi=c-half,c+half
+        assert abs(lo[2]-task.FACE_Z)<1e-8, "reset tab must touch the face"
+        assert lo[0]>=task.PANEL_XY[0]-task.PANEL/2 and hi[0]<=task.PANEL_XY[0]+task.PANEL/2
+        assert lo[1]>=-task.PANEL_Y/2 and hi[1]<=task.PANEL_Y/2, "release path must remain backed"
+        assert abs(task.tab_lift(p))<1e-12
+lots.use(None)
+record()
+print("continuous-face/flat-tab/both-lot/full-stroke regressions passed")
+
+# Unknown hand data and below-floor states cannot certify any credit.
+from types import SimpleNamespace
+class MockScene(dict):
+    env_origins=np.zeros((1,3))
+pose=np.tile(np.array([10.,10.,10.,0.,0.,0.,1.]),(1,3,1))
+def asset(names):return SimpleNamespace(body_names=names,data=SimpleNamespace(body_link_pose_w=pose.copy()))
+names=list(task._HAND_LINKS)
+scene=MockScene(left_robot=asset(names),right_robot=asset(names))
+sim=SimpleNamespace(env=SimpleNamespace(unwrapped=SimpleNamespace(scene=scene)))
+original=task.parts._np
+try:
+    task.parts._np=lambda x:np.asarray(x)
+    assert task._hands(sim) is not None
+    scene["right_robot"].data.body_link_pose_w[:]=np.nan
+    assert task._hands(sim) is None
+    scene["right_robot"]=asset(names[:-1])
+    assert task._hands(sim) is None
+    del scene["right_robot"]
+    assert task._hands(sim) is None
+finally:task.parts._np=original
+record()
+below=panel(in_tray(dz=-.015))
+assert task.score(below)==0.0
+record(gap=None)
+assert task.score(panel(in_tray()))==0.0
+record(held=False)
+assert task.score(panel(in_tray()))==0.0
+record()
+print("missing/nonfinite hands, below-floor and unmeasured/held-credit regressions passed")
+
+# Finite cached links do not certify a panel with unknown root or joint state.
+import copy
+for corrupt in ("root-position", "root-quaternion", "joint", "missing-joint", "missing-link"):
+    record()
+    states=panel(in_tray());p=copy.deepcopy(states["panel"])
+    if corrupt=="root-position": p.pos[0]=np.nan
+    elif corrupt=="root-quaternion": p.quat_xyzw[0]=np.nan
+    elif corrupt=="joint": p.joints["bz"]=np.nan
+    elif corrupt=="missing-joint": del p.joints["bz"]
+    else: del p.links["tab"]
+    states["panel"]=p
+    assert task.score(states)==0., corrupt
+    assert not task.hook_supported(p) and not task.hook_in_tray(p), corrupt
+    task.judge(p)
+    assert task._rec["blind"], corrupt
+record()
+print("unknown root/joint/link state fails closed despite finite cached hook geometry")

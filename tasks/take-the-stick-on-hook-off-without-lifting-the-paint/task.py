@@ -1,12 +1,13 @@
-"""On the station table: a square section of painted drywall lies on its back on two wooden battens, held at its
-corners by four clips. A white stick-on utility hook is stuck to the painted face near one edge with a white foam
-adhesive strip; the strip's grip tab hangs over that edge. Which edge the hook is on changes between trials. A low
-grey tray stands on the table nearer the robot.
+"""On the station table: a continuous painted drywall coupon lies face up on two battens, held by corner clips.
+A white utility hook is mounted well inside the face on a foam stretch-release strip. The strip's unbonded red pull
+tab lies flat against that same surface below the hook. The assembly is mirrored between trials. A low grey tray
+stands nearer the robot.
 """
 
 from __future__ import annotations
 
 import math
+import os
 import pathlib
 import sys
 
@@ -35,32 +36,33 @@ TRAY_COL = (0.45, 0.47, 0.50)
 TORN = (0.56, 0.44, 0.30)  # bare brown drywall paper where paint came away
 
 # -- the panel (its own frame: origin at the middle of the painted face, z out of the face) -----------------------
-PANEL = 0.250  # m square
+PANEL = 0.250  # m, across x
+PANEL_Y = 1.000  # m: continuous backing under both mirrored 305 mm release paths and the hand beyond them
 PANEL_T = 0.0127  # 1/2 in drywall
-PANEL_MASS = 0.50  # kg (1/2 in gypsum board, about 8 kg/m^2)
+PANEL_MASS = 2.00  # kg, clipped work surface, estimated 8 kg/m^2; never lifted by the robot
 BATTEN_H = 0.050
 PANEL_XY = (0.27, 0.0)
 FACE_Z = TOP + BATTEN_H + PANEL_T  # the painted face
-EDGE = -PANEL / 2  # the edge the tab hangs over, in the panel frame (y)
+EDGE = -0.045  # local layout reference only; the actual coupon edges are y=+/-0.500 m
 
 # -- hook and strip (panel frame, lot A orientation: "down the wall" is -y) ---------------------------------------
 HX = 0.0  # hook centre line across the panel
 STRIP_W = 0.019  # medium strip, 3/4 in wide
-STRIP_T = 0.0012  # foam thickness
+STRIP_T = 0.00127  # the strip's listed thickness, 1/20 in
 CELL = 0.010  # bond cells along the strip
 N_CELLS = 5  # 50 mm bonded under the plate
-BOND_Y0 = EDGE + 0.005  # the bond's tab end
-TAB_PIVOT_Y = EDGE - 0.014  # where the unbonded strip turns down over the edge (15 mm of strip past the bond)
-TAB_LEN, TAB_T = 0.015, 0.002
+BOND_Y0 = -0.040  # 50 mm bonded length plus 20 mm free tab = 70 mm overall
+TAB_PIVOT_Y = BOND_Y0
+TAB_LEN, TAB_T = 0.020, STRIP_T  # the tab is the strip's own unbonded end: same foam, same thickness
 PLATE = (0.024, 0.062, 0.004)  # hook back plate: 24 x 62 mm, 4 mm thick
-PLATE_Y0 = EDGE + 0.003
+PLATE_Y0 = BOND_Y0  # the plate's lower end sits at the bond's lower end; the whole tab shows below it
 PLATE_Z0 = STRIP_T
 STEM = (0.014, 0.014, 0.021)  # the hook's stem, rising from the plate's upper end
 STEM_Y = PLATE_Y0 + 0.044
 ARM_Y1 = PLATE_Y0 + 0.062  # the hook's arm runs on "up" the wall to here
 HOOK_MASS = 0.015
 SEG_MASS = 0.008
-TAB_MASS = 0.006
+TAB_MASS = 0.001  # numerical articulated-link mass; not a measured product mass
 
 # Bond and strip mechanics (see README): the bond holds the plate on stiff springs in all three directions; the
 # strip's segments stretch on springs once their bond lets go.
@@ -73,7 +75,7 @@ LOCKED = 0.0002  # a still-bonded segment can stretch 0.2 mm
 PEEL_TEAR = math.radians(30.0)  # a cell that lets go with the tab lifted more than 30 degrees off the face tears
 PEEL_RIP = math.radians(45.0)  # lifted more than 45 degrees under half the release pull, the front peels with paint
 RIP_E = E_REL * 0.5
-TAB_FLAT_K = 0.05  # N m/rad on the tab's hinge once the hook is free
+TAB_FLAT_K = 0.0001  # N m/rad, uncalibrated relaxed-tab response once free
 
 
 def _cell_y(i: int) -> float:
@@ -106,28 +108,29 @@ HOOK_SHAPES = (
 
 
 def _segment(i: int):
-    """Segment i (0 = the tab end): its 10 mm of strip, and a thin visual tail that fills the gap it opens as it
-    stretches (hidden under the plate and the next segments until then)."""
+    """Segment i (0 = the tab end): its 10 mm of strip, and thin visual tails that fill the gaps which open at its
+    two ends as the strip stretches. At the start every tail is out of sight: the forward one under the plate, the
+    backward one inside the links nearer the tab and the tab itself. None of these shapes collides."""
     y0 = BOND_Y0 + i * CELL
+    x0, x1 = HX - STRIP_W / 2 + 0.001, HX + STRIP_W / 2 - 0.001
     shapes = [_box((HX - STRIP_W / 2, y0, 0.0001), (HX + STRIP_W / 2, y0 + CELL, STRIP_T - 0.0001), FOAM, False)]
-    if i == 0:  # the unbonded strip from the bond to the edge, where the tab turns down
-        shapes.append(_box((HX - STRIP_W / 2, TAB_PIVOT_Y, 0.0001), (HX + STRIP_W / 2, y0, STRIP_T - 0.0001), FOAM,
-                           False))
-    if i < N_CELLS - 1:
-        shapes.append(_box((HX - STRIP_W / 2 + 0.001, y0 + CELL, 0.0002),
-                           (HX + STRIP_W / 2 - 0.001, y0 + CELL + E_MAX, STRIP_T - 0.0003), FOAM, False))
+    fwd = min(E_MAX, PLATE_Y0 + PLATE[1] - 0.001 - (y0 + CELL))
+    shapes.append(_box((x0, y0 + CELL, 0.0002), (x1, y0 + CELL + fwd, STRIP_T - 0.0003), FOAM, False))
+    if i > 0:
+        back = min(E_MAX, y0 - (TAB_PIVOT_Y - TAB_LEN) - 0.001)
+        shapes.append(_box((x0, y0 - back, 0.0002), (x1, y0, STRIP_T - 0.0003), FOAM, False))
     parent = "bz" if i == N_CELLS - 1 else f"s{i + 2}"
     return parts.Slider(f"s{i + 1}", shapes=tuple(shapes), axis=(0.0, -1.0, 0.0), travel=E_MAX, mass=SEG_MASS,
                         spring=SEG_K, damping=1.0, parent=parent)
 
 
-# The tab hangs straight down over the edge at hinge angle 0; it swings out and up about the panel's x axis:
-# at 90 degrees it lies in the face's plane pointing away from the bond, beyond 90 it is lifted off the face.
+# The unbonded tab starts flat against the continuous painted face, with no gap behind it.
+# Positive hinge angle lifts it off the face.
 TAB = parts.Hinge(
     "tab",
-    shapes=(_box((HX - STRIP_W / 2, TAB_PIVOT_Y - TAB_T / 2, STRIP_T / 2 - TAB_LEN),
-                 (HX + STRIP_W / 2, TAB_PIVOT_Y + TAB_T / 2, STRIP_T / 2), TAB_COL),),
-    pivot=(HX, TAB_PIVOT_Y, STRIP_T / 2), axis=(-1.0, 0.0, 0.0), lower=-0.35, upper=math.pi, mass=TAB_MASS,
+    shapes=(_box((HX - STRIP_W / 2, TAB_PIVOT_Y - TAB_LEN, 0.0),
+                 (HX + STRIP_W / 2, TAB_PIVOT_Y, TAB_T), TAB_COL),),
+    pivot=(HX, TAB_PIVOT_Y, TAB_T / 2), axis=(-1.0, 0.0, 0.0), lower=0.0, upper=math.pi/2, mass=TAB_MASS,
     spring=0.0, damping=0.0005, parent="s1",
 )
 
@@ -143,8 +146,8 @@ SEGMENTS = tuple(_segment(i) for i in reversed(range(N_CELLS)))  # parents first
 PANEL_PART = parts.Part(
     "panel", pos=(*PANEL_XY, FACE_Z), yaw=0.0, mass=PANEL_MASS,
     shapes=(
-        _box((-PANEL / 2, -PANEL / 2, -PANEL_T), (PANEL / 2, PANEL / 2, -0.0004), GYPSUM),
-        _box((-PANEL / 2, -PANEL / 2, -0.0004), (PANEL / 2, PANEL / 2, 0.0), PAINT),
+        _box((-PANEL / 2, -PANEL_Y / 2, -PANEL_T), (PANEL / 2, PANEL_Y / 2, -0.0004), GYPSUM),
+        _box((-PANEL / 2, -PANEL_Y / 2, -0.0004), (PANEL / 2, PANEL_Y / 2, 0.0), PAINT),
     ),
     joints=(BX, BY, BZ, *SEGMENTS, TAB),
 )
@@ -155,12 +158,12 @@ _CLIP_GAP, _POST, _LIP = 0.0005, 0.008, 0.015
 
 def _frame_shapes():
     px, py = PANEL_XY
-    out = [_box((px + sx * 0.085 - 0.015, py - PANEL / 2, TOP), (px + sx * 0.085 + 0.015, py + PANEL / 2,
+    out = [_box((px + sx * 0.085 - 0.015, py - PANEL_Y / 2, TOP), (px + sx * 0.085 + 0.015, py + PANEL_Y / 2,
                 TOP + BATTEN_H), WOOD) for sx in (-1, 1)]
     h = PANEL / 2
     for sx in (-1, 1):
         for sy in (-1, 1):
-            cx, cy = px + sx * h, py + sy * h
+            cx, cy = px + sx * h, py + sy * PANEL_Y/2
             # a post beyond each edge at the corner, and a lip over the corner
             out.append(_box((min(cx, cx - sx * 0.030), min(cy + sy * _CLIP_GAP, cy + sy * (_CLIP_GAP + _POST)), TOP),
                             (max(cx, cx - sx * 0.030), max(cy + sy * _CLIP_GAP, cy + sy * (_CLIP_GAP + _POST)),
@@ -198,8 +201,8 @@ TRAY = parts.Part("tray", pos=(*TRAY_XY, TOP), shapes=_tray_shapes())
 
 OBJECTS = [PANEL_PART, FRAME, TRAY]
 
-# Lot A: the hook near the edge on the robot's right, its tab hanging over that edge. Lot B: the panel turned half
-# round in its clips, so the hook is near the left edge (and 40 mm farther from the robot) with the tab over it.
+# Lot A: the tab lies flat at the interior right-side marks. Lot B rotates the
+# assembly half round; both initial grips and full pulls stay over continuous face.
 LOTS = lots.declare(
     OBJECTS,
     lots.Lot("A", place={"panel": PANEL_PART.pos}),
@@ -209,7 +212,7 @@ LOTS = lots.declare(
 SUCCESS_HOLD_S = 1.0
 CLEAR = 0.005  # let go: every gripper part more than 5 mm from the hook, its strip and tab
 HOLD_S = 1.0
-IN_TRAY_Z = 0.004  # plate's lowest point within 4 mm of the tray floor
+IN_TRAY_Z = 0.002  # plate's lowest point within 2 mm of the tray floor
 FACE_STEP = 0.003
 _HAND_LINKS = ("gripper", "tip_left", "tip_right")
 
@@ -231,6 +234,27 @@ def _link_poses(p) -> dict:
     return out
 
 
+def _panel_valid(p) -> bool:
+    """Cached link geometry cannot replace missing/nonfinite root or joint state."""
+    try:
+        required = {j.name for j in PANEL_PART.joints}
+        if not required.issubset(p.joints) or not required.issubset(p.links):
+            return False
+        values = np.r_[p.pos, p.quat_xyzw, p.lin_vel, p.ang_vel, p.low, p.high,
+                       [p.joints[n] for n in required]]
+        if not np.isfinite(values).all() or not .99 <= np.linalg.norm(p.quat_xyzw) <= 1.01:
+            return False
+        for name in required:
+            pos, quat = p.links[name]
+            if (np.asarray(pos).shape != (3,) or np.asarray(quat).shape != (4,)
+                    or not np.isfinite(np.r_[pos, quat]).all()
+                    or not .99 <= np.linalg.norm(quat) <= 1.01):
+                return False
+        return bool(np.asarray(p.pos).shape == (3,) and np.asarray(p.quat_xyzw).shape == (4,))
+    except (AttributeError, KeyError, TypeError, ValueError):
+        return False
+
+
 def _hook_boxes(p, with_strip=True):
     """World boxes (link, centre, rotation, size) of the hook, and of its strip and tab if asked."""
     names = {"bz", "tab"} | ({f"s{i + 1}" for i in range(N_CELLS)} if with_strip else set())
@@ -239,9 +263,8 @@ def _hook_boxes(p, with_strip=True):
 
 
 def tab_lift(p) -> float:
-    """How far the tab is lifted off the painted face (rad): 0 lying along the face away from the bond, negative
-    hanging down past the edge, positive pulled up off the face."""
-    return float(p.joints["tab"]) - math.pi / 2
+    """Lift angle off the face (rad); reset zero is a wall-backed, flat tab."""
+    return float(p.joints["tab"])
 
 
 # -- the bond record (whole trial; cleared only by the simulator's reset for a new trial) -------------------------
@@ -251,7 +274,7 @@ _rec = parts.__dict__.setdefault("hook_strip_record", {})
 def fresh() -> None:
     _rec.update(released=[False] * N_CELLS, torn=[False] * N_CELLS, freed=False, blind=False, gap=None, t=None,
                 since=None, held=False, cause=None,
-                hook_prev=None, hook_v=None)
+                hook_prev=None, hook_v=None, released_since=None, released_held=False)
 
 
 if not _rec:
@@ -260,6 +283,9 @@ if not _rec:
 
 def judge(p) -> list[int]:
     """Update the bond from one control step's panel state; returns the cells that let go at this step."""
+    if not _panel_valid(p):
+        _rec.update(blind=True, gap=None, held=False, since=None, released_held=False, released_since=None)
+        return []
     if _rec["freed"]:
         return []
     q = p.joints
@@ -332,6 +358,8 @@ def _link_faces(name):
 
 class _WorldHull:
     def __init__(self, hull, faces, m):
+        if not all(np.isfinite(v).all() for v in (hull.vertices, hull.planes, faces, m)) or not len(faces):
+            raise ValueError("unknown hand hull")
         rot, pos = m[:3, :3], m[:3, 3]
         self.vertices = hull.vertices @ rot.T + pos
         n_w = hull.planes[:, :3] @ rot.T
@@ -339,13 +367,21 @@ class _WorldHull:
         self.face_points = faces @ rot.T + pos
 
 
-def gap(p, hulls) -> float:
+def gap(p, hulls) -> float | None:
     """The closest any point on a gripper hull's faces (sampled about every 3 mm, corners included) comes to the
     hook, its strip or its tab (m; negative inside)."""
     from yam_arena import analysis
 
-    pts = np.concatenate([getattr(h, "face_points", h.vertices) for h in hulls])
+    if not _panel_valid(p) or not hulls:
+        return None
+    clouds = [getattr(h, "face_points", h.vertices) for h in hulls]
+    if any(np.asarray(a).ndim != 2 or np.asarray(a).shape[1] != 3
+           or not len(a) or not np.isfinite(a).all() for a in clouds):
+        return None
+    pts = np.concatenate(clouds)
     boxes = _hook_boxes(p)
+    if not boxes or not all(np.isfinite(np.r_[c, r.ravel(), s]).all() for _,c,r,s in boxes):
+        return None
     centre = np.mean([c for _, c, _, _ in boxes], axis=0)
     near = np.linalg.norm(pts - centre, axis=1) < 0.60
     if not near.any():
@@ -356,26 +392,38 @@ def gap(p, hulls) -> float:
 
 def _hands(sim):
     """Both arms' gripper and finger tip hulls in the world, or None unless all six hand links were found."""
-    base = sim.env.unwrapped
-    origin = parts._np(base.scene.env_origins[0])
-    hulls, found = [], 0
-    for arm in ("left_robot", "right_robot"):
-        asset = base.scene[arm]
-        poses = parts._np(asset.data.body_link_pose_w)[0]
-        for i, n in enumerate(asset.body_names):
-            if n in _HAND_LINKS:
-                m = np.eye(4)
-                m[:3, :3] = _rot(poses[i, 3:])
-                m[:3, 3] = poses[i, :3] - origin
-                link = [_WorldHull(h, f, m) for h, f in _link_faces(n)]
-                found += 1 if link else 0
-                hulls += link
-    return hulls if found == 2 * len(_HAND_LINKS) else None
+    try:
+        base = sim.env.unwrapped
+        origin = parts._np(base.scene.env_origins[0])
+        if not np.isfinite(origin).all():
+            return None
+        hulls, found = [], set()
+        for arm in ("left_robot", "right_robot"):
+            asset = base.scene[arm]
+            poses = parts._np(asset.data.body_link_pose_w)[0]
+            if not set(_HAND_LINKS).issubset(asset.body_names) or not np.isfinite(poses).all():
+                return None
+            for i, n in enumerate(asset.body_names):
+                if n in _HAND_LINKS:
+                    if not .99 <= np.linalg.norm(poses[i, 3:]) <= 1.01:
+                        return None
+                    m = np.eye(4)
+                    m[:3, :3] = _rot(poses[i, 3:])
+                    m[:3, 3] = poses[i, :3] - origin
+                    link = [_WorldHull(h, f, m) for h, f in _link_faces(n)]
+                    if not link:
+                        return None
+                    found.add((arm,n));hulls += link
+        return hulls if len(found) == 2 * len(_HAND_LINKS) else None
+    except (KeyError, AttributeError, ValueError, TypeError, IndexError):
+        return None
 
 
 # -- end state -------------------------------------------------------------------------------------------------------
 def hook_in_tray(p) -> bool:
-    """The hook's plate lies inside the tray's walls, its lowest point within 4 mm of the floor, and it is still."""
+    """The hook's plate lies inside the tray's walls, its lowest point within 2 mm of the floor, and it is still."""
+    if not _panel_valid(p):
+        return False
     boxes = _hook_boxes(p, with_strip=False)
     hook = [b for b in boxes if b[0] == "bz"]
     corners = np.concatenate([c + (np.abs(r) @ (s / 2)) * np.array([[-1.0], [1.0]]) for _, c, r, s in hook])
@@ -383,8 +431,38 @@ def hook_in_tray(p) -> bool:
     tx, ty = TRAY_XY
     ax, ay = TRAY_IN[0] / 2, TRAY_IN[1] / 2
     inside = lo[0] >= tx - ax - EPS and hi[0] <= tx + ax + EPS and lo[1] >= ty - ay - EPS and hi[1] <= ty + ay + EPS
-    down = lo[2] <= TOP + TRAY_FLOOR + IN_TRAY_Z + EPS
+    down = TOP + TRAY_FLOOR-EPS <= lo[2] <= TOP + TRAY_FLOOR + IN_TRAY_Z + EPS
     return bool(inside and down)
+
+
+def hook_supported(p) -> bool:
+    """Plate supported on the known tray, coupon or table, never below a surface."""
+    from yam_arena import station
+    if not _panel_valid(p):
+        return False
+    hook=[b for b in _hook_boxes(p,with_strip=False) if b[0]=="bz"]
+    if not hook or not all(np.isfinite(np.r_[c,r.ravel(),s]).all() for _,c,r,s in hook):
+        return False
+    bounds=np.concatenate([c+(np.abs(r)@(s/2))*np.array([[-1.],[1.]]) for _,c,r,s in hook])
+    lo,hi=bounds.min(0),bounds.max(0)
+    # The tabletop cannot support a hook embedded in the raised tray floor,
+    # battens or coupon. Check the actual individual box pieces first.
+    obstacles = TRAY.world_boxes({"base":(np.asarray(TRAY.pos),TRAY.rotation)})
+    obstacles += FRAME.world_boxes({"base":(np.asarray(FRAME.pos),FRAME.rotation)})
+    obstacles += PANEL_PART.world_boxes({"base":(np.asarray(p.pos),_rot(p.quat_xyzw))})
+    for _,c,r,size in hook:
+        half=np.abs(r)@(size/2);a0,a1=c-half,c+half
+        for _,b,rot,extent in obstacles:
+            h=np.abs(rot)@(extent/2)
+            if np.all(np.minimum(a1,b+h)-np.maximum(a0,b-h)>EPS):
+                return False
+    surfaces=[(TRAY_XY,TRAY_IN,TOP+TRAY_FLOOR),
+              (PANEL_XY,(PANEL,PANEL_Y),FACE_Z),
+              (station.TABLE_CENTER[:2],station.TABLE_SIZE[:2],TOP)]
+    return any(z-EPS <= lo[2] <= z+.002+EPS
+               and np.all(lo[:2]>=np.asarray(xy)-np.asarray(size)/2-EPS)
+               and np.all(hi[:2]<=np.asarray(xy)+np.asarray(size)/2+EPS)
+               for xy,size,z in surfaces)
 
 
 def hook_pos(p) -> np.ndarray:
@@ -392,8 +470,17 @@ def hook_pos(p) -> np.ndarray:
 
 
 def _hold(p, t) -> None:
-    ok = (_rec["gap"] is not None and _rec["gap"] > CLEAR + EPS and _rec["freed"] and not any(_rec["torn"])
-          and _rec["hook_v"] is not None and _rec["hook_v"] < 0.01 and hook_in_tray(p))
+    common = (_rec["gap"] is not None and np.isfinite(_rec["gap"]) and _rec["gap"] > CLEAR + EPS
+              and np.isfinite(t) and _rec["freed"] and not any(_rec["torn"])
+              and _rec["hook_v"] is not None and np.isfinite(_rec["hook_v"])
+              and _rec["hook_v"] < 0.01 and hook_supported(p))
+    if common:
+        if _rec["released_since"] is None:
+            _rec["released_since"]=t
+        _rec["released_held"]=t-_rec["released_since"] >= HOLD_S-EPS
+    else:
+        _rec.update(released_since=None,released_held=False)
+    ok = common and hook_in_tray(p)
     if not ok:
         _rec.update(since=None, held=False)
         return
@@ -521,12 +608,12 @@ def _new_trial(sim) -> None:
     _draw_torn(sim, sim.states()["panel"])
 
 
-DEBUG = False  # set True while tuning: prints the finger tips and the tab every 0.5 s
+DEBUG = bool(os.environ.get("TASK_DEBUG"))  # diagnostic output only; no controller feedback
 
 
 def _debug(sim, p) -> None:
     _rec["n"] = _rec.get("n", 0) + 1
-    if _rec["n"] % 10:
+    if _rec["n"] % 5:
         return
     base = sim.env.unwrapped
     origin = parts._np(base.scene.env_origins[0])
@@ -535,16 +622,42 @@ def _debug(sim, p) -> None:
         asset = base.scene[arm]
         poses = parts._np(asset.data.body_link_pose_w)[0]
         tips = [poses[i, :3] - origin for i, n in enumerate(asset.body_names) if n in ("tip_left", "tip_right")]
+        floor = []
+        pad_low = {}
+        for i, n in enumerate(asset.body_names):
+            if n in ("tip_left", "tip_right"):
+                m=np.eye(4);m[:3,:3]=_rot(poses[i,3:]);m[:3,3]=poses[i,:3]-origin
+                values = [float(_WorldHull(h,f,m).vertices[:,2].min()-FACE_Z) for h,f in _link_faces(n)]
+                floor += values
+                pad_low[n] = min(values)
+        finger_ids = asset.find_joints(["joint7", "joint8"], preserve_order=True)[0]
+        finger_q = parts._np(asset.data.joint_pos)[0, finger_ids]
+        # Measured drive effort, not an invented pad-contact-force measurement.
+        effort = parts._np(asset.data.applied_torque)[0, finger_ids]
         out.append(f"{arm[0]} " + " ".join(f"{v * 1000:.0f}" for v in np.mean(tips, axis=0))
-                   + f" w{np.linalg.norm(tips[0] - tips[1]) * 1000:.0f}")
+                   + f" w{np.linalg.norm(tips[0] - tips[1]) * 1000:.1f} pad_low{min(floor)*1000:.2f}mm"
+                   + f" pads{pad_low['tip_left']*1000:.2f}/{pad_low['tip_right']*1000:.2f}mm"
+                   + f" joint_gap{-float(np.sum(finger_q))*1000:.2f}mm"
+                   + f" drive{float(effort[0]):.2f}/{float(effort[1]):.2f}N")
     tab = _link_poses(p)["tab"][0]
-    print(f"[dbg] t={float(sim.t):.1f} {' | '.join(out)} | tab " + " ".join(f"{v * 1000:.0f}" for v in tab)
-          + f" s1 {p.joints['s1'] * 1000:.1f}", file=sys.stderr, flush=True)
+    q = p.joints
+    gap_mm = "na" if _rec.get("gap") is None else "%.0f" % (_rec["gap"] * 1000)
+    v_mm = "na" if _rec.get("hook_v") is None else "%.0f" % (_rec["hook_v"] * 1000)
+    ext = "/".join("%.0f" % (q["s%d" % (i + 1)] * 1000) for i in range(N_CELLS))
+    print("[dbg] t=%.2f %s | tab %s s1 %.1f ext %s lift %.1fdeg bond %.1f/%.1f/%.1f rel %d torn %d blind %d gap %s "
+          "v %s sup %d tray %d rheld %d held %d"
+          % (float(sim.t), " | ".join(out), " ".join("%.0f" % (v * 1000) for v in tab), q["s1"] * 1000, ext,
+             math.degrees(q["tab"]), q["bx"] * 1000, q["by"] * 1000, q["bz"] * 1000, sum(_rec["released"]),
+             sum(_rec["torn"]), int(_rec["blind"]), gap_mm, v_mm, int(hook_supported(p)), int(hook_in_tray(p)),
+             int(_rec["released_held"]), int(_rec["held"])), file=sys.stderr, flush=True)
 
 
 @parts.on_step
 def _step(sim) -> None:
     p = sim.states()["panel"]
+    if not _panel_valid(p):
+        _rec.update(blind=True, gap=None, held=False, since=None, released_held=False, released_since=None)
+        return
     was_free = _rec["freed"]
     went = judge(p)
     if went:
@@ -555,7 +668,7 @@ def _step(sim) -> None:
         _draw_torn(sim, p)
     if _rec["freed"] and not was_free:
         _write_bond(sim, False)
-        sim.set_target("panel", "tab", math.pi / 2)
+        sim.set_target("panel", "tab", 0.0)
     hulls = _hands(sim)
     if DEBUG:
         _debug(sim, p)
@@ -568,18 +681,26 @@ def _step(sim) -> None:
         _rec.update(gap=None, since=None, held=False, blind=True)
         return
     _rec["gap"] = gap(p, hulls)
+    if _rec["gap"] is None:
+        _rec.update(blind=True,held=False,since=None,released_held=False,released_since=None)
+        return
     _hold(p, _rec["t"])
 
 
 # -- scoring ---------------------------------------------------------------------------------------------------------
 def score(objects):
     """0 if paint came away anywhere at any time in the trial, or if the grippers could not be measured. Otherwise
-    0.5 once the strip has let go of the whole bond, and 1.0 when the hook is also lying in the tray, let go
+    0.5 only after clean release, known hand clearance, supported rest and a 1 s hold; 1.0 when the hook is also in the tray, let go
     (every gripper part more than 5 mm from it, its strip and tab) and still for 1 s."""
     if any(_rec["torn"]) or _rec["blind"] or not _rec["freed"]:
         return 0.0
-    p = objects["panel"]
-    released = _rec["gap"] is not None and _rec["gap"] > CLEAR + EPS
+    p = objects.get("panel")
+    if not _panel_valid(p):
+        return 0.0
+    released = (_rec["gap"] is not None and np.isfinite(_rec["gap"]) and _rec["gap"] > CLEAR+EPS
+                and _rec["released_held"] and hook_supported(p))
+    if not released:
+        return 0.0
     if _rec["held"] and released and hook_in_tray(p):
         return 1.0
     return 0.5
@@ -594,12 +715,19 @@ def distance(objects):
 
 
 # -- scripted demo -----------------------------------------------------------------------------------------------
-# Open loop from the lot's published layout (which edge the hook is on, as the top camera shows it). One arm holds
-# the hook by its stem; the other pinches the hanging tab by its edges and draws it slowly straight out along the
-# face, past the edge, until the strip has let go; then it lets the tab go, and the first arm lifts the hook off
-# and lays it in the tray.
+# Open loop from the published visible layout; no simulator state is read. One hand comes straight down with a finger
+# either side of the flat tab, closes on the tab's two long edges with its fingertips on the wall, and draws the tab
+# along the wall. The other hand takes hold of the hook's stem once the pulling hand has moved clear, keeps the hook
+# still while the rest of the strip lets go, and then carries the hook to the tray.
 TIP = 0.013
-ARM_SOFT = 0.045  # the arm is soft (about 190 N/m): its target leads the tab by about 40 mm at the strip's 7 N
+TIP_PAST_TCP = 0.0128425  # the fingertips' ends beyond the tool point (m)
+PRELOAD = 0.005  # fingertip target this far into the face (m); contact keeps the real fingertips on the face
+PINCH_FROM_ROOT = 0.012  # pinch centre this far from the tab root (m); the fingertip end is 15.5 mm wide along the strip
+PINCH_OVERCLOSE = 0.010  # jaw target this much narrower than the 19 mm tab: about 25 N a finger, half the 50 N cap
+FIRST_PULL = 0.190  # commanded first stage of the pull (m), before the other hand reaches the hook
+T_FIRST, T_REST = 5.5, 10.0  # s: first stage, then the rest of the pull
+HOLDER_LEAD = 0.5  # s: the other hand is over the stem this long before the first stage ends
+PULL_LEAD = 0.095  # the arm is soft (about 180 N/m): its target leads the tab by 40 to 55 mm at the strip's 7 N; the rest is margin
 
 
 def _grip(gap_m: float) -> float:
@@ -630,51 +758,48 @@ def demo():
     hy = _yaw(hold_arm, across)
     # the pulling arm reaches far out to its own side: its wrist turned so the fingers' closing axis stays across
     # the strip with the hand's back toward the arm's own base, which keeps the far end of the pull in reach
-    want = -math.pi / 2 if pull_arm == "right" else math.pi / 2
+    want = math.pi / 2 if pull_arm == "right" else -math.pi / 2
     py = min((across + k * math.pi for k in range(-3, 4)), key=lambda y: abs(y - want))
     side = 0.20 if hold_arm == "left" else -0.20
     side_p = -side
 
-    # The pulling hand pinches the hanging tab by its edges and draws it out along the face a little first, so the
-    # two hands are not both crowded over the hook; then the other hand holds the hook while the pull goes on.
-    pinch_y = TAB_PIVOT_Y - 0.008  # the pads (26 mm across) cover the tab, their inner ends 9 mm short of the edge
-    pinch_z = FACE_Z - 0.002  # the pads (16 mm deep) cover the hanging tab
-    level = pinch_z + 0.004
-    open_p, close_p = _grip(0.034), _grip(STRIP_W - 0.012)  # squeezed 6 mm a side: the tab is pinched by its edges
+    # The pulling hand comes straight down with a finger either side of the flat tab, its fingertips on the wall,
+    # closes on the tab's two long edges and draws it along the wall. Nothing reaches behind the tab.
+    pinch_y = TAB_PIVOT_Y - PINCH_FROM_ROOT
+    pinch_z = FACE_Z + TIP_PAST_TCP - PRELOAD  # fingertips commanded into the face: the soft arm presses lightly
+    open_p, close_p = _grip(0.034), _grip(STRIP_W - PINCH_OVERCLOSE)
     p0 = _world(lot, (HX, pinch_y))
-    pull = 5 * E_REL + 0.025 + ARM_SOFT
-    first = 0.150  # commanded; the soft arm lags the tab about 40 mm behind its target
+    pull = 5 * E_REL + PULL_LEAD  # 400 mm commanded for the 305 mm the strip needs
+    first = FIRST_PULL
     puller = [
         Waypoint(1.5, (0.24, side_p * 1.5, TOP + 0.12), FINGER_OPEN, "aside", py),
         Waypoint(2.0, (*p0, pinch_z + 0.04), open_p, "over the tab", py),
         Waypoint(1.2, (*p0, pinch_z), open_p, "down round the tab", py),
         Waypoint(1.0, (*p0, pinch_z), close_p, "pinch the tab", py),
-        Waypoint(1.0, (*p0, level), close_p, "level with the face", py),
-        Waypoint(2.0, (*_world(lot, (HX, pinch_y - first)), level), close_p, "start drawing the tab out", py),
+        Waypoint(0.5, (*p0, pinch_z), close_p, "settle the grip", py),
+        Waypoint(T_FIRST, (*_world(lot, (HX, pinch_y - first)), pinch_z), close_p, "draw the tab out", py),
     ]
     t_started = sum(w.duration for w in puller)
 
     stem = _world(lot, (HX, STEM_Y))
     grasp_z = FACE_Z + PLATE_Z0 + PLATE[2] + 0.004 + TIP  # finger tips 4 mm above the plate
     open_h, close_h = _grip(0.034), _grip(STEM[0] - 0.006)
+    # the other hand sets off while the first pull is under way and reaches the hook once the pulling hand is clear
+    t_over = t_started - HOLDER_LEAD
     holder = [
         Waypoint(1.5, (0.22, side, TOP + 0.14), FINGER_OPEN, "aside", hy),
-        Waypoint(max(0.5, t_started - 1.5), (0.22, side, TOP + 0.14), FINGER_OPEN, "wait", hy),
+        Waypoint(max(0.5, t_over - 2.0 - 1.5), (0.22, side, TOP + 0.14), FINGER_OPEN, "wait", hy),
         Waypoint(2.0, (*stem, grasp_z + 0.025), open_h, "over the hook's stem", hy),
         Waypoint(1.2, (*stem, grasp_z), open_h, "down round the stem", hy),
         Waypoint(1.0, (*stem, grasp_z), close_h, "hold the hook", hy),
     ]
     t_held = sum(w.duration for w in holder)
-    puller.append(Waypoint(max(0.5, t_held - t_started), puller[-1].pos, close_p, "wait for the hook to be held", py))
-    n = 7
-    for k in range(1, n + 1):
-        d = first + (pull - first) * k / n
-        pk = _world(lot, (HX, pinch_y - d))
-        puller.append(Waypoint(1.6, (*pk, level), close_p, f"draw the tab out along the face {k}/{n}", py))
-    t_pulled = sum(w.duration for w in puller)
+    puller.append(Waypoint(max(0.3, t_held - t_started), puller[-1].pos, close_p, "wait for the hook to be held", py))
     pe = _world(lot, (HX, pinch_y - pull))
+    puller.append(Waypoint(T_REST, (*pe, pinch_z), close_p, "draw the tab on out along the face", py))
+    t_pulled = sum(w.duration for w in puller)
     puller += [
-        Waypoint(0.8, (*pe, level), open_p, "let the spent strip go", py),
+        Waypoint(0.8, (*pe, pinch_z), open_p, "let the spent strip go", py),
         Waypoint(1.0, (*pe, pinch_z + 0.06), open_p, "up", py),
         Waypoint(1.5, (0.20, side_p * 1.4, TOP + 0.16), FINGER_OPEN, "park", 0.0),
     ]
