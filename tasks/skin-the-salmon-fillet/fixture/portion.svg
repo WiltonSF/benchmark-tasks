@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 380" font-family="Helvetica, Arial, sans-serif" font-size="12">
+  <title>Salmon portion as set up: top view and side section (mm)</title>
+  <rect width="640" height="380" fill="#ffffff"/>
+  <text x="20" y="24" font-size="14" font-weight="bold">Top view (2 px = 1 mm), tail end on the right of this drawing is the robot's left (+y)</text>
+  <!-- skin under flesh, 180 x 62 -->
+  <rect x="80" y="60" width="360" height="124" fill="#8a9196" stroke="#333"/>
+  <!-- flesh 140 x 62 -->
+  <rect x="80" y="60" width="280" height="124" fill="#f08c6b" stroke="#333"/>
+  <line x1="80" y1="91" x2="360" y2="91" stroke="#e0785a"/>
+  <line x1="80" y1="122" x2="360" y2="122" stroke="#e0785a"/>
+  <line x1="80" y1="153" x2="360" y2="153" stroke="#e0785a"/>
+  <text x="190" y="128">flesh 140 x 62</text>
+  <text x="366" y="128">bare skin</text>
+  <text x="378" y="142">tab 40</text>
+  <!-- dimension lines -->
+  <line x1="80" y1="200" x2="360" y2="200" stroke="#000"/><text x="200" y="215">140</text>
+  <line x1="360" y1="200" x2="440" y2="200" stroke="#000"/><text x="392" y="215">40</text>
+  <line x1="460" y1="60" x2="460" y2="184" stroke="#000"/><text x="466" y="126">62</text>
+  <text x="80" y="232">head end (y = -0.070)</text>
+  <text x="300" y="232">tail end of flesh (y = +0.070)</text>
+  <!-- grid note -->
+  <text x="20" y="256">Interface grid used for scoring: 12 cells across (5.2 mm) x 28 cells along (5.0 mm); seven 20 mm skin links under the flesh.</text>
+  <!-- side section -->
+  <text x="20" y="284" font-size="14" font-weight="bold">Section across the portion (x), 4 px = 1 mm</text>
+  <rect x="80" y="352" width="248" height="5" fill="#8a9196" stroke="#333"/>
+  <rect x="80" y="296" width="49.6" height="56" fill="#f08c6b" stroke="#333"/>
+  <rect x="129.6" y="268" width="49.6" height="84" fill="#f08c6b" stroke="#333"/>
+  <rect x="179.2" y="256" width="49.6" height="96" fill="#f08c6b" stroke="#333"/>
+  <rect x="228.8" y="264" width="49.6" height="88" fill="#f08c6b" stroke="#333"/>
+  <rect x="278.4" y="288" width="49.6" height="64" fill="#f08c6b" stroke="#333"/>
+  <text x="340" y="300">strip thickness 14 / 21 / 24 / 22 / 16 mm (belly to back)</text>
+  <text x="340" y="318">scaled 0.80 / 0.92 / 1.0 / 1.0 from tail end to head end</text>
+  <text x="340" y="336">skin 1.2 mm; flesh 164 g, skin 14 g</text>
+  <text x="340" y="354">board top z = 0.7675 m, skin-flesh interface z = 0.7687 m</text>
+</svg>
