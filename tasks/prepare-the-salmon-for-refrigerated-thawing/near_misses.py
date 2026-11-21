@@ -3,11 +3,13 @@
 Each case: (label, {object: state}, expected score, expected success). Offline there is no robot, so before the
 cases this file writes into the task's per-trial record what the step callback records in a trial where the film's
 near end was cut open and both hands ended 50 mm from everything. The cases then vary the end state. _run() first
-drives the step-side function observe() directly, state by state, to check the cut rule (a cut in the unwelded film
-opens the end; a cut only through the seal band, a closing with the blades lying along the film, a closing begun
-more than 2 s after the blades were open, or a closing on the fish does not), and the whole-trial rules (film in the
-dish, fish on the counter or in the scrap bowl, an open blade tip in the fish, the dish tipped), which stay at 0
-after the scene is put right. It raises if anything scores wrongly.
+drives the step-side function observe() directly, state by state, to check the cut rule (a cut in an end's unwelded
+film opens that end; a slit along the top opens the upper film; a cut only through the seal band, a slit too short,
+a closing with the blades lying along the film, a closing begun more than 2 s after the blades were open, or a closing
+on the fish does not), that either opening scores 1.0 once the fish is out of the film and in the dish, that film
+which entered the dish and was taken out again does not count while film left in the dish at the end scores 0, and
+the whole-trial rules (fish on the counter or in the scrap bowl, an open blade tip in the fish, the dish tipped), which
+stay at 0 after the scene is put right. It raises if anything scores wrongly.
 """
 
 import math
@@ -119,11 +121,42 @@ def shears_at_cut(lot="A", jaw=T.SHUT, dz=0.0, dx=0.0, dy=0.0):
     return T.SHEARS.state(joints={"jaw": jaw}, pos=piv, quat_xyzw=qz(yaw))
 
 
+def shears_slit_top(lot="A", jaw=T.SHUT, gap=math.radians(10.0), tilt=math.radians(3.5), x0=-0.060, y0=0.0):
+    """The shears slitting the top of the portion as it lies on the board: their blades' plane upright along the
+    portion (x), the pivot ``x0`` from the portion's middle (beyond its -x end) at the upper film's height, the blades
+    closing on a line ``tilt`` above level, so the lower blade runs just under the upper film. ``gap``: how far they
+    were open (the jaw starts at SHUT - gap)."""
+    lots.use(lot)
+    px, py, pz = lots.current().pos("pouch")
+    a = np.array([math.cos(tilt), 0.0, math.sin(tilt)])  # the line the blades close on
+    c = np.array([0.0, 1.0, 0.0])  # the blades' plane's normal
+    hand = np.column_stack([a, np.cross(c, a), c])  # symmetric hold, as shears_at_cut: x along that line
+    r = hand @ T._rot(qz(-jaw / 2))
+    piv = np.array([px + x0, py + y0, pz + T.H_OUT - T.WALL / 2])
+    return T.SHEARS.state(joints={"jaw": jaw}, pos=piv, quat_xyzw=q_of(r))
+
+
+def slit_top(lot="A", gap=math.radians(10.0), t0=10.0, **kw):
+    """Feed observe() the shears open (by ``gap``) then shut over the portion lying on the board."""
+    T.observe(scene(lot, shears=shears_slit_top(lot, T.SHUT - gap, gap=gap, **kw)), CLEAR, t0)
+    T.observe(scene(lot, shears=shears_slit_top(lot, T.SHUT, gap=gap, **kw)), CLEAR, t0 + 0.5)
+    return T._rec["cuts"][-1] if T._rec["cuts"] else None
+
+
 def close_on(states_open, states_shut, t0=10.0, dt=0.5):
     """Feed observe() an open then a shut step; return the cut it recorded (or None)."""
     T.observe(states_open, CLEAR, t0)
     T.observe(states_shut, CLEAR, t0 + dt)
     return T._rec["cuts"][-1] if T._rec["cuts"] else None
+
+
+def end_score(states):
+    """The trial ending in ``states``: feed observe() that scene for just over 1 s (so the stillness rule has its
+    history), then score it."""
+    t = T._rec["t"] + 1.0
+    T.observe(states, CLEAR, t)
+    T.observe(states, CLEAR, t + 1.05)
+    return T.score(states)
 
 
 def expect(label, got, want):
@@ -138,9 +171,11 @@ def _run():
         T.reset_record()
         cut = close_on(scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, 0.0)),
                        scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, T.SHUT)))
-        assert cut and cut["end"] == "nx" and not cut["fish"], (lot, cut)
-        T._rec["gaps"] = dict(CLEAR)
-        expect(f"{lot} cut then finished", T.score(finished(lot)), 1.0)
+        assert cut and cut["end"] == "nx" and not cut["fish"] and cut["top"] is None, (lot, cut)
+        expect(f"{lot} cut then finished", end_score(finished(lot)), 1.0)
+        # 1b. opened, but the fish still in the film (on the board, or held over the dish): 0
+        expect(f"{lot} opened, fish still in the film", T.score(scene(lot, pouch=T.POUCH.state(joints={"end_nx": 0.4}))), 0.0)
+        expect(f"{lot} opened, fish still in the film over the dish", T.score(finished(lot, pouch=pouch, salmon=fish)), 0.0)
         # 2. never cut: the same finished scene scores 0 (the fish cannot leave a sealed film)
         T.reset_record()
         T._rec["gaps"] = dict(CLEAR)
@@ -196,10 +231,17 @@ def _run():
         close_on(scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, 0.0)),
                  scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, T.SHUT)), t0=14.0)
         assert T._rec["opened"]["nx"] and not T._rec["zero"], (lot, T._rec["cuts"])
-        # 6d. a second snip from further in cuts the strip right off over the dish: it falls in, 0 for the trial
+        # 6d. a further snip right across the end: the simulated strip stays joined to the film (it is not a
+        # separate body), nothing is latched, and the finished scene still scores 1.0
         close_on(scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, 0.0, dx=0.03)),
                  scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, T.SHUT, dx=0.03)), t0=18.0)
-        assert T._rec["zero"] and "strip" in T._rec["why"], (lot, T._rec["why"], T._rec["cuts"])
+        assert not T._rec["zero"], (lot, T._rec["why"], T._rec["cuts"])
+        expect(f"{lot} cut right across, finished", end_score(finished(lot)), 1.0)
+        # 6d2. the fish still sliding at the end (moved 5 mm in the last second): not at rest, 0.25
+        T.observe(finished(lot, salmon=fish_in_dish(lot, dx=0.005)), CLEAR, T._rec["t"] + 0.5)
+        T.observe(finished(lot), CLEAR, T._rec["t"] + 0.5)
+        T.observe(finished(lot), CLEAR, T._rec["t"] + 0.5)
+        expect(f"{lot} fish moved 5 mm in the last second", T.score(finished(lot)), 0.25)
         # 6e. closing the jaw with the fish between the blades (20 mm too high): 0 for the trial at once
         T.reset_record()
         T.observe(scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, 0.0, dz=0.020)), CLEAR, 10.0)
@@ -221,15 +263,63 @@ def _run():
         T.observe(scene(lot, salmon=f2, shears=st), CLEAR, 5.0)
         T._rec["opened"]["nx"] = True
         expect(f"{lot} blade tip in the fish", T.score(finished(lot)), 0.0)
-        # 8. the sealed portion set in the dish at any moment: 0, even after it is taken out and finished
+        # 8. the sealed portion set in the dish and taken out again, then opened and finished: film in the dish
+        # is judged at the end, so this scores 1.0; left there (the literal errand), or the opened film left in the
+        # dish with the fish in it or beside it, it scores 0
         T.reset_record()
         lots.use(lot)
         dxy = lots.current().pos("dish")
-        T.observe(scene(lot, pouch=T.POUCH.state(pos=(dxy[0], dxy[1], T.TOP + T.DISH_T)),
-                        salmon=T.FISH_PART.state(pos=(dxy[0], dxy[1], T.TOP + T.DISH_T + T.WALL + T.FISH[2] / 2))),
-                  CLEAR, 3.0)
-        T._rec["opened"]["nx"] = True
-        expect(f"{lot} film was in the dish", T.score(finished(lot)), 0.0)
+        sealed = dict(pouch=T.POUCH.state(pos=(dxy[0], dxy[1], T.TOP + T.DISH_T)),
+                      salmon=T.FISH_PART.state(pos=(dxy[0], dxy[1], T.TOP + T.DISH_T + T.WALL + T.FISH[2] / 2)))
+        T.observe(scene(lot, **sealed), CLEAR, 3.0)
+        assert T._rec["film_was_in_dish"] and not T._rec["zero"], (lot, T._rec["why"])
+        expect(f"{lot} sealed portion in the dish", T.score(scene(lot, **sealed)), 0.0)
+        close_on(scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, 0.0)),
+                 scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, T.SHUT)), t0=8.0)
+        expect(f"{lot} opened film with the fish in it, in the dish", T.score(scene(lot, **sealed)), 0.0)
+        expect(f"{lot} film was in the dish, taken out", end_score(finished(lot)), 1.0)
+        # 8b. the empty film dropped into the dish after the fish and lifted out again: 1.0; left there: 0
+        T.observe(finished(lot, pouch=T.POUCH.state(joints={"end_nx": 0.4},
+                                                     pos=(dxy[0], dxy[1] + 0.03, T.TOP + T.DISH_T + T.FISH[2]))),
+                  CLEAR, 20.0)
+        expect(f"{lot} empty film left in the dish", T.score(finished(lot, pouch=T.POUCH.state(
+            joints={"end_nx": 0.4}, pos=(dxy[0], dxy[1] + 0.03, T.TOP + T.DISH_T + T.FISH[2])))), 0.0)
+        expect(f"{lot} empty film was in the dish, taken out", end_score(finished(lot)), 1.0)
+        # 8c. a slit along the top of the portion as it lies on the board: one snip from beyond its end runs 96 mm
+        # of the 107 mm top and leaves it shut; a second snip on the same line, further in, completes it end to end
+        # and the upper film opens; the fish taken out through the top into the dish then scores 1.0, as the end cut
+        # does
+        T.reset_record()
+        cut = slit_top(lot)
+        assert cut and cut["top"] and cut["end"] is None and not cut["fish"] and not cut["band"], (lot, cut)
+        assert not T._rec["opened"]["top"], (lot, cut)
+        cut = slit_top(lot, x0=-0.015, t0=14.0)
+        assert cut and cut["top"] and not cut["fish"], (lot, cut)
+        assert T._rec["opened"]["top"] and not T._rec["opened"]["nx"] and not T._rec["zero"], (lot, T._rec["cuts"])
+        top_open = T.POUCH.state(joints={"top": 2.0}, pos=lots.current().pos("bowl")[:2] + (T.TOP + 0.006,))
+        expect(f"{lot} top slit, fish still in the film", T.score(scene(lot, pouch=T.POUCH.state(joints={"top": 2.0}))), 0.0)
+        expect(f"{lot} top slit, fish in the dish", end_score(finished(lot, pouch=top_open)), 1.0)
+        # 8d. the second snip 15 mm across from the first is not the same slit: the top stays shut
+        T.reset_record()
+        slit_top(lot)
+        cut = slit_top(lot, x0=-0.015, y0=0.015, t0=14.0)
+        assert cut and cut["top"] and not cut["fish"] and not T._rec["opened"]["top"], (lot, T._rec["cuts"])
+        # 8e. a top slit with the blades closing level (the lower blade 9 mm down at its tip): it cuts the fish, 0
+        T.reset_record()
+        cut = slit_top(lot, tilt=0.0)
+        assert cut and cut["fish"] and T._rec["zero"], (lot, cut)
+        T._rec["opened"]["top"] = True
+        T._rec["gaps"] = dict(CLEAR)
+        expect(f"{lot} top slit into the fish", T.score(finished(lot)), 0.0)
+        # 8f. the sealed portion set down on the counter (the film between the fish and the counter), then opened
+        # and finished: the fish never touched the counter, 1.0
+        T.reset_record()
+        T.observe(scene(lot, pouch=T.POUCH.state(pos=(0.12, 0.0, T.TOP)),
+                        salmon=T.FISH_PART.state(pos=(0.12, 0.0, T.TOP + T.WALL + T.FISH[2] / 2))), CLEAR, 3.0)
+        assert not T._rec["zero"], (lot, T._rec["why"])
+        close_on(scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, 0.0)),
+                 scene(lot, pouch=pouch, salmon=fish, shears=shears_at_cut(lot, T.SHUT)), t0=8.0)
+        expect(f"{lot} sealed portion on the counter, then finished", end_score(finished(lot)), 1.0)
         # 9. the fish on the counter at any moment: 0, even after it is put in the dish
         T.reset_record()
         lots.use(lot)
@@ -272,7 +362,12 @@ CASES = [
     ("shears still held up where they cut, over the dish", finished("A", shears=shears_at_cut("A", 0.0)), 0.5, False),
     ("shears laid in the dish beside the fish", finished("A", shears=shears_down("A", where=(_dish[0] + 0.0, _dish[1]), z=T.TOP + T.DISH_T + T.HANDLE_T / 2)), 0.5, False),
     ("empty film still held over the dish", finished("A", pouch=T.POUCH.state(joints={"end_nx": 0.4}, pos=(_dish[0], _dish[1], T.TOP + 0.10))), 0.5, False),
+    ("empty film lying flat across the dish's rim, above the fish", finished("A", pouch=T.POUCH.state(pos=(_dish[0], _dish[1], T.TOP + T.DISH_H))), 0.5, False),
     ("empty film in the dish with the fish", finished("A", pouch=T.POUCH.state(joints={"end_nx": 0.4}, pos=(_dish[0], _dish[1] + 0.03, T.TOP + T.DISH_T + T.FISH[2]))), 0.0, False),
+    ("sealed portion left in the dish (the literal errand)", finished("A", pouch=T.POUCH.state(pos=(_dish[0], _dish[1], T.TOP + T.DISH_T)), salmon=T.FISH_PART.state(pos=(_dish[0], _dish[1], T.TOP + T.DISH_T + T.WALL + T.FISH[2] / 2))), 0.0, False),
+    ("fish still inside the opened film on the board", finished("A", pouch=T.POUCH.state(joints={"end_nx": 1.5}), salmon=T.FISH_PART.state()), 0.0, False),
+    ("fish half out of the opened end, on the board", finished("A", pouch=T.POUCH.state(joints={"end_nx": 1.5}), salmon=T.FISH_PART.state(pos=(T.POUCH_XY[0] - 0.06, T.POUCH_XY[1], T.BOARD_TOP + T.WALL + T.FISH[2] / 2))), 0.0, False),
+    ("upper film swung open, fish lifted out onto the board", finished("A", pouch=T.POUCH.state(joints={"top": 2.0}), salmon=T.FISH_PART.state(pos=(0.42, 0.10, T.BOARD_TOP + T.FISH[2] / 2))), 0.25, False),
     ("fish out of the film but left on the board", finished("A", salmon=T.FISH_PART.state(pos=(0.30, 0.10, T.BOARD_TOP + T.FISH[2] / 2))), 0.25, False),
     ("fish propped on the dish's rim", finished("A", salmon=fish_in_dish("A", dx=-0.07, dz=0.03, quat=q_tilt(25, "y"))), 0.25, False),
     ("fish half over the dish's wall", finished("A", salmon=fish_in_dish("A", dx=0.08)), 0.25, False),

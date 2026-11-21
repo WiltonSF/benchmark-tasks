@@ -93,31 +93,40 @@ def _end_shapes(s: int):
 
 POUCH_SHAPES = [
     parts.box((L_IN, W_OUT, WALL), at=(0, 0, WALL / 2), color=FILM, visible=False),  # lower film
-    parts.box((L_IN, W_OUT, WALL), at=(0, 0, H_OUT - WALL / 2), color=FILM, visible=False),  # upper film
     *[parts.box((L_IN, WALL, H_IN), at=(0, s * (W_OUT - WALL) / 2, WALL + H_IN / 2), color=FILM, visible=False)
       for s in (1, -1)],
-    *[parts.box((L_IN, 0.0015, 0.0015), at=(0, s * (W_OUT / 2 - 0.00075), H_OUT - 0.00075), color=FILM, collide=False)
-      for s in (1, -1)],  # the film's two upper edges, so the clear sleeve shows
+    parts.box((L_IN, 0.0015, 0.0015), at=(0, -(W_OUT / 2 - 0.00075), H_OUT - 0.00075), color=FILM, collide=False),
     *[parts.box((L_IN, 0.0015, 0.0015), at=(0, s * (W_OUT / 2 - 0.00075), 0.00075), color=FILM, collide=False)
       for s in (1, -1)],
+    # glints of the clear film down the sides, so the wrapped fish reads as wrapped
+    *[parts.box((L_IN, 0.0006, 0.004), at=(0, s * (W_OUT / 2 + 0.0003), H_OUT - 0.006), color=GLINT, collide=False)
+      for s in (1, -1)],
+]
+# The upper film is its own panel, hinged along its -y edge and held shut by the same 1 N m/rad seal spring as the
+# ends: a slit along the top (the cut rule below) frees it, so the fish can leave through the top as well as an end.
+# It stops 1 mm short of each end panel. Its label, glints and free edge go with it.
+TOP_L = L_IN - 0.002
+TOP_SHAPES = (
+    parts.box((TOP_L, W_OUT, WALL), at=(0, 0, H_OUT - WALL / 2), color=FILM, visible=False),  # upper film
+    parts.box((TOP_L, 0.0015, 0.0015), at=(0, W_OUT / 2 - 0.00075, H_OUT - 0.00075), color=FILM, collide=False),
     parts.box((0.045, 0.034, 0.0006), at=(0.012, 0, H_OUT + 0.0003), color=SEAL, collide=False),  # printed label
     parts.box((0.045, 0.008, 0.0004), at=(0.012, 0.010, H_OUT + 0.0008), color=(0.80, 0.10, 0.10), collide=False),
     parts.box((0.030, 0.004, 0.0004), at=(0.012, -0.004, H_OUT + 0.0008), color=(0.15, 0.30, 0.55), collide=False),
     parts.box((0.022, 0.003, 0.0004), at=(0.012, -0.010, H_OUT + 0.0008), color=(0.15, 0.30, 0.55), collide=False),
-    # glints of the clear film across the top and down the sides, so the wrapped fish reads as wrapped
     *[parts.box((0.0015, W_OUT, 0.0006), at=(x, 0, H_OUT + 0.0003), color=GLINT, collide=False)
       for x in (-0.045, -0.030, 0.034, 0.044)],
-    *[parts.box((L_IN, 0.0006, 0.004), at=(0, s * (W_OUT / 2 + 0.0003), H_OUT - 0.006), color=GLINT, collide=False)
-      for s in (1, -1)],
-]
+)
 END_JOINTS = (
     parts.Hinge("end_px", shapes=_end_shapes(1), pivot=(L_IN / 2, 0, 0), axis=(0, 1, 0), lower=0.0, upper=2.6,
                 mass=0.012, spring=K_SEAL, damping=0.002, max_effort=1.0),
     parts.Hinge("end_nx", shapes=_end_shapes(-1), pivot=(-L_IN / 2, 0, 0), axis=(0, -1, 0), lower=0.0, upper=2.6,
                 mass=0.012, spring=K_SEAL, damping=0.002, max_effort=1.0),
+    parts.Hinge("top", shapes=TOP_SHAPES, pivot=(0, -W_OUT / 2, H_OUT), axis=(1, 0, 0), lower=0.0, upper=2.6,
+                mass=0.008, spring=K_SEAL, damping=0.002, max_effort=1.0),
 )
+JOINT_OF = {"px": "end_px", "nx": "end_nx", "top": "top"}  # each opening and the panel it frees
 POUCH_XY = (0.265, 0.020)  # its near flat end 2 mm in from the board's near edge
-POUCH = parts.Part("pouch", pos=(*POUCH_XY, BOARD_TOP), mass=0.03, friction=(0.5, 0.4), contact_offset=0.003,
+POUCH = parts.Part("pouch", pos=(*POUCH_XY, BOARD_TOP), mass=0.022, friction=(0.5, 0.4), contact_offset=0.003,
                    shapes=POUCH_SHAPES, joints=END_JOINTS)
 FISH_PART = parts.Part("salmon", pos=(*POUCH_XY, BOARD_TOP + WALL + FISH[2] / 2), mass=FISH_MASS,
                        friction=(0.2, 0.15), contact_offset=0.003,
@@ -298,17 +307,18 @@ def fish_corners(objects) -> np.ndarray:
     return _corners(_part_boxes(FISH_PART, objects["salmon"]))
 
 
-def bag_points(objects) -> np.ndarray:
-    """Corners and centres of every piece of film, the flat seals included."""
-    return _corners(_part_boxes(POUCH, objects["pouch"], collide_only=False))
-
-
-def in_dish(objects, pts) -> np.ndarray:
-    """Which points are inside the dish: within its inner walls and below its rim."""
+def dish_inside(objects):
+    """The space inside the dish as a box (centre, rotation, size): its inner walls, from 10 mm under its base up to
+    1 mm below its rim."""
     o, r = _frame(objects["dish"])
-    loc = (np.asarray(pts, float) - o) @ r
-    return ((np.abs(loc[:, 0]) <= DISH_IN[0] / 2 + EPS) & (np.abs(loc[:, 1]) <= DISH_IN[1] / 2 + EPS)
-            & (loc[:, 2] <= DISH_H + EPS) & (loc[:, 2] >= -0.010))
+    lo, hi = -0.010, DISH_H - 0.001
+    return o + r @ np.array([0.0, 0.0, (lo + hi) / 2]), r, np.array([DISH_IN[0], DISH_IN[1], hi - lo])
+
+
+def dish_column(objects):
+    """The dish's outline grown by 10 mm, at any height, as a box (centre, rotation, size)."""
+    o, r = _frame(objects["dish"])
+    return o, r, np.array([DISH_L + 0.020, DISH_W + 0.020, 20.0])
 
 
 def tilt_deg(st) -> float:
@@ -364,19 +374,25 @@ def shears_down(objects) -> bool:
 
 # -- the cut rule ---------------------------------------------------------------------------------------------------
 # The blades have no collider. When the jaw closes (from at least 9 degrees open to within 2 degrees of shut, within
-# 2 s), the film that lay between the open blades is cut: where the film's flat end crosses the blades' plane inside
+# 2 s), the film that lay between the open blades is cut: where a film panel's plane crosses the blades' plane inside
 # the wedge the blades swept as the hand closed them (from the pivot out to the 102 mm blade length, as wide as they
-# were last open), the two planes crossing at 20 degrees or more. Film from 4 mm inside an end panel to the start of
-# that end's seal band (its 28 mm of unwelded film) is cut there; cuts at one end add up, and once they cover 80 mm or
-# more of the 90 mm flat end (enough for the fish's 160 mm girth to pass) that end opens: its panel is free to swing.
-# Cuts only in the seal band open nothing. A cut all the way across (to within 1 mm of both sides) cuts the strip off;
-# it falls straight down from there, so over the dish that is film in the dish. If any part of the fish lies in the
-# swept wedge the fish is cut, and closing the jaw on the fish at any time also cuts it; a blade tip pushed 3 mm into
-# the fish pierces it: each is 0 for the trial. A closing during which a blade passes more than 1 mm into the board or
-# the counter cuts nothing.
+# were last open), the two planes crossing at 20 degrees or more. Two places open the simulated film:
+# - an end: film from 4 mm inside an end panel to the start of that end's seal band (its 28 mm of unwelded film);
+#   cuts at one end add up across it, and once they cover 80 mm or more of the 90 mm flat end (enough for the fish's
+#   160 mm girth to pass) that end opens: its panel is free to swing;
+# - the top: a slit along the upper film (its 107 x 71 mm); slits on one line (within 5 mm of each other across it)
+#   add up along its length, and once they cover 100 mm or more of its 107 mm in all, the upper film opens (its panel
+#   is free to swing up), so the 105 mm fish can be lifted or tipped out through the top.
+# A panel is cut only while it is still shut (opened less than 0.2 rad). Cuts only in a seal band open nothing. A cut
+# right across an end does not separate its strip here: the simulated strip stays joined to the film. If any part of
+# the fish lies in the swept wedge the fish is cut, and closing the jaw on the fish at any time also cuts it; a blade
+# tip pushed 3 mm into the fish pierces it: each is 0 for the trial. A closing during which a blade passes more than
+# 1 mm into the board, the counter, the dish's glass or the bowl's wall cuts nothing.
 OPEN_AT = SHUT - D(9.0)
 SHUT_AT = SHUT - D(2.0)
-OPEN_SPAN = 0.080
+OPEN_SPAN = 0.080  # of an end's 90 mm
+TOP_SPAN = 0.100  # of the upper film's 107 mm
+TOP_LINE = 0.005  # top slits this close to each other across the film count as one line
 MIN_CROSS = D(20.0)
 _perp1 = np.array([-_u1[1], _u1[0], 0.0])
 
@@ -409,41 +425,66 @@ def _in_fish(objects, pts, margin) -> bool:
 
 
 def below_surface(objects, pts) -> bool:
-    """Is any point more than 1 mm into the board or the counter under it?"""
+    """Is any point more than 1 mm into something a blade cannot pass through: the board, the counter under it, the
+    dish's glass or the bowl's wall?"""
+    pts = np.asarray(pts, float)
     bo, br = _frame(objects["board"])
-    loc = (np.asarray(pts, float) - bo) @ br
+    loc = (pts - bo) @ br
     over = (np.abs(loc[:, 0]) <= BOARD_L / 2) & (np.abs(loc[:, 1]) <= BOARD_W / 2)
     floor = np.where(over, bo[2] + BOARD_T, TOP)
-    return bool(np.any(np.asarray(pts)[:, 2] < floor - 0.001))
+    if np.any(pts[:, 2] < floor - 0.001):
+        return True
+    for part, name in ((DISH, "dish"), (BOWL, "bowl")):
+        for c, r, size in _part_boxes(part, objects[name]):
+            inner = np.maximum(np.asarray(size) / 2 - 0.001, 0.0)
+            if np.any(np.all(np.abs((pts - c) @ r) <= inner, axis=1)):
+                return True
+    return False
+
+
+def _cut_line(objects, z_local, gap):
+    """Points (pouch frame) of the line where the pouch-frame plane z = ``z_local`` meets the blades' plane, inside
+    the wedge the blades swept (blades last open by ``gap`` rad)."""
+    po, pr = _frame(objects["pouch"])
+    so, sr = _frame(objects["shears"])
+    nf, nb = pr[:, 2], sr[:, 2]
+    l = np.cross(nf, nb)
+    l /= np.linalg.norm(l)
+    pf = po + pr @ np.array([0.0, 0.0, z_local])
+    p0 = np.linalg.solve(np.array([nf, nb, l]), np.array([nf @ pf, nb @ so, l @ so]))
+    line = p0 + np.arange(-0.20, 0.20, 0.0005)[:, None] * l
+    loc_s = (line - so) @ sr
+    along, perp = loc_s @ _u1, loc_s @ _perp1
+    inside = (np.hypot(along, perp) <= BLADE + EPS) & (along > 0.0) & (np.abs(np.arctan2(perp, along)) <= gap / 2 + EPS)
+    return (line[inside] - po) @ pr
 
 
 def evaluate_cut(objects, gap=SHUT) -> dict:
     """What a closing that ends at the shears' current (shut) pose cuts, for blades last open by ``gap`` rad:
     {'end': 'px'|'nx'|None, 'y': (lo, hi) across that end (m), 'at': mean distance beyond its panel (m),
-    'band': bool, 'fish': bool, 'cross': deg, 'solid': bool}."""
+    'top': (lo, hi, y) along the upper film and where across it (m), or None, 'band': bool, 'fish': bool,
+    'cross': deg, 'solid': bool}."""
     wedge = _wedge(objects, -gap / 2, gap / 2)
     fish = _in_fish(objects, wedge, 0.001)
     po, pr = _frame(objects["pouch"])
     so, sr = _frame(objects["shears"])
     nf, nb = pr[:, 2], sr[:, 2]
     cross = math.asin(min(1.0, float(np.linalg.norm(np.cross(nf, nb)))))
-    best = dict(end=None, y=None, at=None, band=False, fish=fish, cross=round(math.degrees(cross), 1),
+    best = dict(end=None, y=None, at=None, top=None, band=False, fish=fish, cross=round(math.degrees(cross), 1),
                 solid=below_surface(objects, wedge))
     if cross < MIN_CROSS - EPS or best["solid"]:
         return best
+    # a slit in the upper film, while it is shut
+    if float(objects["pouch"].joints.get("top", 0.0)) <= 0.2:
+        loc = _cut_line(objects, H_OUT - WALL / 2, gap)
+        on = (np.abs(loc[:, 0]) <= TOP_L / 2 + EPS) & (np.abs(loc[:, 1]) <= W_OUT / 2 + EPS) if len(loc) else []
+        if np.any(on):
+            best["top"] = (round(float(loc[on, 0].min()), 4), round(float(loc[on, 0].max()), 4),
+                           round(float(loc[on, 1].mean()), 4))
     # the line where the flat film's plane meets the blades' plane
-    l = np.cross(nf, nb)
-    l /= np.linalg.norm(l)
-    pf = po + pr @ np.array([0.0, 0.0, 0.0008])
-    a = np.array([nf, nb, l])
-    p0 = np.linalg.solve(a, np.array([nf @ pf, nb @ so, l @ so]))
-    line = p0 + np.arange(-0.20, 0.20, 0.0005)[:, None] * l
-    loc_s = (line - so) @ sr
-    along, perp = loc_s @ _u1, loc_s @ _perp1
-    inside = (np.hypot(along, perp) <= BLADE + EPS) & (along > 0.0) & (np.abs(np.arctan2(perp, along)) <= gap / 2 + EPS)
-    if not np.any(inside):
+    loc = _cut_line(objects, 0.0008, gap)
+    if not len(loc):
         return best
-    loc = (line[inside] - po) @ pr
     for name, sgn in (("px", 1), ("nx", -1)):
         if float(objects["pouch"].joints.get(f"end_{name}", 0.0)) > 0.2:
             continue  # already open: its flat end has swung away
@@ -508,13 +549,57 @@ _rec = parts.__dict__.setdefault("salmon_record", {})
 
 def reset_record() -> None:
     _rec.clear()
-    _rec.update(zero=False, why="", opened={"px": False, "nx": False}, spans={"px": [], "nx": []}, gaps=None,
+    _rec.update(zero=False, why="", opened={k: False for k in JOINT_OF}, spans={k: [] for k in JOINT_OF}, gaps=None,
                 known=True, reason="", open_t=-1e9, open_th=0.0, shut=False, prev_jaw=0.0, cuts=[], t=0.0, steps=0,
-                last_t=None)
+                last_t=None, film_was_in_dish=False, hist=[])
 
 
 if not _rec:
     reset_record()
+
+
+def film_in_dish(objects) -> bool:
+    """Any piece of film inside the dish now (inside its walls, at least 1 mm below its rim). Judged at the end of the
+    trial: film that was in the dish earlier and was taken out again does not count."""
+    room = dish_inside(objects)
+    return any(_sat_overlap(b, room) > EPS for b in _part_boxes(POUCH, objects["pouch"], collide_only=False))
+
+
+def _sat_overlap(a, b) -> float:
+    """Overlap depth (m) of two oriented boxes (centre, rotation, size) along their least-overlapping separating axis;
+    0 or less means they do not overlap."""
+    (ca, ra, sa), (cb, rb, sb) = a, b
+    axes = [ra[:, i] for i in range(3)] + [rb[:, i] for i in range(3)]
+    axes += [np.cross(ra[:, i], rb[:, j]) for i in range(3) for j in range(3)]
+    d = np.asarray(cb, float) - np.asarray(ca, float)
+    depth = np.inf
+    for ax in axes:
+        n = np.linalg.norm(ax)
+        if n < 1e-9:
+            continue
+        ax = ax / n
+        ra_ = float(np.sum(np.abs(ra.T @ ax) * np.asarray(sa) / 2))
+        rb_ = float(np.sum(np.abs(rb.T @ ax) * np.asarray(sb) / 2))
+        depth = min(depth, ra_ + rb_ - abs(float(d @ ax)))
+    return float(depth)
+
+
+def film_outline(objects):
+    """The film's closed body as one box (pouch frame): 114 x 71 x 26 mm, end panel to end panel, board to top."""
+    po, pr = _frame(objects["pouch"])
+    return po + pr @ np.array([0.0, 0.0, H_OUT / 2]), pr, np.array([2 * END_X, W_OUT, H_OUT])
+
+
+def fish_out(objects) -> bool:
+    """The film has been opened and the whole fish is out of it: no part of the fish box inside the film's closed
+    outline (an overlap of 0.5 mm or less, two surfaces touching, counts as out)."""
+    if not any(_rec["opened"].values()):
+        return False  # the fish cannot leave a film that was never opened (fail closed)
+    fo, fr = _frame(objects["salmon"])
+    return _sat_overlap((fo, fr, np.asarray(FISH)), film_outline(objects)) <= 0.0005 + EPS
+
+
+COUNTER_TOUCH = 0.0015  # a corner of the fish this close to the counter touches it (the film under it is 2.5 mm)
 
 
 def instant_zero(objects) -> str:
@@ -522,12 +607,10 @@ def instant_zero(objects) -> str:
     for name in ("board", "pouch", "salmon", "shears", "dish", "bowl"):
         if objects[name].pos[2] < TOP - 0.05:
             return f"{name} off the counter"
-    if np.any(in_dish(objects, bag_points(objects))):
-        return "film in the dish"
     fc = fish_corners(objects)
     fo = np.asarray(objects["salmon"].pos, float)
     low = float(fc[:, 2].min())
-    for c in fc[fc[:, 2] < TOP + 0.004]:  # any corner down at the counter, not over the board or the dish
+    for c in fc[fc[:, 2] < TOP + COUNTER_TOUCH]:  # any corner down at the counter, not over the board or the dish
         if not _over(objects, "board", c[:2]) and not _over(objects, "dish", c[:2]):
             return "fish on the counter"
     bo = np.asarray(objects["bowl"].pos, float)
@@ -554,6 +637,11 @@ def observe(objects, gaps, t, known=True, hands=None) -> None:
         return
     _rec["gaps"] = gaps
     _latch(instant_zero(objects))
+    if not _rec["film_was_in_dish"] and film_in_dish(objects):
+        _rec["film_was_in_dish"] = True  # logged only: film in the dish is judged at the end
+    _rec["hist"].append((float(t), {n: key_points(objects[n]) for n in STILL}))
+    while len(_rec["hist"]) > 2 and _rec["hist"][1][0] <= t - STILL_S - EPS:
+        _rec["hist"].pop(0)  # keep the last 1 s, and the step just before it
     th = float(objects["shears"].joints.get("jaw", 0.0))
     if biting(objects, _rec["prev_jaw"]):
         _latch("shears closed on the fish")
@@ -571,18 +659,18 @@ def observe(objects, gaps, t, known=True, hands=None) -> None:
             _rec["cuts"].append(res)
             if res["fish"]:
                 _latch("fish cut by the shears")
-            elif res["end"]:
+                return
+            if res["top"]:
+                _rec["spans"]["top"].append(res["top"])
+                y0 = res["top"][2]
+                line = [(lo, hi) for lo, hi, y in _rec["spans"]["top"] if abs(y - y0) <= TOP_LINE + EPS]
+                if _union(line) >= TOP_SPAN - EPS:
+                    _rec["opened"]["top"] = True
+            if res["end"]:
                 end = res["end"]
                 _rec["spans"][end].append(res["y"])
-                lo, hi = min(v[0] for v in _rec["spans"][end]), max(v[1] for v in _rec["spans"][end])
                 if _union(_rec["spans"][end]) >= OPEN_SPAN - EPS:
                     _rec["opened"][end] = True
-                if lo <= -FLAT_W / 2 + 0.001 + EPS and hi >= FLAT_W / 2 - 0.001 - EPS:  # cut right through
-                    po, pr = _frame(objects["pouch"])
-                    sgn = 1 if end == "px" else -1
-                    strip = po + pr @ np.array([sgn * (END_X + LOOSE + BAND / 2), 0.0, 0.0])
-                    if _over(objects, "dish", strip[:2]):
-                        _latch("cut-off strip fell into the dish")
 
 
 def _gap_ok(name, d) -> bool:
@@ -591,30 +679,54 @@ def _gap_ok(name, d) -> bool:
 
 
 def away_from_dish(objects) -> bool:
-    """No film and no part of the shears in or over the dish (its outline grown by 10 mm), at any height."""
-    o, r = _frame(objects["dish"])
-    for pts in (bag_points(objects), _corners(_part_boxes(SHEARS, objects["shears"], collide_only=False))):
-        loc = (np.asarray(pts) - o) @ r
-        if np.any((np.abs(loc[:, 0]) <= DISH_L / 2 + 0.010) & (np.abs(loc[:, 1]) <= DISH_W / 2 + 0.010)):
-            return False
-    return True
+    """No piece of film and no part of the shears in or over the dish (its outline grown by 10 mm), at any height."""
+    col = dish_column(objects)
+    boxes = _part_boxes(POUCH, objects["pouch"], collide_only=False)
+    boxes += _part_boxes(SHEARS, objects["shears"], collide_only=False)
+    return not any(_sat_overlap(b, col) > EPS for b in boxes)
+
+
+STILL = ("salmon", "pouch", "shears", "dish")
+STILL_S, STILL_MM = 1.0, 0.002
+
+
+def key_points(st) -> np.ndarray:
+    """Points that move with a part and each of its links: every link's origin and two points 50 mm from it."""
+    poses = [(np.asarray(st.pos, float), _rot(st.quat_xyzw))]
+    poses += [(np.asarray(p, float), _rot(q)) for p, q in st.links.values()]
+    return np.concatenate([[p, p + r[:, 0] * 0.05, p + r[:, 1] * 0.05] for p, r in poses])
+
+
+def still(objects, name) -> bool:
+    """Nothing of the part moved more than 2 mm over the last 1 s of the trial (compared with where it is now). With
+    no recorded history (offline checks) its velocity must be at rest instead; in a trial, less than 1 s of history
+    is not still."""
+    h = _rec["hist"]
+    if not h:
+        return objects[name].resting()
+    if h[0][0] > _rec["t"] - STILL_S + EPS:
+        return False
+    now = key_points(objects[name])
+    return all(float(np.linalg.norm(pts[name] - now, axis=1).max()) <= STILL_MM + EPS for _, pts in h) and \
+        objects[name].resting()
 
 
 def score(objects):
-    """0 for the trial if a whole-trial rule broke. Else 0.25 the film cut open across an end; 0.5 also the whole
-    fish lying in the dish, let go; 0.75 also no film and no shears in or over the dish; 1.0 also both hands 30 mm
-    clear of fish, dish, film and shears, and everything still."""
-    if _rec["zero"] or not _rec["known"] or instant_zero(objects):
+    """0 for the trial if a whole-trial rule broke, or if any film is in the dish at the end. Else 0.25 the film
+    opened (any opening: an end or the top) and the whole fish out of it; 0.5 also the whole fish lying in the dish,
+    let go; 0.75 also no film and no shears in or over the dish; 1.0 also both hands 30 mm clear of fish, dish, film
+    and shears, and everything still."""
+    if _rec["zero"] or not _rec["known"] or instant_zero(objects) or film_in_dish(objects):
         return 0.0
-    if not any(_rec["opened"].values()):
+    if not fish_out(objects):
         return 0.0
-    if not (fish_in_dish(objects) and _gap_ok("salmon", 0.005) and objects["salmon"].resting()):
+    if not (fish_in_dish(objects) and _gap_ok("salmon", 0.005) and still(objects, "salmon")):
         return 0.25
     if not away_from_dish(objects):
         return 0.5
-    still = all(objects[n].resting() for n in ("salmon", "pouch", "shears", "dish"))
+    calm = all(still(objects, n) for n in STILL)
     clear = all(_gap_ok(n, 0.030) for n in ("salmon", "pouch", "shears", "dish"))
-    if not (still and clear):
+    if not (calm and clear):
         return 0.75
     return 1.0
 
@@ -711,7 +823,7 @@ def _arm_poses(sim):
 
 
 def _restore(sim) -> None:
-    for j in ("end_px", "end_nx"):
+    for j in JOINT_OF.values():
         try:
             sim.set_stiffness("pouch", j, K_SEAL)
         except Exception:  # noqa: BLE001
@@ -775,9 +887,9 @@ def _step(sim) -> None:
     for end, now in _rec["opened"].items():
         if now and not before[end]:
             try:
-                sim.set_stiffness("pouch", f"end_{end}", 0.0)
+                sim.set_stiffness("pouch", JOINT_OF[end], 0.0)
             except Exception as e:  # noqa: BLE001
-                _rec["known"], _rec["reason"] = False, f"could not free the end: {e}"
+                _rec["known"], _rec["reason"] = False, f"could not free the {JOINT_OF[end]} panel: {e}"
     log = _log_path()
     if log and (_rec["steps"] % 5 == 0 or _rec["opened"] != before):
         try:
@@ -785,7 +897,8 @@ def _step(sim) -> None:
             row = dict(t=round(float(sim.t), 3), lot=lots.current().name, score=score(objects), zero=_rec["zero"],
                        why=_rec["why"], opened=_rec["opened"], cuts=_rec["cuts"][-1:],
                        jaw=round(float(sh.joints.get("jaw", 0.0)), 3),
-                       ends=[round(float(objects["pouch"].joints.get(k, 0.0)), 3) for k in ("end_px", "end_nx")],
+                       panels=[round(float(objects["pouch"].joints.get(k, 0.0)), 3) for k in JOINT_OF.values()],
+                       fish_out=fish_out(objects), film_was_in_dish=_rec["film_was_in_dish"],
                        fish=np.round(objects["salmon"].pos, 4).tolist(), pouch=np.round(objects["pouch"].pos, 4).tolist(),
                        pouch_q=np.round(objects["pouch"].quat_xyzw, 3).tolist(),
                        shears=np.round(sh.pos, 4).tolist(), shears_q=np.round(sh.quat_xyzw, 3).tolist(),
