@@ -1,8 +1,10 @@
-"""An electronics bench. A short black 20 x 20 mm V-slot aluminium rail stands on two feet, running straight away
-from the robot. Three black 8 mm tape feeders sit on it side by side at the rail's 15.5 mm slot pitch, each hooked
-over the rail and clipped to a yellow slot block on the rail's left face, with a white 7 inch component reel hanging
-from it on the left. The three units are identical and touch-close: about 0.5 mm between feeder bodies and 2.5 mm
-between reels. To the left of the bank lies a blue service mat. Nobody is in the scene.
+"""The front of a desktop pick-and-place machine (an Opulo LumenPnP) on a bench. Its front frame rail, a black 20 x 20 mm
+aluminium extrusion, runs straight away from the robot; the machine's bed, frame and parked gantry are to the robot's
+right, the front left leg and side frame nearer the robot. Three black 8 mm tape feeders sit side by side on the rail in
+its first three slots, each hooked over the rail and clipped to the yellow slot blade on the rail's left face, each
+with a white 7 inch component reel hanging from it on the left and its tape threaded into the feeder. The units are
+identical and touch-close: about 0.8 mm between feeder bodies and 2.8 mm between reels. To the left of the machine lies
+a blue service mat. Nobody is in the scene.
 """
 
 from __future__ import annotations
@@ -24,6 +26,13 @@ import observation  # noqa: E402
 from yam_arena.demo import FINGER_OPEN, Waypoint  # noqa: E402
 from yam_arena.task_file import TABLE_TOP  # noqa: E402
 
+# Millimetre-scale catches and a 0.8 mm packing gap need a contact envelope
+# smaller than that gap (the generic kit uses 5 mm). Rest offsets remain zero.
+parts.SOLVER_ITERATIONS = (64, 8)
+parts.MAX_DEPENETRATION = 0.10
+lots.SETTLE_S = 2.0  # arms at READY; no policy actions or scorer bypass during a trial
+PACKED_CONTACT = 0.0002
+
 SCENE = "station"
 TOP = TABLE_TOP[SCENE]
 EPS = 1e-6
@@ -44,38 +53,48 @@ def _qy(a: float) -> tuple[float, float, float, float]:
 
 
 # -- geometry, in a feeder's own frame (metres) ---------------------------------------------------------------------------
-# u: inward, from the reel side to the pick end; w: across, along the rail (the slot pitch); z: up. Origin: the rail's
-# centre line at the slot centre. Opulo LumenPnP 8 mm feeder: frame-8 envelope 164.8 x 82.8 x 15 mm (maker CAD, feeder
-# repository commit c9869fe); 15 mm wide; spool arm carrying a standard 7 inch (178 mm) reel. Shapes below are a
-# simplified copy of the hook, slot-block clip and lever; their exact dimensions are estimates from the maker's photos.
-PITCH = 0.0155  # slot pitch (estimate: 15 mm feeder plus clearance)
+# u: inward, from the reel side toward the machine's bed; w: across, along the rail (the slot pitch); z: up. Origin:
+# the rail's centre line at the slot centre. From the maker's CAD: the LumenPnP front frame rail is a 20 x 20 mm
+# V-slot extrusion whose centre line is 110 mm above the bench (machine on its leg extensions); the front slot blades
+# stand 28 mm out from its outer face, 45 mm tall; slots sit at a 15.8 mm pitch; the 8 mm feeder frame is 164.8 mm
+# long and 82.8 mm tall (feeder repository commit c9869fe), 15 mm wide, reaching 70 mm inward from the rail centre to
+# just short of the bed; modelled 73 mm tall, without the bulge under the drive gear. The hook, clip and lever shapes
+# below are a simplified copy sized from the maker's photos.
+PITCH = 0.0158  # slot pitch (maker CAD: 25 front slots on two blades, 103 to 498 mm along the rail)
 W2 = 0.0075  # half the feeder width
-Z_R = 0.112  # rail centre height above the bench (reels clear the bench by 8 mm)
+Z_R = 0.110  # rail centre height above the bench
 
 RAIL_CORE = ((-0.010, 0.010), (-0.010, 0.006))  # (u range, z range)
-RAIL_TOP = [((-0.010, -0.00205), (0.006, 0.010)), ((0.00205, 0.010), (0.006, 0.010))]  # the top-face slot, 4.1 x 4 mm
-STRIP = ((-0.016, -0.010), (-0.016, 0.010), 0.00725)  # slot block on the rail's outer face, half width in w
-PEG = ((-0.0215, -0.016), (-0.002, 0.004), 0.0025)  # alignment peg on the slot block
+RAIL_TOP = [((-0.010, -0.0025), (0.006, 0.010)), ((0.0025, 0.010), (0.006, 0.010))]  # the top-face slot, 5 x 4 mm
+BLADE = ((-0.038, -0.010), (-0.035, 0.010))  # slot blade on the rail's outer face (u range, z range)
+PEG = ((-0.0435, -0.038), (-0.016, -0.010), 0.0025)  # alignment peg on the blade, one per slot
 
-BODY = [((-0.018, -0.001), (0.01005, 0.052)), ((-0.001, 0.140), (0.0115, 0.052))]  # rests on the rail's outer half
-TAB = ((-0.018, -0.006), (0.052, 0.064))
-PRONG = ((-0.0245, -0.0175), (-0.012, 0.01005), (0.0032, 0.0075))  # two prongs either side of the peg
-BEAR = ((-0.0175, -0.01605), (-0.006, -0.003), (0.0032, 0.0075))  # the pads that bear on the slot block
-BRIDGE = ((-0.0245, -0.0175), (0.00405, 0.01005), 0.0032)
-STEM = ((-0.0010, 0.0010), (0.0083, 0.0115))
+BODY = [((-0.052, -0.001), (0.01005, 0.040)), ((-0.001, 0.070), (0.015, 0.040)),  # over the blade and rail
+        ((-0.095, -0.052), (-0.033, 0.030))]  # the frame's outer part, in front of the blade
+CLIP = ((-0.052, -0.046), (-0.030, 0.01005))
+PRONG = ((-0.046, -0.0395), (-0.030, 0.01005), (0.0026, 0.0075))  # two prongs, a close fit either side of the peg
+BEAR = ((-0.0395, -0.03805), (-0.026, -0.022), (0.0026, 0.0075))  # the pads that bear on the blade's face
+BRIDGE = ((-0.046, -0.0395), (-0.0099, 0.01005), 0.0026)
+STEM = ((-0.0010, 0.0010), (0.0083, 0.015))
 NOSE = ((0.0, 0.0083), 0.0020)  # round hook nose in the rail's top slot; the feeder turns about it
 NOSE_W = 0.014  # the nose runs along the slot for nearly the feeder's width
-ARM = [((-0.060, -0.018), (0.016, 0.028)), ((-0.125, -0.055), (-0.020, 0.022))]  # spool arm (stepped)
-HUB = (-0.125, -0.015)
+SPOOL_ARM = ((-0.186, -0.095), (-0.019, -0.011))
+HUB = (-0.186, -0.015)
 REEL_R, REEL_W = 0.089, 0.013
-PIVOT = (-0.0200, -0.0103)  # release lever pivot, outboard of the tooth so a lift on the tooth turns it
-TOOTH = ((-0.0156, -0.01855), 0.0025, (0.0034, 0.0070))  # one tooth either side of the peg (w and -w)
-LEVER_SIDE = ((-0.0215, -0.0175), (-0.018, -0.010))  # the lever's two side bars, beside the peg
-LEVER_CROSS = [((-0.028, -0.0215), (-0.013, -0.010)), ((-0.028, -0.025), (-0.013, 0.0))]  # crossbar and thumb tab
+PIVOT = (-0.0440, -0.0293)  # release lever pivot, outboard of the teeth so a lift on a tooth turns it
+TOOTH = ((-0.0376, -0.03755), 0.0025, (0.0034, 0.0070))  # one tooth either side of the peg (w and -w)
+LEVER_SIDE = ((-0.0435, -0.0395), (-0.037, -0.029))  # the lever's two side bars, beside the blade's face
+LEVER_CROSS = [((-0.050, -0.0435), (-0.032, -0.029)), ((-0.050, -0.047), (-0.032, -0.019))]  # crossbar and thumb tab
 
-FEEDER_MASS = 0.29  # kg, body with electronics and a loaded reel (estimate)
+BODY_MASS = 0.13  # kg: printed frame, two gear motors, board and spool arm (estimate)
+REEL_MASS = 0.13  # kg: 7 inch reel with paper tape, part used (estimate)
 LEVER_MASS = 0.025
-LEVER_SPRING, LEVER_PRELOAD = 0.10, -0.30  # N m/rad, rad (target beyond the closed stop: a preloaded spring)
+LEVER_SPRING, LEVER_PRELOAD = 0.10, -0.15  # N m/rad, rad (target beyond the closed stop: a preloaded spring)
+REEL_DRAG = 0.002  # N m s/rad, the reel turning on its hub (estimate)
+REEL_SLACK = 3.0  # rad the reel may unwind (tape goes slack); winding is stopped by the threaded tape
+# Printed feeder surfaces: 0.38 static is the top of the 0.12-0.38 range measured between pairs of printed PLA parts
+# (Santana, Alves and Netto, Proc. IMechE Part L 235(6), 2021; printed PETG pairs 0.13-0.21); 0.30 sliding is an estimate.
+FEEDER_FRICTION = (0.38, 0.30)
 
 
 def _box(ur, zr, wr, color, collide=True, quat=None, friction=None):
@@ -88,7 +107,7 @@ def _box(ur, zr, wr, color, collide=True, quat=None, friction=None):
 
 def _feeder_shapes():
     out = [_box(u, z, W2, FEEDER_BLACK) for u, z in BODY]
-    out.append(_box(*TAB, W2, FEEDER_BLACK))
+    out.append(_box(*CLIP, W2, FEEDER_BLACK))
     for s in (1, -1):
         w = PRONG[2] if s > 0 else (-PRONG[2][1], -PRONG[2][0])
         out.append(_box(PRONG[0], PRONG[1], w, FEEDER_BLACK))
@@ -96,19 +115,27 @@ def _feeder_shapes():
     out.append(_box(BRIDGE[0], BRIDGE[1], BRIDGE[2], FEEDER_BLACK))
     out.append(_box(STEM[0], STEM[1], NOSE_W / 2, FEEDER_BLACK))
     out.append(parts.cylinder(NOSE[1], NOSE_W, at=(NOSE[0][0], 0.0, NOSE[0][1]), color=FEEDER_BLACK, axis="y"))
-    out.append(_box(ARM[0][0], ARM[0][1], 0.0025, FEEDER_BLACK))
-    out.append(_box(ARM[1][0], ARM[1][1], 0.0025, FEEDER_BLACK, collide=False))
-    out.append(parts.cylinder(REEL_R, REEL_W, at=(HUB[0], 0.0, HUB[1]), color=REEL_WHITE, axis="y"))
-    # looks only: the wound tape seen through the reel's faces, the hub and a label strip on the feeder's side
+    out.append(_box(*SPOOL_ARM, 0.0025, FEEDER_BLACK, collide=False))
+    # looks only: the threaded tape from the top of the reel into the feeder, and a label strip on each side
+    a = math.atan2(0.030 - 0.074, -0.095 - (-0.150))
+    out.append(parts.box((0.071, 0.008, 0.0006), at=(-0.1225, 0.0, 0.052), color=TAPE, quat=_qy(-a), collide=False))
     for s in (1, -1):
+        out.append(_box((-0.010, 0.050), (0.022, 0.032), (s * W2 - 0.0002, s * W2 + 0.0002) if s > 0 else
+                        (-W2 - 0.0002, -W2 + 0.0002), LABEL, collide=False))
+    return out
+
+
+def _reel_shapes():
+    out = [parts.cylinder(REEL_R, REEL_W, at=(HUB[0], 0.0, HUB[1]), color=REEL_WHITE, axis="y")]
+    for s in (1, -1):  # looks only: the wound tape seen through the faces, the hub, and a spoke so its turning shows
         out.append(parts.cylinder(0.070, 0.0004, at=(HUB[0], s * (REEL_W / 2 + 0.0002), HUB[1]), color=TAPE, axis="y",
                                   collide=False))
         out.append(parts.cylinder(0.018, 0.0006, at=(HUB[0], s * (REEL_W / 2 + 0.0005), HUB[1]), color=REEL_WHITE,
                                   axis="y", collide=False))
         out.append(parts.cylinder(0.006, 0.0008, at=(HUB[0], s * (REEL_W / 2 + 0.0008), HUB[1]), color=YELLOW, axis="y",
                                   collide=False))
-        out.append(_box((0.030, 0.075), (0.030, 0.040), (s * W2 - 0.0002, s * W2 + 0.0002) if s > 0 else
-                        (-W2 - 0.0002, -W2 + 0.0002), LABEL, collide=False))
+        out.append(parts.box((0.050, 0.0008, 0.006), at=(HUB[0] + 0.044, s * (REEL_W / 2 + 0.0006), HUB[1]),
+                             color=REEL_WHITE, collide=False))
     return out
 
 
@@ -123,58 +150,108 @@ def _lever_shapes():
     return out
 
 
-def _rail_shapes():
-    L = 0.050  # half length of the rail section
-    out = [_box(*RAIL_CORE, L, RAIL_BLACK)]
-    for u, z in RAIL_TOP:
-        out.append(_box(u, z, L, RAIL_BLACK))
-    for s in (1, -1):  # looks only: the V grooves on the two side faces
-        out.append(_box((s * 0.0101 - 0.0001, s * 0.0101 + 0.0001), (-0.003, 0.003), L, (0.05, 0.05, 0.05), collide=False))
-    for k in (-1, 0, 1):
-        w = k * PITCH
-        out.append(_box(STRIP[0], STRIP[1], (w - STRIP[2], w + STRIP[2]), YELLOW))
-        out.append(_box(PEG[0], PEG[1], (w - PEG[2], w + PEG[2]), YELLOW))
-    for s in (1, -1):  # two feet under the rail ends
-        w = (0.040, 0.050) if s > 0 else (-0.050, -0.040)
-        out.append(_box((-0.010, 0.010), (-Z_R + 0.006, -0.010), w, RAIL_BLACK))
-        wf = (0.032, 0.058) if s > 0 else (-0.058, -0.032)
-        out.append(_box((-0.030, 0.030), (-Z_R, -Z_R + 0.006), wf, RAIL_BLACK))
-    return out
-
-
 # -- layout -------------------------------------------------------------------------------------------------------------
-X0, Y_R = 0.240, -0.060  # the middle slot: rail centre line under it
+# The machine's own frame (maker CAD, mm): x_m along the front rail from the machine's left outer face, y_m inward
+# (front to back), z_m up from the bottom of the frame, whose feet stand 100 mm lower on the bench.
+X_L, Y_R = 0.150, -0.070  # world x of the machine's left outer face; world y of the front rail's centre line
+SLOT_X = [103.0 + PITCH * 1000 * (k + 0.5) for k in range(25)]  # front slot centres, x_m
+FIRST = 0  # the bank fills slots 1 to 3; the middle feeder is in slot 2
+X0 = X_L + SLOT_X[FIRST + 1] / 1000  # world x of the middle slot
 YAW = -math.pi / 2  # feeder frame u -> world -y, w -> world +x
 NAMES = ("feeder_front", "feeder_middle", "feeder_back")  # nearest the robot first
 MIDDLE = "feeder_middle"
 NEIGHBOURS = ("feeder_front", "feeder_back")
 
 
+def _m(xr, yr, zr):
+    """World (centre, size) of a box given in the machine frame (mm ranges)."""
+    xs = (X_L + xr[0] / 1000, X_L + xr[1] / 1000)
+    ys = (Y_R - (yr[1] - 10) / 1000, Y_R - (yr[0] - 10) / 1000)
+    zs = (TOP + 0.100 + zr[0] / 1000, TOP + 0.100 + zr[1] / 1000)
+    return [(a + b) / 2 for a, b in (xs, ys, zs)], [b - a for a, b in (xs, ys, zs)]
+
+
+ALU = (0.13, 0.13, 0.14)
+PRINT = (0.10, 0.10, 0.11)
+BED = (0.08, 0.08, 0.09)
+STEEL = (0.62, 0.64, 0.67)
+# (name, x_m, y_m, z_m, colour); positions from the maker's assembly, the gantry parked at the back of its travel
+MACHINE = [
+    ("left lower side rail", (0, 20), (-80, 520), (20, 40), ALU), ("right lower side rail", (580, 600), (-80, 520), (20, 40), ALU),
+    ("left upper side rail", (0, 20), (-80, 520), (90, 110), ALU), ("right upper side rail", (580, 600), (-80, 520), (90, 110), ALU),
+    ("left y guide", (4, 16), (-56, 494), (110, 118), STEEL), ("right y guide", (584, 596), (-56, 494), (110, 118), STEEL),
+    ("back frame rail", (0, 600), (450, 470), (0, 20), ALU),
+    ("front left leg", (-10, 30), (-104, 0), (-50, 120), PRINT), ("front left foot", (-10, 20), (-85, -29), (-100, -50), PRINT),
+    ("front right leg", (570, 610), (-104, 0), (-50, 120), PRINT), ("front right foot", (580, 610), (-85, -29), (-100, -50), PRINT),
+    ("back left leg", (-12, 31), (500, 568), (-100, 120), PRINT), ("back right leg", (568, 612), (500, 568), (-100, 120), PRINT),
+    ("bed", (20, 580), (85, 450), (40, 43), BED), ("bottom camera", (101, 139), (121, 159), (4, 34), PRINT),
+    ("control box", (-65, 0), (30, 244), (-80, 40), PRINT),
+    ("gantry beam", (-65, 640), (420, 440), (125, 165), ALU), ("left gantry carriage", (-12, 27), (384, 496), (85, 135), PRINT),
+    ("right gantry carriage", (573, 612), (384, 496), (85, 135), PRINT), ("toolhead", (399, 489), (395, 455), (88, 240), PRINT),
+]
+
+
+def _machine_shapes():
+    out = []
+    for _, xr, yr, zr, col in MACHINE:
+        c, size = _m(xr, yr, zr)
+        out.append(parts.box(tuple(size), at=tuple(c), color=col))
+    return out
+
+
+def _rail_shapes():
+    lo, hi = -SLOT_X[FIRST + 1] / 1000, (600.0 - SLOT_X[FIRST + 1]) / 1000  # the rail's ends, in w
+    out = [_box(RAIL_CORE[0], RAIL_CORE[1], (lo, hi), RAIL_BLACK)]
+    for u, z in RAIL_TOP:
+        out.append(_box(u, z, (lo, hi), RAIL_BLACK))
+    for s in (1, -1):  # looks only: the V grooves on the two side faces
+        out.append(_box((s * 0.0101 - 0.0001, s * 0.0101 + 0.0001), (-0.003, 0.003), (lo, hi), (0.05, 0.05, 0.05),
+                        collide=False))
+    b0, b1 = (103.0 - SLOT_X[FIRST + 1]) / 1000, (498.0 - SLOT_X[FIRST + 1]) / 1000
+    out.append(_box(BLADE[0], BLADE[1], (b0, b1), YELLOW))
+    for k in range(25):
+        w = (SLOT_X[k] - SLOT_X[FIRST + 1]) / 1000
+        out.append(_box(PEG[0], PEG[1], (w - PEG[2], w + PEG[2]), YELLOW))
+        out.append(_box((BLADE[0][0] - 0.0003, BLADE[0][0]), (0.000, 0.006), (w - 0.003, w + 0.003), (0.15, 0.15, 0.15),
+                        collide=False))  # looks only: a slot number plate
+    return out
+
+
 def _feeder(name, k):
     lever = parts.Hinge("lever", shapes=tuple(_lever_shapes()), pivot=(PIVOT[0], 0.0, PIVOT[1]), axis=(0.0, 1.0, 0.0),
                         lower=0.0, upper=0.6, mass=LEVER_MASS, spring=LEVER_SPRING, damping=0.002, max_effort=1.0,
                         target=LEVER_PRELOAD)
-    return parts.Part(name, pos=(X0 + k * PITCH, Y_R, TOP + Z_R), yaw=YAW, mass=FEEDER_MASS,
-                      shapes=tuple(_feeder_shapes()), joints=(lever,), friction=(0.9, 0.8), contact_offset=0.002,
+    reel = parts.Hinge("reel", shapes=tuple(_reel_shapes()), pivot=(HUB[0], 0.0, HUB[1]), axis=(0.0, 1.0, 0.0),
+                       lower=-0.02, upper=REEL_SLACK, mass=REEL_MASS, spring=0.0, damping=REEL_DRAG, max_effort=1.0)
+    return parts.Part(name, pos=(X0 + k * PITCH, Y_R, TOP + Z_R), yaw=YAW, mass=BODY_MASS,
+                      shapes=tuple(_feeder_shapes()), joints=(lever, reel), friction=FEEDER_FRICTION, contact_offset=PACKED_CONTACT,
                       link_friction=(("lever", (0.2, 0.15)),))
 
 
 FEEDERS = {n: _feeder(n, k) for n, k in zip(NAMES, (-1, 0, 1))}
 RAIL = parts.Part("feeder_rail", pos=(X0, Y_R, TOP + Z_R), yaw=YAW, shapes=tuple(_rail_shapes()), friction=(0.3, 0.25),
-                  contact_offset=0.002)
+                  contact_offset=PACKED_CONTACT)
+MACHINE_PART = parts.Part("pick_and_place_machine", pos=(0.0, 0.0, 0.0), shapes=tuple(_machine_shapes()),
+                          friction=(0.5, 0.4), contact_offset=PACKED_CONTACT)
 MAT_SIZE = (0.300, 0.420, 0.003)
-MAT_A = (0.350, 0.360)
+MAT_A = (0.350, 0.425)
 MAT = parts.Part("service_mat", pos=(*MAT_A, TOP), mass=0.5,
                  shapes=(parts.box(MAT_SIZE, at=(0.0, 0.0, MAT_SIZE[2] / 2), color=MAT_BLUE),), friction=(0.9, 0.8),
-                 contact_offset=0.002)
-OBJECTS = [RAIL, *FEEDERS.values(), MAT]
+                 contact_offset=PACKED_CONTACT)
+OBJECTS = [MACHINE_PART, RAIL, *FEEDERS.values(), MAT]
 LOTS = lots.declare(OBJECTS, lots.Lot("A", place={"service_mat": (*MAT_A, TOP)}),
                     lots.Lot("B", place={"service_mat": (MAT_A[0] - 0.030, MAT_A[1], TOP)}))
 
 # -- scoring constants --------------------------------------------------------------------------------------------------
 NB_MOVE, NB_TURN = 0.002, D(3.0)  # neighbour limits at the end of the trial
-NB_LOOSE_MOVE, NB_LOOSE_TURN = 0.005, D(10.0)  # beyond either at any moment, a neighbour has been knocked loose
-CLEAR = 0.005  # middle feeder clear of the rail, slot blocks and pegs
+# At any moment, a neighbour is knocked loose when its hook leaves the rail's top slot or its catch lets go, or (a
+# backstop for sliding or turning that the simplified clip does not stop) its origin moves or its body turns past these:
+NB_LOOSE_MOVE, NB_LOOSE_TURN = 0.005, D(10.0)
+SLOT_HALF, RAIL_TOP_Z = RAIL_TOP[1][0][0], RAIL_TOP[1][1][1]  # top slot half width (2.5 mm); rail top face (z 10 mm)
+BLADE_FACE, BLADE_BOTTOM = BLADE[0][0], BLADE[1][0]  # slot blade's front face (u -38 mm) and bottom face (z -35 mm)
+NOSE_ENDS = tuple((NOSE[0][0], s * NOSE_W / 2, NOSE[0][1]) for s in (-1, 1))  # hook nose axis, both ends
+TEETH = tuple((TOOTH[0][0], s * (TOOTH[2][0] + TOOTH[2][1]) / 2, TOOTH[0][1]) for s in (1, -1))  # lever tooth centres
+CLEAR = 0.005  # middle feeder clear of the rail, slot blade and pegs
 HAND_CLEAR = 0.005  # released: no gripper or fingertip within this of the middle feeder
 FLAT = D(20.0)  # lying on a face: its across axis within this of vertical
 STILL_V, STILL_W, HOLD_S = 0.005, 0.05, 1.0
@@ -208,18 +285,29 @@ def _surface_points(shape, step=0.004) -> np.ndarray:
 _PTS = {}
 
 
+LINKS = {"lever": (_lever_shapes, PIVOT), "reel": (_reel_shapes, HUB)}
+
+
+def _link_pose(st, name):
+    if name not in getattr(st, "links", {}):
+        raise ValueError(name + " link pose unknown")
+    lp, lq = (np.asarray(a, float) for a in st.links[name])
+    if lp.shape != (3,) or lq.shape != (4,) or not np.isfinite(lp).all() or not np.isfinite(lq).all():
+        raise ValueError(name + " link pose malformed")
+    return lp, _rot(lq)
+
+
 def feeder_points(st) -> np.ndarray:
-    """World points on every collider of a feeder (body and lever), from its reported pose and lever link pose."""
+    """World points on every collider of a feeder (body, lever and reel), from its reported pose and link poses."""
     if "base" not in _PTS:
         _PTS["base"] = np.vstack([_surface_points(s) for s in _feeder_shapes() if s.collide])
-        lever_pts = np.vstack([_surface_points(s) for s in _lever_shapes()])
-        _PTS["lever"] = lever_pts - np.array([PIVOT[0], 0.0, PIVOT[1]])  # relative to the hinge (link frame origin)
+        for name, (fn, piv) in LINKS.items():  # relative to the hinge (the link frame origin)
+            _PTS[name] = np.vstack([_surface_points(s) for s in fn() if s.collide]) - np.array([piv[0], 0.0, piv[1]])
     p, r = np.asarray(st.pos, float), _rot(st.quat_xyzw)
     out = [_PTS["base"] @ r.T + p]
-    if "lever" not in getattr(st, "links", {}):
-        raise ValueError("lever link pose unknown")
-    lp, lq = (np.asarray(a, float) for a in st.links["lever"])
-    out.append(_PTS["lever"] @ _rot(lq).T + lp)
+    for name in LINKS:
+        lp, lr = _link_pose(st, name)
+        out.append(_PTS[name] @ lr.T + lp)
     return np.vstack(out)
 
 
@@ -231,7 +319,7 @@ def _rail_boxes():
 
 
 def rail_gap(pts) -> float:
-    """Least distance (m) from any point to the rail, its slot blocks, pegs and feet."""
+    """Least distance (m) from any point to the rail, its slot blade and its pegs."""
     best = math.inf
     for c, r, s in _rail_boxes():
         loc = (pts - c) @ r
@@ -242,15 +330,13 @@ def rail_gap(pts) -> float:
 
 
 def _shape_frames(st):
-    """(shape, world centre, world rotation) for every collider of a feeder: body shapes and lever shapes."""
+    """(shape, world centre, world rotation) for every collider of a feeder: body, lever and reel shapes."""
     p, r = np.asarray(st.pos, float), _rot(st.quat_xyzw)
     out = [(s, p + r @ np.asarray(s.at, float), r @ s.R) for s in _feeder_shapes() if s.collide]
-    if "lever" not in getattr(st, "links", {}):
-        raise ValueError("lever link pose unknown")
-    lp, lq = (np.asarray(a, float) for a in st.links["lever"])
-    lr = _rot(lq)
-    piv = np.array([PIVOT[0], 0.0, PIVOT[1]])
-    out += [(s, lp + lr @ (np.asarray(s.at, float) - piv), lr @ s.R) for s in _lever_shapes()]
+    for name, (fn, piv) in LINKS.items():
+        lp, lr = _link_pose(st, name)
+        pv = np.array([piv[0], 0.0, piv[1]])
+        out += [(s, lp + lr @ (np.asarray(s.at, float) - pv), lr @ s.R) for s in fn() if s.collide]
     return out
 
 
@@ -282,6 +368,29 @@ def hand_gap(clouds, st) -> float:
             if len(near):
                 best = min(best, float(_shape_distance(near, shape, cen, rot).min()))
     return best
+
+
+def _rail_frame(pts) -> np.ndarray:
+    """World points in the rail's frame (u out from the rail centre line toward the bed, w along the rail, z up)."""
+    st = RAIL.state()
+    return (np.asarray(pts, float) - np.asarray(st.pos, float)) @ _rot(st.quat_xyzw)
+
+
+def hooked(st) -> bool:
+    """The hook nose is in the rail's top slot: at both ends of the nose, its axis lies within the slot's width and its
+    lowest point below the rail's top face."""
+    p, r = np.asarray(st.pos, float), _rot(st.quat_xyzw)
+    c = _rail_frame([p + r @ np.asarray(e) for e in NOSE_ENDS])
+    return bool(np.all(np.abs(c[:, 0]) <= SLOT_HALF + EPS) and np.all(c[:, 2] - NOSE[1] <= RAIL_TOP_Z + EPS))
+
+
+def latched(st) -> bool:
+    """The catch holds: each of the lever's two teeth is still under the slot blade (its centre at or below the
+    blade's bottom face, and its inboard edge reaching in past the blade's front face)."""
+    lp, lr = _link_pose(st, "lever")
+    pv = np.array([PIVOT[0], 0.0, PIVOT[1]])
+    c = _rail_frame([lp + lr @ (np.asarray(t) - pv) for t in TEETH])
+    return bool(np.all(c[:, 2] <= BLADE_BOTTOM + EPS) and np.all(c[:, 0] + TOOTH[1] > BLADE_FACE + EPS))
 
 
 def flat(st) -> bool:
@@ -323,7 +432,7 @@ def _turn(qa, qb) -> float:
 
 
 def observe(objects, clouds, t) -> None:
-    """One control step. Unknown or malformed observations fail closed for the rest of the trial."""
+    """One control step. An unknown or malformed observation scores 0 for as long as it lasts (fail closed)."""
     try:
         sts = {n: objects[n] for n in (*NAMES, MAT.name)}
         for n, st in sts.items():
@@ -332,6 +441,8 @@ def observe(objects, clouds, t) -> None:
                 raise ValueError("state unknown: " + n)
         if _rec["t"] is not None and not t > _rec["t"]:
             raise ValueError("time did not advance")
+        if _rec["t"] is not None and t - _rec["t"] > 0.05 + EPS:
+            _rec.update(since=None, held=0.0)  # a missing 20 Hz sample interrupts the continuous hold
         if _rec["start"] is None:
             _rec["start"] = {n: (np.asarray(sts[n].pos, float).copy(), np.asarray(sts[n].quat_xyzw, float).copy())
                              for n in NAMES}
@@ -341,10 +452,13 @@ def observe(objects, clouds, t) -> None:
         hand = hand_gap(clouds, m)
         if not _rec["zero"]:
             for n in NEIGHBOURS:
-                p0, q0 = _rec["start"][n]
-                if np.linalg.norm(np.asarray(sts[n].pos) - p0) > NB_LOOSE_MOVE + EPS or \
-                        _turn(q0, sts[n].quat_xyzw) > NB_LOOSE_TURN + EPS:
-                    _rec.update(zero=True, why=f"{n} was knocked loose")
+                if not hooked(sts[n]):
+                    _rec.update(zero=True, why=f"{n} was knocked loose: its hook left the rail's slot")
+                elif not latched(sts[n]):
+                    _rec.update(zero=True, why=f"{n} was knocked loose: its catch let go")
+                elif np.linalg.norm(np.asarray(sts[n].pos) - _rec["start"][n][0]) > NB_LOOSE_MOVE + EPS or \
+                        _turn(_rec["start"][n][1], sts[n].quat_xyzw) > NB_LOOSE_TURN + EPS:
+                    _rec.update(zero=True, why=f"{n} was knocked loose: moved over 5 mm or turned over 10 degrees")
             for n in NAMES:
                 if np.linalg.norm(sts[n].lin_vel) > DROP_V:
                     _rec.update(zero=True, why=f"{n} was dropped")
@@ -359,7 +473,7 @@ def observe(objects, clouds, t) -> None:
         _rec.update(known=True, steps=_rec["steps"] + 1, t=t, gap=gap, hand=hand,
                     held=0.0 if _rec["since"] is None else t - _rec["since"])
     except (KeyError, ValueError, TypeError, AttributeError, IndexError) as e:
-        _rec.update(known=False, why="unknown observation: " + str(e))
+        _rec.update(known=False, since=None, held=0.0, why="unknown observation: " + str(e))
 
 
 def neighbours_seated(objects) -> bool:
@@ -373,9 +487,9 @@ def neighbours_seated(objects) -> bool:
 
 
 def score(objects):
-    """0: unknown observation; at any moment a neighbour knocked loose (moved more than 5 mm or turned more than 10
-    degrees) or any feeder dropped or off the bench; at the end, a neighbour more than 2 mm or 3 degrees from its start,
-    or the middle feeder within 5 mm of the rail, its feet, slot blocks or pegs.
+    """0: unknown observation; at any moment a neighbour knocked loose (its hook out of the rail's slot, its catch let
+    go, or its origin moved over 5 mm or its body turned over 10 degrees) or any feeder dropped or off the bench; at the end, a neighbour more than 2 mm or 3 degrees from its start,
+    or the middle feeder within 5 mm of the rail, its slot blade or pegs.
     0.5: the middle feeder 5 mm or more clear of all of them (held, moving, or not lying on a side).
     0.75: also released (no hand within 5 mm), lying on a side on the bench or mat, still for 1 s.
     1.0: also entirely over the mat."""
@@ -416,16 +530,21 @@ def _step(sim):
     try:
         clouds, _ = observation.hand_state(sim)
     except (ValueError, AttributeError, KeyError, IndexError):
-        _rec.update(known=False, why="hand state unknown")
+        _rec.update(known=False, since=None, held=0.0, why="hand state unknown")
         return
     observe(objects, clouds, float(sim.t))
-    if os.environ.get("TRACE_OUT"):
+    if os.environ.get("TRACE_OUT") or os.environ.get("FEEDER_TRACE"):
         row = dict(t=float(sim.t), lot=lots.current().name, known=_rec["known"], zero=_rec["zero"], why=_rec["why"],
                    gap=_rec["gap"], hand=_rec["hand"], held=_rec["held"], score=score(objects))
         for n in (*NAMES, MAT.name):
             st = objects[n]
             row[n] = dict(pos=np.asarray(st.pos).round(5).tolist(), quat=np.asarray(st.quat_xyzw).round(5).tolist(),
                           v=float(np.linalg.norm(st.lin_vel)), joints={k: float(v) for k, v in st.joints.items()})
+            if n in NEIGHBOURS:
+                try:
+                    row[n].update(hooked=hooked(st), latched=latched(st))
+                except (ValueError, KeyError):
+                    pass
         try:  # debugging only: where each hand's TCP is
             from yam_arena.constants import TCP_OFFSET
 
@@ -439,7 +558,7 @@ def _step(sim):
                 row[arm] = dict(tcp=np.round(tcp, 4).tolist(), finger=float(q[robot.joint_names.index("joint7")]))
         except (AttributeError, KeyError, IndexError, ValueError, ImportError):
             pass
-        with pathlib.Path(os.environ["TRACE_OUT"]).with_name("feeder.jsonl").open("a") as f:
+        with pathlib.Path(os.environ.get("TRACE_OUT") or os.environ["FEEDER_TRACE"]).with_name("feeder.jsonl").open("a") as f:
             f.write(json.dumps(row) + "\n")
 
 
@@ -450,7 +569,7 @@ def world(u, z, k=0):
 
 
 GRIP_YAW = math.pi / 2  # fingers close along world x, across the feeders
-PINCH = -0.0020  # finger command: 4.5 mm past each face of the 13 mm reel
+PINCH = -0.0030  # finger command: 4.5 mm past each side of the 15 mm feeder body
 
 
 def _w(d, p, finger, label, tilt_deg=0.0, heading=0.0, yaw=GRIP_YAW):
@@ -460,46 +579,48 @@ def _w(d, p, finger, label, tilt_deg=0.0, heading=0.0, yaw=GRIP_YAW):
 def demo():
     lot = lots.current()
     mx, my, _ = lot.pos(MAT.name)
-    top = TOP + Z_R + BODY[1][1][1]  # feeder top
-    # right hand: one open finger presses the middle feeder's pick end down, the other finger is in free space
-    px, py = X0 + 0.050, Y_R - 0.120
+    inner_top = TOP + Z_R + BODY[1][1][1]  # top of the feeders' inner part
+    outer_top = TOP + Z_R + BODY[2][1][1]  # top of the feeders' outer part
+    # right hand: one open finger presses the middle feeder's inner end down, the other finger is in free space
+    px, py = X0 + 0.0545, Y_R - 0.060  # 4.5 mm past the finger spacing: the arm lags about that far here
     right = [
-        _w(2.5, (px, py, TOP + 0.215), FINGER_OPEN, "above the middle pick end"),
-        _w(1.5, (px, py, top + 0.0129 + 0.004), FINGER_OPEN, "finger on the pick end"),
-        _w(3.0, (px, py, top + 0.0129 - 0.040), FINGER_OPEN, "press it down"),
-        _w(4.2, (px, py, top + 0.0129 - 0.040), FINGER_OPEN, "hold it tipped"),
-        _w(1.5, (px, py, TOP + 0.215), FINGER_OPEN, "lift away"),
-        _w(2.0, (0.20, -0.30, TOP + 0.20), FINGER_OPEN, "aside"),
-        _w(20.0, (0.20, -0.30, TOP + 0.20), FINGER_OPEN, "wait"),
+        _w(2.5, (px, py, TOP + 0.195), FINGER_OPEN, "above the middle feeder's inner end"),
+        _w(1.5, (px, py, inner_top + 0.0129 + 0.004), FINGER_OPEN, "finger on the inner end"),
+        _w(3.0, (px, py, inner_top + 0.0129 - 0.045), FINGER_OPEN, "press it down"),
+        _w(4.2, (px, py, inner_top + 0.0129 - 0.045), FINGER_OPEN, "hold it tipped"),
+        _w(1.5, (px, py, TOP + 0.195), FINGER_OPEN, "lift away"),
+        _w(2.0, (0.20, -0.30, TOP + 0.22), FINGER_OPEN, "aside"),
+        _w(20.0, (0.20, -0.30, TOP + 0.22), FINGER_OPEN, "wait"),
     ]
-    # left hand: pinch the middle reel where it stands proud, lift the hook out, move it out a little, level it,
-    # slide it out along its own plane past the neighbours' reels, then lay it on the mat
-    gy = Y_R + 0.127
-    level = dict(tilt_deg=20.0, heading=-math.pi / 2)
-    out_y = gy + 0.370
-    lay = (mx + 0.010, out_y)
+    # left hand: pinch the middle feeder's outer end where it now stands proud, lift the hook out, move it out a
+    # little, level it, slide it out along its own plane past the neighbours' reels, then lay it on the mat
+    gy = Y_R + 0.078
+    gz = outer_top + 0.004 + 0.0129
+    level = dict(tilt_deg=15.0, heading=-math.pi / 2)
+    out_y = gy + 0.365
+    lay = (mx + 0.060, out_y + 0.040)
     away = tilt.away("left", lay)
 
     def lw(*a, **k):
         return _w(*a, yaw=-GRIP_YAW, **k)
 
     left = [
-        lw(2.5, (X0, gy, TOP + 0.212), FINGER_OPEN, "above the reels"),
-        lw(4.5, (X0, gy, TOP + 0.212), FINGER_OPEN, "wait for the tip"),
-        lw(1.5, (X0, gy, TOP + 0.203), FINGER_OPEN, "fingers either side of the proud reel"),
-        lw(1.0, (X0, gy, TOP + 0.203), PINCH, "pinch the reel"),
-        lw(0.7, (X0, gy, TOP + 0.203), PINCH, "settle"),
-        lw(1.0, (X0, gy, TOP + 0.213), PINCH, "lift the hook out"),
-        lw(1.5, (X0, gy, TOP + 0.213), PINCH, "hold while the other hand lifts"),
-        lw(1.5, (X0, gy + 0.025, TOP + 0.212), PINCH, "out a little"),
-        lw(2.0, (X0, gy + 0.025, TOP + 0.211), PINCH, "level it", **level),
-        lw(3.0, (X0, gy + 0.170, TOP + 0.211), PINCH, "slide it out", **level),
-        lw(3.0, (X0, out_y, TOP + 0.211), PINCH, "clear of the bank"),
-        lw(1.5, (*lay, TOP + 0.190), PINCH, "over the mat"),
-        lw(2.0, (*lay, TOP + 0.175), PINCH, "lower"),
-        lw(2.0, (*lay, TOP + 0.175), PINCH, "lean it", tilt_deg=35.0, heading=away),
-        lw(1.0, (*lay, TOP + 0.175), FINGER_OPEN, "let go", tilt_deg=35.0, heading=away),
-        lw(1.5, (*lay, TOP + 0.195), FINGER_OPEN, "up", tilt_deg=20.0, heading=away),
-        lw(4.0, (*lay, TOP + 0.195), FINGER_OPEN, "wait", tilt_deg=20.0, heading=away),
+        lw(2.5, (X0, gy, TOP + 0.178), FINGER_OPEN, "above the feeders' outer ends"),
+        lw(4.5, (X0, gy, TOP + 0.178), FINGER_OPEN, "wait for the tip"),
+        lw(1.5, (X0, gy, gz), FINGER_OPEN, "fingers either side of the proud outer end"),
+        lw(1.0, (X0, gy, gz), PINCH, "pinch the feeder body"),
+        lw(0.7, (X0, gy, gz), PINCH, "settle"),
+        lw(1.0, (X0, gy, gz + 0.022), PINCH, "lift the hook out"),
+        lw(1.5, (X0, gy, gz + 0.022), PINCH, "hold while the other hand lifts"),
+        lw(1.5, (X0, gy + 0.020, gz + 0.022), PINCH, "out a little"),
+        lw(2.0, (X0, gy + 0.020, gz + 0.029), PINCH, "level it", **level),
+        lw(3.0, (X0, gy + 0.170, gz + 0.029), PINCH, "slide it out", **level),
+        lw(3.0, (X0, out_y, gz + 0.029), PINCH, "clear of the bank"),
+        lw(1.5, (*lay, gz + 0.004), PINCH, "over the mat"),
+        lw(2.0, (*lay, gz - 0.010), PINCH, "lower"),
+        lw(2.0, (*lay, gz - 0.010), PINCH, "lean it", tilt_deg=35.0, heading=away),
+        lw(1.0, (*lay, gz - 0.010), FINGER_OPEN, "let go", tilt_deg=35.0, heading=away),
+        lw(1.5, (*lay, gz + 0.030), FINGER_OPEN, "up", tilt_deg=20.0, heading=away),
+        lw(4.0, (*lay, gz + 0.030), FINGER_OPEN, "wait", tilt_deg=20.0, heading=away),
     ]
     return {"left": left, "right": right}

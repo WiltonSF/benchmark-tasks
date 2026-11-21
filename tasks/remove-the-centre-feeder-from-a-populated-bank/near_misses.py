@@ -89,7 +89,7 @@ def run():
         out = middle(dpos=(0, 0.060, 0.030), lever=0.3)  # off the hook, up and out toward the reel side
         case("lifted out of its slot, still held", objects(out), 0.5, hand=0.0)
         case("lifted out and released (hands clear) but in the air", objects(out), 0.5)
-        case("lifted 30 mm with the catch released, but the clip still over the slot block",
+        case("lifted 30 mm with the catch released, but the clip still over the slot blade",
              objects(middle(dpos=(0, 0, 0.030), lever=0.6)), 0.0)
 
         def at_gap(g):  # lifted 30 mm, then moved out until the nearest point is g from the rail parts
@@ -111,7 +111,7 @@ def run():
         case("lying flat on the mat, still only 0.9 s", objects(lying), 0.5, held=0.9)
         case("lying flat on the mat, a fingertip 4 mm away", objects(lying), 0.5, hand=0.004)
         case("lying flat on the mat, fingertip exactly 5 mm away", objects(lying), 1.0, hand=0.005)
-        case("lying flat on the mat, but a neighbour moved earlier", objects(lying), 0.0, zero=True)
+        case("lying flat on the mat, but a neighbour knocked loose earlier", objects(lying), 0.0, zero=True)
         case("lying flat on the mat, observation unknown", objects(lying), 0.0, known=False)
         # the mat's long edge: the feeder's outline must lie entirely inside it
         pts = task.feeder_points(lying)
@@ -137,7 +137,8 @@ def run():
         task._rec.update(task._fresh())
         task.observe(objects(lying), [np.full((5, 3), np.nan)], 10.0)
         results.append(("NaN hand geometry fails closed", task.score(objects(lying)) == 0.0, task.score(objects(lying)), 0.0))
-        # neighbours: judged loose at any moment (over 5 mm or 10 degrees), and seated at the end (2 mm, 3 degrees)
+        # neighbours: knocked loose at any moment (hook out of the rail's slot, or catch let go), and seated at the end
+        # (2 mm, 3 degrees)
         far = [np.array([[0.0, 0.0, 2.0]])]
 
         def history(*steps):
@@ -148,12 +149,83 @@ def run():
                 task.observe(objects(lying), far, 2.0 + 0.05 * k)
             return task.score(objects(lying))
 
+        def nb(name, uz, angle, lever=0.0):
+            """A neighbour turned by `angle` (rad) about the rail's direction through its own feeder-frame point (u, z);
+            a positive angle lifts the reel end. `lever` opens its catch lever (rad)."""
+            spec = task.FEEDERS[name]
+            k = -1 if name == "feeder_front" else 1
+            pt = np.array(task.world(uz[0], uz[1], k))
+            rr = P._rot((1, 0, 0), angle)
+            p0 = np.asarray(spec.pos, float)
+            return spec.state(pos=tuple(rr @ (p0 - pt) + pt), quat_xyzw=_q(rr @ P._quat_to_matrix(spec.state().quat_xyzw)),
+                              joints={"lever": lever})
+
+        def edge(test, lo, hi):  # the value where test() turns False (test(lo) True, test(hi) False)
+            for _ in range(60):
+                mid = (lo + hi) / 2
+                lo, hi = (mid, hi) if test(mid) else (lo, mid)
+            return (lo + hi) / 2
+
+        hook, tooth = task.NOSE[0], task.TOOTH[0]
+        # a wobble about the hook (reel end up): the catch lets go once a tooth comes out from under the blade
+        lim = edge(lambda a: task.latched(nb("feeder_back", hook, a)), 0.0, math.radians(15))
+        for a, want, what in ((math.radians(2.0), 1.0, "still hooked and latched: no zero"),
+                              (lim - math.radians(0.2), 1.0, "0.2 degrees short of the catch letting go: no zero"),
+                              (lim + math.radians(0.2), 0.0, "0.2 degrees past: the catch let go")):
+            st = nb("feeder_back", hook, a)
+            got = history(objects(lying, feeder_back=st))
+            results.append((f"neighbour wobbled {math.degrees(a):.1f} degrees about its hook for one step, then back, "
+                            f"{what} (hooked {task.hooked(st)}, latched {task.latched(st)})", got == want, got, want))
+        # the hook lifted out of its slot while the catch still holds (turned inner end up about the lever's teeth)
+        lim = edge(lambda a: task.hooked(nb("feeder_front", tooth, -a)), 0.0, math.radians(15))
+        for a, want, what in ((lim - math.radians(0.2), 1.0, "nose axis just inside the slot's width: no zero"),
+                              (lim + math.radians(0.2), 0.0, "nose axis just past the slot's edge")):
+            st = nb("feeder_front", tooth, -a)
+            got = history(objects(lying, feeder_front=st))
+            results.append((f"neighbour's inner end lifted {math.degrees(a):.1f} degrees for one step, then back, {what} "
+                            f"(hooked {task.hooked(st)}, latched {task.latched(st)})", got == want, got, want))
+        # the catch opened by its lever (someone pressing a neighbour's lever), body still seated
+        lim = edge(lambda q: task.latched(nb("feeder_back", hook, 0.0, lever=q)), 0.0, 0.6)
+        for q, want, what in ((lim - 0.01, 1.0, "teeth still under the blade: no zero"),
+                              (lim + 0.01, 0.0, "teeth clear of the blade: the catch let go")):
+            got = history(objects(lying, feeder_back=nb("feeder_back", hook, 0.0, lever=q)))
+            results.append((f"neighbour's lever opened {q:.3f} rad for one step, then back, {what}", got == want, got, want))
+        # straight lifts, each branch alone: lever resting its teeth on the blade's corner, the nose rises out of its slot
+        rest = edge(lambda q: task.latched(nb("feeder_back", hook, 0.0, lever=q)), 0.0, 0.6) - 0.002
+        for dz, want, what in ((0.0036, 1.0, "nose still in its slot: no zero"), (0.0038, 0.0, "nose out of its slot")):
+            st = nb("feeder_back", hook, 0.0, lever=rest)
+            st = task.FEEDERS["feeder_back"].state(pos=tuple(np.asarray(st.pos) + (0, 0, dz)), quat_xyzw=st.quat_xyzw,
+                                                   joints={"lever": rest})
+            got = history(objects(lying, feeder_back=st))
+            results.append((f"neighbour lifted {dz * 1000:.1f} mm for one step, lever teeth on the blade's corner, {what} "
+                            f"(hooked {task.hooked(st)}, latched {task.latched(st)})", got == want, got, want))
+        st = task.FEEDERS["feeder_front"].state(pos=tuple(np.asarray(task.FEEDERS["feeder_front"].pos) + (0, 0, 0.0026)))
+        got = history(objects(lying, feeder_front=st))
+        results.append((f"neighbour lifted 2.6 mm, lever closed: tooth centre above the blade's bottom face (hooked "
+                        f"{task.hooked(st)}, latched {task.latched(st)})", got == 0.0, got, 0.0))
+        # the backstop: sliding along the rail or turning about a vertical axis, which the simplified clip does not stop
+        got = history(objects(lying, feeder_back=shifted("feeder_back", (0.0055, 0, 0))))
+        results.append(("neighbour slid 5.5 mm along the rail for one step (hooked and latched): backstop, 0", got == 0.0,
+                        got, 0.0))
+        got = history(objects(lying, feeder_back=shifted("feeder_back", (0.0045, 0, 0))))
+        results.append(("neighbour slid 4.5 mm along the rail for one step: no zero", got == 1.0, got, 1.0))
+        spec = task.FEEDERS["feeder_front"]
+        pt = np.array(task.world(tooth[0], tooth[1], -1))
+        for deg, want in ((11.0, 0.0), (2.0, 1.0)):
+            rr = P._rot((0, 0, 1), math.radians(deg))
+            st = spec.state(pos=tuple(rr @ (np.asarray(spec.pos) - pt) + pt),
+                            quat_xyzw=_q(rr @ P._quat_to_matrix(spec.state().quat_xyzw)))
+            got = history(objects(lying, feeder_front=st))
+            results.append((f"neighbour turned {deg:.0f} degrees about a vertical axis through its teeth for one step "
+                            f"(hooked {task.hooked(st)}, latched {task.latched(st)})", got == want, got, want))
         got = history(objects(lying, feeder_back=shifted("feeder_back", (0, 0.006, 0))))
-        results.append(("neighbour knocked 6 mm at some moment, then back", got == 0.0, got, 0.0))
+        results.append(("neighbour pulled 6 mm out of its slot at some moment, then back", got == 0.0, got, 0.0))
         got = history(objects(lying, feeder_front=shifted("feeder_front", turn=math.radians(11))))
         results.append(("neighbour tipped 11 degrees at some moment, then back", got == 0.0, got, 0.0))
-        got = history(objects(lying, feeder_back=shifted("feeder_back", (0, 0.004, 0))))
-        results.append(("neighbour nudged 4 mm and back: no zero", got == 1.0, got, 1.0))
+        got = history(objects(lying, feeder_back=nb("feeder_back", hook, math.radians(1.5))),
+                      objects(lying, feeder_back=nb("feeder_back", hook, math.radians(-0.5))))
+        results.append(("neighbour rocked +1.5 / -0.5 degrees on its hook, hooked and latched: no zero", got == 1.0, got,
+                        1.0))
         case("neighbour 2.5 mm off its seat at the end", objects(lying, feeder_back=shifted("feeder_back", (0, 0.0025, 0))),
              0.0)
         case("neighbour 1.9 mm off its seat at the end", objects(lying, feeder_back=shifted("feeder_back", (0, 0.0019, 0))),
@@ -179,6 +251,43 @@ def run():
             task.observe(objects(lying), far, 1.0 + 0.05 * k)
         got = task.score(objects(lying))
         results.append(("same, hands far away for 2 s: full score", got == 1.0, got, 1.0))
+        # An unobserved interval cannot count toward the continuous released/still hold.
+        task._rec.update(task._fresh())
+        task.observe(objects(lying), far, 1.0)
+        for k in range(1, 21):
+            task.observe(objects(lying), [np.array([[math.nan, 0.0, 0.0]])], 1.0 + 0.05 * k)
+        got = task.score(objects(lying))
+        results.append(("missing hand observations stay at zero", got == 0.0, got, 0.0))
+        task.observe(objects(lying), far, 2.05)
+        got = task.score(objects(lying))
+        results.append(("first recovered sample cannot inherit an unobserved one-second hold", got == 0.5, got, 0.5))
+        for k in range(1, 22):
+            task.observe(objects(lying), far, 2.05 + 0.05 * k)
+        got = task.score(objects(lying))
+        results.append(("fresh continuous one-second hold after recovery earns full score", got == 1.0, got, 1.0))
+        task._rec.update(task._fresh())
+        task.observe(objects(lying), far, 1.0)
+        task.observe(objects(lying), far, 2.05)
+        got = task.score(objects(lying))
+        results.append(("a missing 20 Hz callback interrupts the hold", got == 0.5, got, 0.5))
+        for k in range(1, 22):
+            task.observe(objects(lying), far, 2.05 + 0.05 * k)
+        got = task.score(objects(lying))
+        results.append(("continuous hold after missing callbacks recovers", got == 1.0, got, 1.0))
+        from types import SimpleNamespace
+        original_hand_state = task.observation.hand_state
+        def unavailable_hand_state(sim):
+            raise ValueError("missing native hand state")
+        task._rec.update(task._fresh())
+        task.observe(objects(lying), far, 1.0)
+        try:
+            task.observation.hand_state = unavailable_hand_state
+            task._step(SimpleNamespace(states=lambda: objects(lying), t=2.0))
+        finally:
+            task.observation.hand_state = original_hand_state
+        task.observe(objects(lying), far, 2.05)
+        got = task.score(objects(lying))
+        results.append(("native hand-read failure interrupts the hold", got == 0.5, got, 0.5))
     finally:
         task._rec.clear()
         task._rec.update(old)

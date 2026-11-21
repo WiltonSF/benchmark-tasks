@@ -1,33 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-240 -110 420 260" width="840" height="520" font-family="Helvetica, Arial, sans-serif" font-size="6">
-  <title>Feeder bank, side view along the rail (mm)</title>
-  <rect x="-240" y="-110" width="420" height="260" fill="#fff"/>
-  <!-- y axis points down in SVG: drawing z is -y. Origin at the rail centre line. Robot's left is to the left. -->
-  <line x1="-230" y1="112" x2="170" y2="112" stroke="#999" stroke-width="0.6"/>
-  <text x="120" y="120" fill="#666">bench top</text>
-  <!-- rail with top slot -->
-  <path d="M-10,-10 L-2.05,-10 L-2.05,-6 L2.05,-6 L2.05,-10 L10,-10 L10,10 L-10,10 Z" fill="#333"/>
-  <!-- foot post and plate -->
-  <rect x="-10" y="10" width="20" height="96" fill="#555"/>
-  <rect x="-30" y="106" width="60" height="6" fill="#555"/>
-  <!-- slot block and peg -->
-  <rect x="-16" y="-10" width="6" height="26" fill="#f2b705" stroke="#a07800" stroke-width="0.4"/>
-  <rect x="-21.5" y="-4" width="5.5" height="6" fill="#f2b705" stroke="#a07800" stroke-width="0.4"/>
-  <!-- feeder body, hook nose, prongs, lever, reel (outline) -->
-  <rect x="-18" y="-52" width="158" height="41.95" fill="none" stroke="#111" stroke-width="0.8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-300 -130 420 280" width="840" height="560" font-family="Helvetica, Arial, sans-serif" font-size="6">
+  <title>Feeder on the machine's front rail, side view along the rail (mm)</title>
+  <rect x="-300" y="-130" width="420" height="280" fill="#fff"/>
+  <!-- origin: rail centre line; SVG y = -z. Reel side to the left (u negative), machine bed to the right. -->
+  <line x1="-290" y1="110" x2="115" y2="110" stroke="#999" stroke-width="0.6"/>
+  <text x="70" y="118" fill="#666">bench top</text>
+  <path d="M-10,-10 L-2.5,-10 L-2.5,-6 L2.5,-6 L2.5,-10 L10,-10 L10,10 L-10,10 Z" fill="#333"/>
+  <rect x="-38" y="-10" width="28" height="45" fill="#f2b705" stroke="#a07800" stroke-width="0.4"/>
+  <rect x="-43.5" y="10" width="5.5" height="6" fill="#f2b705" stroke="#a07800" stroke-width="0.4"/>
+  <rect x="75" y="-33" width="40" height="3" fill="#555"/>
+  <text x="76" y="-37" fill="#000">bed (5 clear)</text>
+  <path d="M-52,-40 L70,-40 L70,-15 L-1,-15 L-1,-10.05 L-52,-10.05 Z" fill="none" stroke="#111" stroke-width="0.8"/>
+  <rect x="-95" y="-30" width="43" height="63" fill="none" stroke="#111" stroke-width="0.8"/>
+  <rect x="-52" y="-10.05" width="12.5" height="40" fill="none" stroke="#111" stroke-width="0.6"/>
   <circle cx="0" cy="-8.3" r="2" fill="#111"/>
-  <rect x="-24.5" y="-10.05" width="7" height="22.05" fill="none" stroke="#111" stroke-width="0.6"/>
-  <circle cx="-15.6" cy="18.55" r="2.5" fill="#f2b705" stroke="#a07800" stroke-width="0.4"/>
-  <circle cx="-20" cy="10.3" r="0.8" fill="#a07800"/>
-  <rect x="-28" y="0" width="3" height="13" fill="#f2b705" stroke="#a07800" stroke-width="0.4"/>
-  <circle cx="-125" cy="15" r="89" fill="none" stroke="#888" stroke-width="0.8" stroke-dasharray="3,2"/>
-  <circle cx="-125" cy="15" r="6" fill="#f2b705"/>
-  <!-- dimensions -->
-  <text x="-12" y="-14" fill="#000">rail 20 x 20</text>
-  <text x="-6" y="-56" fill="#000">body 158 long, 42 tall, 15 wide</text>
-  <text x="-222" y="-78" fill="#000">reel 178 dia, 13 wide, hub 125 left of rail centre, 15 below</text>
-  <text x="-80" y="30" fill="#000">slot block 6 x 26, peg 5.5 out</text>
-  <text x="-80" y="38" fill="#000">lever teeth under the block's lip</text>
-  <text x="14" y="60" fill="#000">foot: 20 x 10 post, 60 x 26 x 6 plate</text>
-  <text x="14" y="-2" fill="#000">hook nose 4 dia in top slot (4.1 x 4)</text>
-  <text x="14" y="8" fill="#000">rail centre 112 above bench</text>
+  <circle cx="-37.6" cy="37.55" r="2.5" fill="#f2b705" stroke="#a07800" stroke-width="0.4"/>
+  <circle cx="-44" cy="29.3" r="0.8" fill="#a07800"/>
+  <rect x="-50" y="19" width="3" height="13" fill="#f2b705" stroke="#a07800" stroke-width="0.4"/>
+  <circle cx="-186" cy="15" r="89" fill="none" stroke="#888" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <circle cx="-186" cy="15" r="6" fill="#f2b705"/>
+  <line x1="-150" y1="-60" x2="-95" y2="-25" stroke="#3a2f25" stroke-width="1"/>
+  <text x="-12" y="-44" fill="#000">body 165 long (70 in, 95 out), 15 wide</text>
+  <text x="-280" y="-112" fill="#000">reel 178 dia, 13 wide, turns on its hub (hub 186 out, 15 below)</text>
+  <text x="-140" y="-66" fill="#000">tape threaded into the feeder</text>
+  <text x="-30" y="50" fill="#000">slot blade 28 deep, 45 tall; peg 5.5 out</text>
+  <text x="-30" y="58" fill="#000">lever teeth under the blade's bottom edge</text>
+  <text x="14" y="4" fill="#000">hook nose 4 dia in the top slot (5 x 4)</text>
+  <text x="14" y="14" fill="#000">rail centre 110 above the bench</text>
 </svg>
