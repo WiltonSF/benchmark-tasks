@@ -1,0 +1,15 @@
+part,quantity,length_mm,width_mm,thickness_or_height_mm,stock,notes
+deck top,1,440,340,18,18 mm softwood (pine) plywood sheet,200 x 200 mm square opening cut through its middle
+long batten,2,440,38,62,"planed softwood batten, 62 mm tall x 38 mm wide (nominal 38 x 63 mm studwork timber planed to 62 mm is one option, an estimate: measure the stock)",inner face flush with the opening's edge; width is a build choice
+cross batten,2,200,38,62,"planed softwood batten, 62 mm tall x 38 mm wide (nominal 38 x 63 mm studwork timber planed to 62 mm is one option, an estimate: measure the stock)","between the long battens, inner face flush with the opening's edge"
+end batten,2,200,38,62,"planed softwood batten, 62 mm tall x 38 mm wide (nominal 38 x 63 mm studwork timber planed to 62 mm is one option, an estimate: measure the stock)","between the long battens, under the deck's 340 mm edges"
+edge filler (optional),2,440,32,62,the same batten ripped to 32 mm wide,"closes the overhang on the 440 mm sides, as the simulation models them"
+cover plate,1,270,270,18,18 mm softwood (pine) plywood sheet,"painted yellow, marked HOLE"
+cover handle,1,150,40,40,"planed softwood, 40 x 40 mm section (plane a larger square section down if 40 mm is not stocked)",centred on top of the plate
+cover cleat,2,180,20,18,strip cut from the 18 mm plywood,all four bottom edges bevelled 6 mm at 45 degrees; foot 168 x 8 mm
+"wood screw, deck",16,40,,4,4 x 40 mm countersunk wood screws (suggested size),"through the deck top into the battens, heads flush"
+"wood screw, cleats",6,30,,3.5,3.5 x 30 mm countersunk wood screws (suggested size),"down through the plate into the cleats, heads flush; drill pilot holes"
+"wood screw, handle",2,40,,4,4 x 40 mm countersunk wood screws (suggested size),"up through the plate into the handle, heads flush"
+paint and marker,,,,,yellow paint; black marker or paint for the word HOLE,
+wrench (bought),1,180,,9,any 14 mm combination wrench about 180 mm long,modelled sizes are typical ones (estimates)
+tool tote (bought),1,280,180,100,any open tote of about this inside size,length and width are inside sizes; height overall

@@ -1,0 +1,273 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="590mm" height="850mm" viewBox="0 0 590 850">
+<rect width="590" height="850" fill="white"/>
+<text x="20.00" y="16.00" font-size="6" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">Deck with the floor opening: full size (1:1), millimetres</text>
+<text x="20.00" y="25.00" font-size="3.4" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">18 mm plywood top 440 x 340 with a 200 x 200 opening, on 62 mm tall battens: 80 mm from the table to the deck's top.</text>
+<text x="20.00" y="29.93" font-size="3.4" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">The four battens round the opening are flush with its edges all the way down, so the opening is a square pocket 80 mm deep to the table.</text>
+<text x="20.00" y="34.86" font-size="3.4" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">Simulation numbers: every size shown except the batten width (38 mm, a build choice; the simulation fills the whole space under the plywood)</text>
+<text x="20.00" y="39.79" font-size="3.4" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">and the screw positions (suggested). Dashed brown: battens under the plywood. Dashed red: the scoring square to draw on the deck's top.</text>
+<text x="75.00" y="78.00" font-size="4.5" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">PLAN (from above)</text>
+<polygon points="75.00,470.00 515.00,470.00 515.00,130.00 75.00,130.00" fill="#f1e2c3" stroke="#000" stroke-width="0.7"/>
+<polygon points="195.00,400.00 395.00,400.00 395.00,200.00 195.00,200.00" fill="#ffffff" stroke="#000" stroke-width="0.7"/>
+<polygon points="75.00,200.00 515.00,200.00 515.00,162.00 75.00,162.00" fill="none" stroke="#8a5a2b" stroke-width="0.3" stroke-dasharray="3,1.5"/>
+<polygon points="75.00,438.00 515.00,438.00 515.00,400.00 75.00,400.00" fill="none" stroke="#8a5a2b" stroke-width="0.3" stroke-dasharray="3,1.5"/>
+<polygon points="157.00,400.00 195.00,400.00 195.00,200.00 157.00,200.00" fill="none" stroke="#8a5a2b" stroke-width="0.3" stroke-dasharray="3,1.5"/>
+<polygon points="395.00,400.00 433.00,400.00 433.00,200.00 395.00,200.00" fill="none" stroke="#8a5a2b" stroke-width="0.3" stroke-dasharray="3,1.5"/>
+<polygon points="75.00,400.00 113.00,400.00 113.00,200.00 75.00,200.00" fill="none" stroke="#8a5a2b" stroke-width="0.3" stroke-dasharray="3,1.5"/>
+<polygon points="477.00,400.00 515.00,400.00 515.00,200.00 477.00,200.00" fill="none" stroke="#8a5a2b" stroke-width="0.3" stroke-dasharray="3,1.5"/>
+<polygon points="75.00,162.00 515.00,162.00 515.00,130.00 75.00,130.00" fill="none" stroke="#8a5a2b" stroke-width="0.3" stroke-dasharray="1.2,2"/>
+<polygon points="75.00,470.00 515.00,470.00 515.00,438.00 75.00,438.00" fill="none" stroke="#8a5a2b" stroke-width="0.3" stroke-dasharray="1.2,2"/>
+<polygon points="180.00,415.00 410.00,415.00 410.00,185.00 180.00,185.00" fill="none" stroke="#c62828" stroke-width="0.4" stroke-dasharray="4,2"/>
+<line x1="472.80" y1="419.00" x2="477.20" y2="419.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="475.00" y1="421.20" x2="475.00" y2="416.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="352.80" y1="419.00" x2="357.20" y2="419.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="355.00" y1="421.20" x2="355.00" y2="416.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="232.80" y1="419.00" x2="237.20" y2="419.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="235.00" y1="421.20" x2="235.00" y2="416.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="112.80" y1="419.00" x2="117.20" y2="419.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="115.00" y1="421.20" x2="115.00" y2="416.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="472.80" y1="181.00" x2="477.20" y2="181.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="475.00" y1="183.20" x2="475.00" y2="178.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="352.80" y1="181.00" x2="357.20" y2="181.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="355.00" y1="183.20" x2="355.00" y2="178.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="232.80" y1="181.00" x2="237.20" y2="181.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="235.00" y1="183.20" x2="235.00" y2="178.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="112.80" y1="181.00" x2="117.20" y2="181.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="115.00" y1="183.20" x2="115.00" y2="178.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="411.80" y1="360.00" x2="416.20" y2="360.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="414.00" y1="362.20" x2="414.00" y2="357.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="411.80" y1="240.00" x2="416.20" y2="240.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="414.00" y1="242.20" x2="414.00" y2="237.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="173.80" y1="360.00" x2="178.20" y2="360.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="176.00" y1="362.20" x2="176.00" y2="357.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="173.80" y1="240.00" x2="178.20" y2="240.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="176.00" y1="242.20" x2="176.00" y2="237.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="493.80" y1="360.00" x2="498.20" y2="360.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="496.00" y1="362.20" x2="496.00" y2="357.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="493.80" y1="240.00" x2="498.20" y2="240.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="496.00" y1="242.20" x2="496.00" y2="237.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="91.80" y1="360.00" x2="96.20" y2="360.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="94.00" y1="362.20" x2="94.00" y2="357.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="91.80" y1="240.00" x2="96.20" y2="240.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="94.00" y1="242.20" x2="94.00" y2="237.80" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="69.00" y1="300.00" x2="521.00" y2="300.00" fill="none" stroke="#777777" stroke-width="0.18" stroke-dasharray="6,2"/>
+<line x1="295.00" y1="476.00" x2="295.00" y2="124.00" fill="none" stroke="#777777" stroke-width="0.18" stroke-dasharray="6,2"/>
+<line x1="291.00" y1="300.00" x2="299.00" y2="300.00" fill="none" stroke="#777777" stroke-width="0.3"/>
+<line x1="295.00" y1="304.00" x2="295.00" y2="296.00" fill="none" stroke="#777777" stroke-width="0.3"/>
+<text x="298.00" y="297.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#777777">opening's middle: (0.26, 0.00) m</text>
+<text x="298.00" y="307.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#777777">from the midpoint between the arm bases</text>
+<text x="295.00" y="396.00" font-size="3.4" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">opening 200 x 200, cut square to the line</text>
+<text x="295.00" y="420.50" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#c62828">scoring square 230 x 230 (15 outside each edge)</text>
+<text x="79.00" y="182.20" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#8a5a2b">long batten</text>
+<text x="79.00" y="420.20" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#8a5a2b">long batten</text>
+<text x="79.00" y="147.20" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#8a5a2b">edge filler (optional)</text>
+<text x="79.00" y="455.20" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#8a5a2b">edge filler (optional)</text>
+<text x="176.00" y="370.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#8a5a2b">cross</text>
+<text x="176.00" y="374.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#8a5a2b">batten</text>
+<text x="94.00" y="370.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#8a5a2b">end</text>
+<text x="94.00" y="374.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#8a5a2b">batten</text>
+<text x="414.00" y="370.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#8a5a2b">cross</text>
+<text x="414.00" y="374.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#8a5a2b">batten</text>
+<text x="496.00" y="370.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#8a5a2b">end</text>
+<text x="496.00" y="374.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#8a5a2b">batten</text>
+<line x1="75.00" y1="129.00" x2="75.00" y2="103.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="515.00" y1="129.00" x2="515.00" y2="103.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="75.00" y1="105.00" x2="515.00" y2="105.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="75.00,105.00 77.20,104.34 77.20,105.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="515.00,105.00 512.80,105.66 512.80,104.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="295.00" y="104.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">440</text>
+<line x1="195.00" y1="129.00" x2="195.00" y2="116.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="395.00" y1="129.00" x2="395.00" y2="116.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="195.00" y1="118.00" x2="395.00" y2="118.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="195.00,118.00 197.20,117.34 197.20,118.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="395.00,118.00 392.80,118.66 392.80,117.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="295.00" y="117.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">200</text>
+<line x1="75.00" y1="129.00" x2="75.00" y2="116.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="195.00" y1="129.00" x2="195.00" y2="116.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="75.00" y1="118.00" x2="195.00" y2="118.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="75.00,118.00 77.20,117.34 77.20,118.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="195.00,118.00 192.80,118.66 192.80,117.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="135.00" y="117.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">120</text>
+<line x1="395.00" y1="129.00" x2="395.00" y2="116.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="515.00" y1="129.00" x2="515.00" y2="116.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="395.00" y1="118.00" x2="515.00" y2="118.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="395.00,118.00 397.20,117.34 397.20,118.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="515.00,118.00 512.80,118.66 512.80,117.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="455.00" y="117.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">120</text>
+<line x1="516.00" y1="130.00" x2="544.50" y2="130.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="516.00" y1="470.00" x2="544.50" y2="470.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="543.00" y1="130.00" x2="543.00" y2="470.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="543.00,130.00 543.66,132.20 542.34,132.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="543.00,470.00 542.34,467.80 543.66,467.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="545.20" y="301.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#0b5cad">340</text>
+<line x1="516.00" y1="200.00" x2="529.50" y2="200.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="516.00" y1="400.00" x2="529.50" y2="400.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="528.00" y1="200.00" x2="528.00" y2="400.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="528.00,200.00 528.66,202.20 527.34,202.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="528.00,400.00 527.34,397.80 528.66,397.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="530.20" y="301.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#0b5cad">200</text>
+<line x1="516.00" y1="130.00" x2="529.50" y2="130.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="516.00" y1="200.00" x2="529.50" y2="200.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="528.00" y1="130.00" x2="528.00" y2="200.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="528.00,130.00 528.66,132.20 527.34,132.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="528.00,200.00 527.34,197.80 528.66,197.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="530.20" y="166.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#0b5cad">70</text>
+<line x1="516.00" y1="400.00" x2="529.50" y2="400.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="516.00" y1="470.00" x2="529.50" y2="470.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="528.00" y1="400.00" x2="528.00" y2="470.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="528.00,400.00 528.66,402.20 527.34,402.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="528.00,470.00 527.34,467.80 528.66,467.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="530.20" y="436.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#0b5cad">70</text>
+<line x1="74.00" y1="162.00" x2="61.50" y2="162.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="74.00" y1="200.00" x2="61.50" y2="200.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="63.00" y1="162.00" x2="63.00" y2="200.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="63.00,162.00 63.66,164.20 62.34,164.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="63.00,200.00 62.34,197.80 63.66,197.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="60.80" y="182.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="end" fill="#0b5cad">38</text>
+<line x1="74.00" y1="130.00" x2="61.50" y2="130.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="74.00" y1="162.00" x2="61.50" y2="162.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="63.00" y1="130.00" x2="63.00" y2="162.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="63.00,130.00 63.66,132.20 62.34,132.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="63.00,162.00 62.34,159.80 63.66,159.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="60.80" y="147.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="end" fill="#0b5cad">32</text>
+<line x1="395.00" y1="471.00" x2="395.00" y2="483.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="433.00" y1="471.00" x2="433.00" y2="483.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="395.00" y1="482.00" x2="433.00" y2="482.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="395.00,482.00 397.20,481.34 397.20,482.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="433.00,482.00 430.80,482.66 430.80,481.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="414.00" y="481.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">38</text>
+<line x1="433.00" y1="471.00" x2="433.00" y2="483.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="477.00" y1="471.00" x2="477.00" y2="483.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="433.00" y1="482.00" x2="477.00" y2="482.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="433.00,482.00 435.20,481.34 435.20,482.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="477.00,482.00 474.80,482.66 474.80,481.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="455.00" y="481.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">44</text>
+<line x1="477.00" y1="471.00" x2="477.00" y2="483.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="515.00" y1="471.00" x2="515.00" y2="483.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="477.00" y1="482.00" x2="515.00" y2="482.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="477.00,482.00 479.20,481.34 479.20,482.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="515.00,482.00 512.80,482.66 512.80,481.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="496.00" y="481.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">38</text>
+<line x1="73.00" y1="300.00" x2="66.00" y2="300.00" fill="none" stroke="#000" stroke-width="0.9"/>
+<text x="69.50" y="298.00" font-size="4.5" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">A</text>
+<line x1="295.00" y1="472.00" x2="295.00" y2="479.00" fill="none" stroke="#000" stroke-width="0.9"/>
+<text x="297.50" y="477.10" font-size="4.5" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">B</text>
+<line x1="517.00" y1="300.00" x2="524.00" y2="300.00" fill="none" stroke="#000" stroke-width="0.9"/>
+<text x="520.50" y="298.00" font-size="4.5" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">A</text>
+<line x1="295.00" y1="128.00" x2="295.00" y2="121.00" fill="none" stroke="#000" stroke-width="0.9"/>
+<text x="297.50" y="126.10" font-size="4.5" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">B</text>
+<text x="75.00" y="494.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">+  countersunk wood screw down into a batten, head flush with the deck's top (suggested positions)</text>
+<text x="75.00" y="500.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">Robot side. Top of the page is away from the robot (+x); the left of the page is the robot's left (+y).</text>
+<text x="75.00" y="520.00" font-size="4.5" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">SECTION A-A (along y, through the opening)</text>
+<polygon points="75.00,620.00 515.00,620.00 515.00,558.00 75.00,558.00" fill="none" stroke="#777777" stroke-width="0.25"/>
+<line x1="195.00" y1="558.00" x2="195.00" y2="540.00" fill="none" stroke="#777777" stroke-width="0.25"/>
+<line x1="395.00" y1="558.00" x2="395.00" y2="540.00" fill="none" stroke="#777777" stroke-width="0.25"/>
+<line x1="195.00" y1="540.00" x2="395.00" y2="540.00" fill="none" stroke="#777777" stroke-width="0.25"/>
+<polygon points="75.00,558.00 195.00,558.00 195.00,540.00 75.00,540.00" fill="#f1e2c3" stroke="#000" stroke-width="0.6"/>
+<polygon points="157.00,620.00 195.00,620.00 195.00,558.00 157.00,558.00" fill="#d9b98c" stroke="#000" stroke-width="0.6"/>
+<polygon points="75.00,620.00 113.00,620.00 113.00,558.00 75.00,558.00" fill="#d9b98c" stroke="#000" stroke-width="0.6"/>
+<polygon points="395.00,558.00 515.00,558.00 515.00,540.00 395.00,540.00" fill="#f1e2c3" stroke="#000" stroke-width="0.6"/>
+<polygon points="395.00,620.00 433.00,620.00 433.00,558.00 395.00,558.00" fill="#d9b98c" stroke="#000" stroke-width="0.6"/>
+<polygon points="477.00,620.00 515.00,620.00 515.00,558.00 477.00,558.00" fill="#d9b98c" stroke="#000" stroke-width="0.6"/>
+<line x1="50.00" y1="620.00" x2="540.00" y2="620.00" fill="none" stroke="#444" stroke-width="1"/>
+<text x="295.00" y="625.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#444">table (the subfloor)</text>
+<text x="295.00" y="590.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#777777">long batten beyond: the pocket's far wall</text>
+<text x="176.00" y="588.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">cross</text>
+<text x="176.00" y="592.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">batten</text>
+<text x="94.00" y="588.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">end</text>
+<text x="94.00" y="592.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">batten</text>
+<text x="414.00" y="588.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">cross</text>
+<text x="414.00" y="592.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">batten</text>
+<text x="496.00" y="588.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">end</text>
+<text x="496.00" y="592.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">batten</text>
+<text x="135.00" y="538.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">18 mm plywood</text>
+<line x1="195.00" y1="539.00" x2="195.00" y2="528.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="395.00" y1="539.00" x2="395.00" y2="528.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="195.00" y1="530.00" x2="395.00" y2="530.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="195.00,530.00 197.20,529.34 197.20,530.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="395.00,530.00 392.80,530.66 392.80,529.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="295.00" y="529.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">200</text>
+<line x1="516.00" y1="540.00" x2="530.50" y2="540.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="516.00" y1="620.00" x2="530.50" y2="620.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="529.00" y1="540.00" x2="529.00" y2="620.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="529.00,540.00 529.66,542.20 528.34,542.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="529.00,620.00 528.34,617.80 529.66,617.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="531.20" y="581.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#0b5cad">80</text>
+<line x1="74.00" y1="558.00" x2="61.50" y2="558.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="74.00" y1="620.00" x2="61.50" y2="620.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="63.00" y1="558.00" x2="63.00" y2="620.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="63.00,558.00 63.66,560.20 62.34,560.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="63.00,620.00 62.34,617.80 63.66,617.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="60.80" y="590.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="end" fill="#0b5cad">62</text>
+<line x1="74.00" y1="540.00" x2="61.50" y2="540.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="74.00" y1="558.00" x2="61.50" y2="558.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="63.00" y1="540.00" x2="63.00" y2="558.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="63.00,540.00 63.66,542.20 62.34,542.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="63.00,558.00 62.34,555.80 63.66,555.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="60.80" y="550.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="end" fill="#0b5cad">18</text>
+<text x="75.00" y="650.00" font-size="4.5" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">SECTION B-B (along x, through the opening)</text>
+<polygon points="125.00,765.00 465.00,765.00 465.00,703.00 125.00,703.00" fill="none" stroke="#777777" stroke-width="0.25"/>
+<line x1="195.00" y1="703.00" x2="195.00" y2="685.00" fill="none" stroke="#777777" stroke-width="0.25"/>
+<line x1="395.00" y1="703.00" x2="395.00" y2="685.00" fill="none" stroke="#777777" stroke-width="0.25"/>
+<line x1="195.00" y1="685.00" x2="395.00" y2="685.00" fill="none" stroke="#777777" stroke-width="0.25"/>
+<polygon points="125.00,703.00 195.00,703.00 195.00,685.00 125.00,685.00" fill="#f1e2c3" stroke="#000" stroke-width="0.6"/>
+<polygon points="157.00,765.00 195.00,765.00 195.00,703.00 157.00,703.00" fill="#d9b98c" stroke="#000" stroke-width="0.6"/>
+<polygon points="125.00,765.00 157.00,765.00 157.00,703.00 125.00,703.00" fill="none" stroke="#8a5a2b" stroke-width="0.4" stroke-dasharray="1.2,2"/>
+<polygon points="395.00,703.00 465.00,703.00 465.00,685.00 395.00,685.00" fill="#f1e2c3" stroke="#000" stroke-width="0.6"/>
+<polygon points="395.00,765.00 433.00,765.00 433.00,703.00 395.00,703.00" fill="#d9b98c" stroke="#000" stroke-width="0.6"/>
+<polygon points="433.00,765.00 465.00,765.00 465.00,703.00 433.00,703.00" fill="none" stroke="#8a5a2b" stroke-width="0.4" stroke-dasharray="1.2,2"/>
+<line x1="100.00" y1="765.00" x2="490.00" y2="765.00" fill="none" stroke="#444" stroke-width="1"/>
+<text x="295.00" y="735.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#777777">cross batten beyond</text>
+<text x="489.00" y="735.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#8a5a2b">edge filler (optional)</text>
+<text x="414.00" y="733.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">long</text>
+<text x="414.00" y="737.00" font-size="3" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">batten</text>
+<line x1="125.00" y1="684.00" x2="125.00" y2="661.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="465.00" y1="684.00" x2="465.00" y2="661.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="125.00" y1="663.00" x2="465.00" y2="663.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="125.00,663.00 127.20,662.34 127.20,663.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="465.00,663.00 462.80,663.66 462.80,662.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="295.00" y="662.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">340</text>
+<line x1="195.00" y1="684.00" x2="195.00" y2="673.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="395.00" y1="684.00" x2="395.00" y2="673.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="195.00" y1="675.00" x2="395.00" y2="675.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="195.00,675.00 197.20,674.34 197.20,675.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="395.00,675.00 392.80,675.66 392.80,674.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="295.00" y="674.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">200</text>
+<line x1="125.00" y1="684.00" x2="125.00" y2="673.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="195.00" y1="684.00" x2="195.00" y2="673.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="125.00" y1="675.00" x2="195.00" y2="675.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="125.00,675.00 127.20,674.34 127.20,675.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="195.00,675.00 192.80,675.66 192.80,674.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="160.00" y="674.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">70</text>
+<line x1="395.00" y1="766.00" x2="395.00" y2="776.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="433.00" y1="766.00" x2="433.00" y2="776.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="395.00" y1="775.00" x2="433.00" y2="775.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="395.00,775.00 397.20,774.34 397.20,775.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="433.00,775.00 430.80,775.66 430.80,774.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="414.00" y="774.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">38</text>
+<line x1="433.00" y1="766.00" x2="433.00" y2="776.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="465.00" y1="766.00" x2="465.00" y2="776.50" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="433.00" y1="775.00" x2="465.00" y2="775.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="433.00,775.00 435.20,774.34 435.20,775.66" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="465.00,775.00 462.80,775.66 462.80,774.34" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="449.00" y="774.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#0b5cad">32</text>
+<line x1="466.00" y1="685.00" x2="480.50" y2="685.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="466.00" y1="765.00" x2="480.50" y2="765.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<line x1="479.00" y1="685.00" x2="479.00" y2="765.00" fill="none" stroke="#0b5cad" stroke-width="0.18"/>
+<polygon points="479.00,685.00 479.66,687.20 478.34,687.20" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<polygon points="479.00,765.00 478.34,762.80 479.66,762.80" fill="#0b5cad" stroke="#0b5cad" stroke-width="0.1"/>
+<text x="481.20" y="726.12" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#0b5cad">80</text>
+<text x="125.00" y="773.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">robot side</text>
+<line x1="40.00" y1="815.00" x2="140.00" y2="815.00" fill="none" stroke="#000" stroke-width="0.8"/>
+<line x1="40.00" y1="815.00" x2="40.00" y2="812.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="50.00" y1="815.00" x2="50.00" y2="813.40" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="60.00" y1="815.00" x2="60.00" y2="813.40" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="70.00" y1="815.00" x2="70.00" y2="813.40" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="80.00" y1="815.00" x2="80.00" y2="813.40" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="90.00" y1="815.00" x2="90.00" y2="812.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="100.00" y1="815.00" x2="100.00" y2="813.40" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="110.00" y1="815.00" x2="110.00" y2="813.40" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="120.00" y1="815.00" x2="120.00" y2="813.40" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="130.00" y1="815.00" x2="130.00" y2="813.40" fill="none" stroke="#000" stroke-width="0.3"/>
+<line x1="140.00" y1="815.00" x2="140.00" y2="812.00" fill="none" stroke="#000" stroke-width="0.3"/>
+<text x="40.00" y="820.00" font-size="3.2" font-family="Helvetica, Arial, sans-serif" text-anchor="start" fill="#000">100 mm check bar: must measure 100 mm on the print (print at 100 %, no fit-to-page)</text>
+</svg>
