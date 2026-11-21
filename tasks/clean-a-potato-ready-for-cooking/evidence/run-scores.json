@@ -1,0 +1,66 @@
+{
+  "source_sha256": {
+    "task.py": "435186b664b604cee0c0f5bc5d82de2d16818972faadcfe22791416908cc13d1",
+    "parts.py": "bfe7c0b22bfe7f057812003257bbad199c0ec1b9388f23e639975b97dff1f636",
+    "lots.py": "f2a660eddea564c7c9562864872c00cbaaa15874ec60e9345bd58eeb851bea77",
+    "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567"
+  },
+  "scripted_demo": {
+    "policy": "yam_scripted",
+    "steps_limit": 3600,
+    "trials": [
+      {
+        "layout": "A",
+        "score": 1.0,
+        "clean_windows": 12,
+        "all_clean_at_s": 156.0,
+        "peak_bristle_N": 4.97,
+        "potato_to_plate_centre_mm": 11.8,
+        "brush_to_plate_centre_mm": 174.3,
+        "ended_s": 175.0
+      },
+      {
+        "layout": "B",
+        "score": 1.0,
+        "clean_windows": 12,
+        "all_clean_at_s": 156.0,
+        "peak_bristle_N": 5.42,
+        "potato_to_plate_centre_mm": 10.6,
+        "brush_to_plate_centre_mm": 175.4,
+        "ended_s": 175.0
+      }
+    ],
+    "mean": 1.0
+  },
+  "dream1": {
+    "policy": "dream",
+    "steps_limit": 3600,
+    "instruction": "Clean the dirt from the potato and leave it in the clean dish, with the brush beside it.",
+    "trials": [
+      {
+        "layout": "A",
+        "score": 0.0,
+        "clean_windows": 0,
+        "ended": "step limit",
+        "bristle_contact": false,
+        "potato_moved_mm": 52.6
+      },
+      {
+        "layout": "B",
+        "score": 0.0,
+        "clean_windows": 0,
+        "ended": "step limit",
+        "bristle_contact": false,
+        "potato_moved_mm": 34.0
+      }
+    ],
+    "mean": 0.0,
+    "refusal": false
+  },
+  "media": {
+    "setup.png": "scripted run, layout A, first frame",
+    "demo.mp4": "scripted run, layout A (top and both wrist cameras)",
+    "dream.mp4": "Dream-1 run, layout A"
+  },
+  "note": "Simulated results, not measured robot results. Telemetry is sampled at 1 Hz in the run log."
+}
