@@ -1,4 +1,4 @@
-"""Native sampled hand loads and full face-sampled hand geometry."""
+"""Native sampled hand loads, whole-arm contact with the robot, and full face-sampled hand geometry."""
 import math
 from functools import lru_cache
 import numpy as np
@@ -6,8 +6,6 @@ import parts
 _tip_contact_view=None
 _arm_support_view=None
 _arm_support_shape=None
-_foot_view=None
-_foot_shape=None
 
 @lru_cache(maxsize=1)
 def hand_mesh():
@@ -76,8 +74,8 @@ def hand_state(sim):
     return clouds,finger
 
 def reset():
-    global _tip_contact_view,_arm_support_view,_foot_view
-    _tip_contact_view=None;_arm_support_view=None;_foot_view=None
+    global _tip_contact_view,_arm_support_view
+    _tip_contact_view=None;_arm_support_view=None
 
 
 def arm_support_force(sim):
@@ -98,68 +96,3 @@ def arm_support_force(sim):
     return float(np.linalg.norm(value.reshape(-1,3),axis=1).max())
 
 
-def foot_supports(sim):
-    global _foot_view,_foot_shape
-    if _foot_view is None:
-        from isaaclab_physx.physics import PhysxManager
-        from isaaclab.sim.utils import get_current_stage
-        from pxr import UsdPhysics
-        env=sim.env.unwrapped.scene.env_prim_paths[0]
-        table=[str(p.GetPath()) for p in get_current_stage().Traverse() if str(p.GetPath()).startswith(env+'/') and 'table' in str(p.GetPath()).lower() and p.HasAPI(UsdPhysics.CollisionAPI)]
-        if not table:raise ValueError('table contact geometry unavailable')
-        feet=[parts.ROOT_PATHS['xgo']+'/'+leg+'_calf_joint' for leg in ('fl','fr','br','bl')]
-        _foot_view=PhysxManager.get_physics_sim_view().create_rigid_contact_view(feet,filter_patterns=[table]*4,max_contact_data_count=256)
-        _foot_shape=(4,len(table),3)
-    data=tuple(_contact_array(x) for x in _foot_view.get_contact_data(dt=sim.env.unwrapped.sim.get_physics_dt()))
-    origin=_contact_array(sim.env.unwrapped.scene.env_origins[0])
-    return distal_supports(sim.states()['xgo'],origin,data)
-
-def _contact_array(value):
-    value=value.torch if hasattr(value,'torch') else value
-    if hasattr(value,'detach'):return value.detach().cpu().numpy()
-    if hasattr(value,'numpy'):return np.asarray(value.numpy())
-    return np.asarray(value)
-
-@lru_cache(maxsize=1)
-def _distal_regions():
-    import pathlib,json
-    rows=json.loads((pathlib.Path(__file__).resolve().parents[1]/'assets/native.json').read_text())['links']
-    out=[]
-    for leg in ('fl','fr','br','bl'):
-        row=next(r for r in rows if r['name']==leg+'_calf_joint');piece=row['meshes'][0]['collision_parts'][2]
-        v=np.asarray(piece['vertices']);centroid=v.mean(0);planes=[]
-        for face in piece['faces']:
-            a,b,c=v[face];normal=np.cross(b-a,c-a);length=np.linalg.norm(normal)
-            if length<1e-12:continue
-            normal/=length
-            if normal@(centroid-a)>0:normal=-normal
-            planes.append(np.r_[normal,normal@a])
-        if not planes:raise ValueError('distal foot geometry unavailable')
-        out.append((row['name'],np.asarray(row['origin']),np.asarray(planes)))
-    return out
-
-TOUCH=.0001  # a toe-hull contact point at most 0.1 mm from the tabletop: a 0.1 mm leaf cannot pass under the toe
-def distal_supports(state,origin,data):
-    """A toe is down when a contact point on its own toe hull touches the tabletop (separation at most 0.1 mm)
-    or carries load. Heel or shaft contact never counts."""
-    from yam_arena.task_file import TABLE_TOP
-    fs,ps,ns,seps,counts,starts=data
-    fs=np.asarray(fs,float).reshape(-1);ps=np.asarray(ps,float).reshape(-1,3);ns=np.asarray(ns,float).reshape(-1,3);seps=np.asarray(seps,float).reshape(-1)
-    counts=np.asarray(counts);starts=np.asarray(starts)
-    if counts.ndim!=2 or counts.shape[0]!=4 or starts.shape!=counts.shape:raise ValueError('unknown foot contact indices')
-    if not np.isfinite(np.r_[counts.ravel(),starts.ravel()]).all() or np.any(counts!=np.floor(counts)) or np.any(starts!=np.floor(starts)):raise ValueError('invalid foot contact indices')
-    if any(len(x)!=len(fs) for x in (ps,ns,seps)) or counts.sum()>=len(fs):raise ValueError('foot contact buffer may be truncated')
-    result=[]
-    for i,(name,datum,planes) in enumerate(_distal_regions()):
-        p,q=state.links[name];r=parts._quat_to_matrix(q);load=0.;touch=False
-        for j in range(counts.shape[1]):
-            count=int(counts[i,j]);start=int(starts[i,j])
-            if count<0 or count>64 or (count and (start<0 or start+count>len(fs))):raise ValueError('foot contact buffer overflow')
-            for k in range(start,start+count):
-                if not np.isfinite(np.r_[fs[k],ps[k],ns[k],seps[k]]).all() or fs[k]<0 or abs(np.linalg.norm(ns[k])-1)>.001:raise ValueError('invalid foot contact point')
-                point=ps[k]-origin;local=(point-p)@r+datum
-                in_shoe=bool(np.all(planes[:,:3]@local<=planes[:,3]+.0005))
-                if in_shoe and abs(point[2]-TABLE_TOP['station'])<=.001 and seps[k]<=.001 and abs(ns[k,2])>=.5:
-                    load+=fs[k]*abs(ns[k,2]);touch=touch or bool(seps[k]<=TOUCH)
-        result.append(bool(touch or load>.02))
-    return result

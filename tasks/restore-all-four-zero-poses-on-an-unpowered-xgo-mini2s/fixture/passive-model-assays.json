@@ -1,173 +1,284 @@
 {
-  "scope": "Offline MuJoCo retention assay at illustrated calf15deg. Original OEM convex mesh contacts. Not a stock-hardware measurement or an Arena demonstration. Split calf contacts are assessed separately in Arena traces.",
-  "duration_s": 30,
-  "stiffness_Nm_rad": 4,
-  "damping_Nms_rad": 0.08,
-  "results": [
-    {
-      "mode": "native",
-      "max_error_deg": 69.92227560275204,
-      "range2s_deg": 0.00165477067507247,
-      "final": {
-        "t": 30.00000000001368,
-        "q": [
-          -25.621640610228845,
-          -69.92035383335295,
-          12.482335480773393,
-          -24.285613094543514,
-          -69.91392949099726,
-          12.103592848301924,
-          -33.148122555480704,
-          -69.91520072712129,
-          5.6977784210507965,
-          -34.384593992062435,
-          -69.92227078032913,
-          5.014039178168123
-        ],
-        "feet": [
-          -7.254178301640407e-05,
-          -2.098033207705019e-05,
-          -4.6156601801405905e-05,
-          -5.803376721252862e-05
-        ],
-        "root": [
-          -0.08679523135841576,
-          0.0008085502925067894,
-          0.04147726501360004
-        ]
-      }
+ "scope": "Offline MuJoCo assays of the passive XGO-lite (maker model, 500 g, on a level table, friction 0.5). Model tests",
+ "gearbox_hold": {
+  "breakaway_Nm": 0.06,
+  "stiffness_Nm_rad": 2.0,
+  "damping_Nms_rad": 0.04,
+  "elastic_limit_deg": 1.72
+ },
+ "table_friction": 0.5,
+ "results": [
+  {
+   "mode": "declared",
+   "assay": "posture held 10 s",
+   "complete_legs": 4,
+   "complete_front": 2,
+   "off_posture_deg": {
+    "FL": {
+     "shoulder": -0.68,
+     "thigh": -0.09,
+     "lower_leg": 0.07
     },
-    {
-      "mode": "coulomb",
-      "max_error_deg": 26.10321200109273,
-      "range2s_deg": 3.1898550334401357,
-      "final": {
-        "t": 30.00000000001368,
-        "q": [
-          -25.739319784402056,
-          -5.604025254779837,
-          12.494738937824172,
-          -26.10321200109273,
-          -5.9820634178014815,
-          12.879911950737794,
-          -15.53231161425774,
-          -4.130583731574138,
-          10.887404163365808,
-          -15.151786430871645,
-          -3.1714822925494977,
-          10.504103873254566
-        ],
-        "feet": [
-          -0.0002249947611505758,
-          -0.000228094713212142,
-          -0.0002261926107925659,
-          -0.00012421711291515578
-        ],
-        "root": [
-          -0.0025432871933478416,
-          0.0008733696191905833,
-          0.08990208964012841
-        ]
-      }
+    "FR": {
+     "shoulder": 0.68,
+     "thigh": -0.09,
+     "lower_leg": 0.07
     },
-    {
-      "mode": "brake12",
-      "max_error_deg": 1.9620411895320726,
-      "range2s_deg": 6.945351405107658e-09,
-      "final": {
-        "t": 30.00000000001368,
-        "q": [
-          -0.12092694015955074,
-          -1.4374479725297133,
-          13.827137761941408,
-          -0.09773750036851778,
-          -1.3809159225882508,
-          13.79647223862608,
-          -1.0105929446679847,
-          -1.962041189360141,
-          13.397481465207647,
-          -0.9889206119696725,
-          -1.5121360262389507,
-          13.414461845292553
-        ],
-        "feet": [
-          -0.00010478047831995185,
-          -0.00020223266324803993,
-          -0.0002065317710402935,
-          -0.00022470414135872772
-        ],
-        "root": [
-          -0.004440912089322574,
-          -0.00018175749826901397,
-          0.10913463618906921
-        ]
-      }
+    "RR": {
+     "shoulder": 0.49,
+     "thigh": -0.06,
+     "lower_leg": 0.04
     },
-    {
-      "mode": "brake16",
-      "max_error_deg": 1.7938215772698523,
-      "range2s_deg": 7.485236874771317e-09,
-      "final": {
-        "t": 30.00000000001368,
-        "q": [
-          -0.09908732164570722,
-          -1.1504559854178853,
-          13.881498787701991,
-          -0.0606573040646971,
-          -1.1418838277846044,
-          13.890365477259598,
-          -1.0461231176698789,
-          -1.7938215770977095,
-          13.381726223882893,
-          -1.0129820717044726,
-          -1.5338677091911612,
-          13.567416636172943
-        ],
-        "feet": [
-          -9.796832159362188e-05,
-          -0.00018925059313371073,
-          -0.00024077933979099742,
-          -0.00021710603203254318
-        ],
-        "root": [
-          -0.004435142038454558,
-          -0.00016348927897719435,
-          0.10937308619185954
-        ]
-      }
-    },
-    {
-      "mode": "brake20",
-      "max_error_deg": 1.7591581373581018,
-      "range2s_deg": 7.51452189362567e-09,
-      "final": {
-        "t": 30.00000000001368,
-        "q": [
-          -0.09748505347078758,
-          -1.1465459313422666,
-          13.885309050989598,
-          -0.05881797088860499,
-          -1.137064083031765,
-          13.895056652691487,
-          -1.0475803601556004,
-          -1.7591581371783347,
-          13.353168226634622,
-          -1.014394482854079,
-          -1.5325840135854045,
-          13.568883092465684
-        ],
-        "feet": [
-          -9.75732136345546e-05,
-          -0.0001885901814840541,
-          -0.00024367290897268218,
-          -0.00021761904533358287
-        ],
-        "root": [
-          -0.004423404276826887,
-          -0.00015838021663684435,
-          0.10937972090447674
-        ]
-      }
+    "RL": {
+     "shoulder": -0.49,
+     "thigh": -0.06,
+     "lower_leg": 0.04
     }
-  ]
+   },
+   "body_mm": [
+    -0.1,
+    0.0,
+    77.6
+   ],
+   "belly_mm": 55.6
+  },
+  {
+   "mode": "declared",
+   "assay": "start pose 10 s",
+   "complete_legs": 2,
+   "complete_front": 0,
+   "off_posture_deg": {
+    "FL": {
+     "shoulder": -0.86,
+     "thigh": -0.41,
+     "lower_leg": 22.42
+    },
+    "FR": {
+     "shoulder": 0.23,
+     "thigh": -0.17,
+     "lower_leg": 26.16
+    },
+    "RR": {
+     "shoulder": 0.98,
+     "thigh": -0.67,
+     "lower_leg": 0.67
+    },
+    "RL": {
+     "shoulder": -0.33,
+     "thigh": -0.65,
+     "lower_leg": 0.64
+    }
+   },
+   "body_mm": [
+    0.2,
+    -0.1,
+    76.1
+   ],
+   "belly_mm": 51.7
+  },
+  {
+   "mode": "native",
+   "assay": "posture held 10 s",
+   "complete_legs": 0,
+   "complete_front": 0,
+   "off_posture_deg": {
+    "FL": {
+     "shoulder": -20.87,
+     "thigh": -67.5,
+     "lower_leg": 12.18
+    },
+    "FR": {
+     "shoulder": 19.01,
+     "thigh": -68.71,
+     "lower_leg": 12.23
+    },
+    "RR": {
+     "shoulder": 25.1,
+     "thigh": -72.45,
+     "lower_leg": 14.49
+    },
+    "RL": {
+     "shoulder": -25.16,
+     "thigh": -72.41,
+     "lower_leg": 14.49
+    }
+   },
+   "body_mm": [
+    -75.1,
+    -0.1,
+    17.0
+   ],
+   "belly_mm": -0.0
+  },
+  {
+   "mode": "native",
+   "assay": "start pose 10 s",
+   "complete_legs": 0,
+   "complete_front": 0,
+   "off_posture_deg": {
+    "FL": {
+     "shoulder": -13.56,
+     "thigh": -71.86,
+     "lower_leg": 36.17
+    },
+    "FR": {
+     "shoulder": 10.59,
+     "thigh": -73.43,
+     "lower_leg": 39.2
+    },
+    "RR": {
+     "shoulder": 23.54,
+     "thigh": -73.44,
+     "lower_leg": 16.08
+    },
+    "RL": {
+     "shoulder": -20.52,
+     "thigh": -75.23,
+     "lower_leg": 16.22
+    }
+   },
+   "body_mm": [
+    -75.4,
+    0.5,
+    17.0
+   ],
+   "belly_mm": -0.0
+  },
+  {
+   "mode": "coulomb",
+   "assay": "posture held 10 s",
+   "complete_legs": 4,
+   "complete_front": 2,
+   "off_posture_deg": {
+    "FL": {
+     "shoulder": -4.95,
+     "thigh": -0.8,
+     "lower_leg": 0.62
+    },
+    "FR": {
+     "shoulder": 4.96,
+     "thigh": -0.8,
+     "lower_leg": 0.62
+    },
+    "RR": {
+     "shoulder": 3.42,
+     "thigh": -0.61,
+     "lower_leg": 0.41
+    },
+    "RL": {
+     "shoulder": -3.42,
+     "thigh": -0.61,
+     "lower_leg": 0.41
+    }
+   },
+   "body_mm": [
+    -0.6,
+    0.0,
+    75.8
+   ],
+   "belly_mm": 53.2
+  },
+  {
+   "mode": "coulomb",
+   "assay": "start pose 10 s",
+   "complete_legs": 2,
+   "complete_front": 0,
+   "off_posture_deg": {
+    "FL": {
+     "shoulder": -5.08,
+     "thigh": -2.63,
+     "lower_leg": 24.82
+    },
+    "FR": {
+     "shoulder": 4.21,
+     "thigh": -2.81,
+     "lower_leg": 28.94
+    },
+    "RR": {
+     "shoulder": 4.39,
+     "thigh": -1.8,
+     "lower_leg": 1.39
+    },
+    "RL": {
+     "shoulder": -3.49,
+     "thigh": -1.58,
+     "lower_leg": 1.16
+    }
+   },
+   "body_mm": [
+    -1.8,
+    -0.1,
+    73.8
+   ],
+   "belly_mm": 48.3
+  },
+  {
+   "mode": "declared",
+   "assay": "hold the chassis, turn each front lower leg, then 10 s hands-off",
+   "complete_legs": 4,
+   "complete_front": 2,
+   "off_posture_deg": {
+    "FL": {
+     "shoulder": -0.69,
+     "thigh": -0.1,
+     "lower_leg": 0.4
+    },
+    "FR": {
+     "shoulder": 0.68,
+     "thigh": -0.1,
+     "lower_leg": 0.58
+    },
+    "RR": {
+     "shoulder": 0.5,
+     "thigh": -0.07,
+     "lower_leg": 0.05
+    },
+    "RL": {
+     "shoulder": -0.48,
+     "thigh": -0.07,
+     "lower_leg": 0.05
+    }
+   },
+   "body_mm": [
+    0.0,
+    -0.1,
+    77.6
+   ],
+   "belly_mm": 55.6
+  },
+  {
+   "mode": "declared",
+   "assay": "press each front toe pad straight down, nothing held, then 10 s hands-off",
+   "complete_legs": 2,
+   "complete_front": 0,
+   "off_posture_deg": {
+    "FL": {
+     "shoulder": -0.7,
+     "thigh": 7.78,
+     "lower_leg": 9.42
+    },
+    "FR": {
+     "shoulder": 0.72,
+     "thigh": 7.6,
+     "lower_leg": 9.28
+    },
+    "RR": {
+     "shoulder": 0.45,
+     "thigh": -0.3,
+     "lower_leg": 0.08
+    },
+    "RL": {
+     "shoulder": -0.47,
+     "thigh": -0.19,
+     "lower_leg": 0.18
+    }
+   },
+   "body_mm": [
+    -14.5,
+    0.3,
+    77.3
+   ],
+   "belly_mm": 54.8
+  }
+ ]
 }
