@@ -1,8 +1,9 @@
 """Near misses and unintended strategies, each played as a short timeline through the scorer's own step record.
 
-The scorer keeps a per-trial record that only the simulator's step and reset hooks write: whether the tool's hooked
-pad has stayed in the clump long enough to take it, whether the tool ever dropped off the vanity, whether both grippers
-are clear, and how long everything has been still. Each case resets that record, plays a timeline of states at 20 Hz
+The scorer keeps a per-trial record that only the simulator's step and reset hooks write: whether the tool's barbed
+pad has snagged the clump (gone 10 mm into it, then drawn back 8 mm through it), whether the snagged clump was drawn
+out of the drain's throat under the hair's load (and not jerked, pushed back or crept out), whether the tool ever
+dropped off the vanity, whether both grippers are clear, and how long everything has been still. Each case resets that record, plays a timeline of states at 20 Hz
 through every loaded copy of the task's step function, and leaves the timeline's last state for check.py to score.
 Run alone: python near_misses.py
 """
@@ -99,15 +100,29 @@ def near_tool(objects, gap):
     return FAR + [np.array([[p[0], p[1], p[2] + task.GRIP_R + gap]])]
 
 
-IN = upright(0.035)  # pad 35 mm down, in the clump
+IN = upright(0.035)  # pad 35 mm down, 13 mm into the clump
+HAND = [np.array([[0.30, 0.20, TOP + 0.30]])]  # the hand holding the tool, well away from it
 
 
-def caught_then(final_tool, hold=1.2, dwell=0.6, depth=0.035, pull=0.012, hair=None, r=0.011):
-    """Pad ``depth`` below the flange's top in the clump for ``dwell`` s, drawn back up ``pull`` in the bore, then the
-    tool and the clump left as ``final_tool`` for ``hold`` s."""
+def path(*legs, r=0.011):
+    """Segments that move the pad, a control step at a time, through ``legs`` of (depth below the flange's top
+    to reach, speed in m/s); the first leg's speed is ignored (the pad starts there and rests 0.3 s)."""
+    depth = legs[0][0]
+    out = [(scene(upright(depth, r)), HAND, 0.3)]
+    for target, speed in legs[1:]:
+        n = max(1, round(abs(target - depth) / (speed * DT)))
+        for k in range(1, n + 1):
+            out.append((scene(upright(depth + (target - depth) * k / n, r)), HAND, DT))
+        depth = target
+    return out
+
+
+def drawn_out(final_tool, hold=1.2, depth=0.035, speed=0.020, hair=None, r=0.011, legs=None):
+    """Pad ``depth`` below the flange's top, drawn steadily up the bore at ``speed`` to 12 mm above the flange's top
+    (or along ``legs``), then the tool and the clump left as ``final_tool`` for ``hold`` s."""
     end = scene(final_tool, hair if hair is not None else hair_on(final_tool))
-    hand = [np.array([[0.30, 0.20, TOP + 0.30]])]
-    return play((scene(upright(depth, r)), hand, dwell), (scene(upright(depth - pull, r)), hand, 0.2), (end, FAR, hold))
+    legs = legs or [(depth, 0.0), (-0.012, speed)]
+    return play(*path(*legs, r=r), (end, FAR, hold))
 
 
 def _along(direction, origin, joints=None):
@@ -159,62 +174,97 @@ def moved_after(objects, tool_by=(0.0, 0.0, 0.0), hair_by=(0.0, 0.0, 0.0)):
     return {task.TOOL.name: tool, task.HAIR_PART.name: hair}
 
 
+def turned(deg, lot="A"):
+    """The tool lying where the lot starts it, turned ``deg`` about the vertical through where the wand meets the handle
+    (negative: the wand's end swings toward the top's front edge)."""
+    t = lying(lot)
+    return task.TOOL.state(pos=t.pos, quat_xyzw=_q(parts._rot((0.0, 0.0, 1.0), math.radians(deg)) @ task._R(task.LYING)))
+
+
+HELD = (0.033, 0.0)  # the pad 11 mm into the clump
+# snag (13 mm in, drawn up to 24 mm below the flange's top), then 12 strokes in place: down 4.8 mm in one step, back up
+PUMP = [(0.035, 0.0), (0.024, 0.02)] + [(0.0288, 0.096), (0.024, 0.008)] * 12  # 40 mm of up-strokes under load
+
+
 SPEC = [
     ("no history: nothing observed yet", lambda: play() or scene(lying()), 0.0, False),
     ("arms idle: tool on the counter, hair in the drain", lambda: play((scene(lying()), FAR, 2.0)), 0.0, False),
-    ("full: pad in the clump 0.6 s, tool laid back on the counter with the hair, hands clear, still 1.2 s",
-     lambda: caught_then(lying()), 1.0, True),
-    ("full but still for only 0.85 s", lambda: caught_then(lying(), hold=0.85), 0.0, False),
-    ("pad in the clump 10 control steps (0.45 s counted): the hooks do not take it",
-     lambda: caught_then(lying(), dwell=0.50, hair=in_drain()), 0.0, False),
-    ("pad in the clump 11 control steps (0.50 s counted, limit)", lambda: caught_then(lying(), dwell=0.55), 1.0, True),
-    ("pad 21 mm below the flange's top, above the clump: nothing caught",
-     lambda: caught_then(lying(), depth=0.021, hair=in_drain()), 0.0, False),
-    ("pad 22 mm below the flange's top (limit): caught", lambda: caught_then(lying(), depth=0.022), 1.0, True),
-    ("pad in the clump 0.6 s, then drawn up only 9 mm before leaving the bore sideways: not taken",
-     lambda: caught_then(lying(), pull=0.009, hair=in_drain()), 0.0, False),
-    ("pad in the clump 0.6 s, then drawn up 10 mm in the bore (limit): taken", lambda: caught_then(lying(), pull=0.010),
-     1.0, True),
-    ("pad outside the drain's bore, beside the flange: nothing caught",
-     lambda: caught_then(lying(), r=0.020, hair=in_drain()), 0.0, False),
+    ("full: pad 13 mm into the clump, drawn up the bore at 20 mm/s under the hair's load (snagged after 8 mm, free at"
+     " the flange's top), tool laid back on the counter with the hair, hands clear, still 1.2 s",
+     lambda: drawn_out(lying()), 1.0, True),
+    ("full but still for only 0.85 s", lambda: drawn_out(lying(), hold=0.85), 0.0, False),
+    ("pad only 9 mm into the clump (31 mm below the flange's top), then drawn out: the barbs never snag",
+     lambda: drawn_out(lying(), depth=0.031, hair=in_drain()), 0.0, False),
+    ("pad 10 mm into the clump (limit), then drawn out: snagged", lambda: drawn_out(lying(), depth=0.032), 1.0, True),
+    ("pad 13 mm into the clump, then out of the drain in one jump (not drawn back through the clump): not snagged",
+     lambda: drawn_out(lying(), legs=[(0.035, 0.0), (-0.012, 1.0)], hair=in_drain()), 0.0, False),
+    ("pad beside the flange, outside the drain's bore: nothing snagged",
+     lambda: drawn_out(lying(), r=0.020, hair=in_drain()), 0.0, False),
+    ("jerked: drawn out at 0.11 m/s: the hair strips off the barbs and stays in the drain",
+     lambda: drawn_out(lying(), speed=0.11, hair=in_drain()), 0.0, False),
+    ("drawn out at 0.09 m/s (under the 0.10 m/s limit)", lambda: drawn_out(lying(), speed=0.09), 1.0, True),
+    ("crept out at 1.5 mm/s, under half the hair's load: the hair slips off at the flange's top and stays",
+     lambda: drawn_out(lying(), speed=0.0015, hair=in_drain()), 0.0, False),
+    ("drawn out at 3 mm/s (three quarters of the load): free", lambda: drawn_out(lying(), speed=0.003), 1.0, True),
+    ("snagged, then pushed back down 5.1 mm: the barbs let go, and the pad (now only 7 mm into the clump) cannot snag"
+     " again on the way out",
+     lambda: drawn_out(lying(), hair=in_drain(), legs=[HELD, (0.024, 0.02), (0.0291, 0.02), (-0.012, 0.02)]), 0.0,
+     False),
+    ("snagged, then pushed back down 4.9 mm (limit) and drawn out: still held",
+     lambda: drawn_out(lying(), legs=[HELD, (0.024, 0.02), (0.0289, 0.02), (-0.012, 0.02)]), 1.0, True),
+    ("pumping: snagged, then 12 up-and-down strokes of 4.8 mm in place (up at 8 mm/s under the load, down in one step),"
+     " then crept out at 1 mm/s: only new height counts toward the 15 mm, so the hair slips off at the flange's top",
+     lambda: drawn_out(lying(), legs=PUMP + [(-0.012, 0.001)]), 0.0, False),  # (scored 1.0 before the fix)
+    ("snagged, pumped the same way, then drawn out steadily at 20 mm/s: free",
+     lambda: drawn_out(lying(), legs=PUMP + [(-0.012, 0.02)]), 1.0, True),
+    ("snagged, drawn up 20 mm and left there: the hair is still in the drain",
+     lambda: drawn_out(lying(), hair=hair_at(-0.005), legs=[(0.035, 0.0), (0.005, 0.02)]), 0.0, False),
     ("naive: tool never taken to the drain, laid back where it was", lambda: play((scene(lying(dz=0.03)), FAR, 1.0),
                                                                                    (scene(lying()), FAR, 1.2)), 0.0, False),
-    ("caught, tool and hair left lying in the basin", lambda: caught_then(in_basin()), 0.25, False),
-    ("caught, clump left over the drain's mouth 9 mm above the flange's top: still in the drain",
-     lambda: caught_then(in_basin(), hair=hair_at(0.009)), 0.0, False),
-    ("caught, clump over the drain's mouth 10 mm above the flange's top (limit)",
-     lambda: caught_then(in_basin(), hair=hair_at(0.010)), 0.25, False),
-    ("caught, clump shaken off onto the basin's bottom 28 mm from the drain's axis, beside the flange",
-     lambda: caught_then(in_basin(), hair=hair_at(-0.002, r=0.028)), 0.25, False),
-    ("caught, hair on the counter but the tool's handle in the basin", lambda: caught_then(across_rim()), 0.5, False),
-    ("caught, tool laid 65 mm further back: its wand over the basin's front edge, the end and the hair hanging in",
-     lambda: caught_then(lying(dx=0.065, joints={f"w{i}": 1.0 for i in (5, 6, 7)})), 0.25, False),
-    ("caught and laid on the counter, still held: a fingertip 9 mm above the grip",
-     lambda: play((scene(IN), FAR, 0.6), (scene(upright(0.020)), FAR, 0.2),
+    ("drawn out, tool and hair left lying in the basin", lambda: drawn_out(in_basin()), 0.25, False),
+    ("drawn out, clump left over the drain's mouth 9 mm above the flange's top: still in the drain",
+     lambda: drawn_out(in_basin(), hair=hair_at(0.009)), 0.0, False),
+    ("drawn out, clump over the drain's mouth 10 mm above the flange's top (limit)",
+     lambda: drawn_out(in_basin(), hair=hair_at(0.010)), 0.25, False),
+    ("drawn out, clump shaken off onto the basin's bottom 28 mm from the drain's axis, beside the flange",
+     lambda: drawn_out(in_basin(), hair=hair_at(-0.002, r=0.028)), 0.25, False),
+    ("drawn out, hair on the counter but the tool's handle in the basin", lambda: drawn_out(across_rim()), 0.5, False),
+    ("drawn out, tool laid 65 mm further back: its wand over the basin's front edge, the end and the hair hanging in",
+     lambda: drawn_out(lying(dx=0.065, joints={f"w{i}": 1.0 for i in (5, 6, 7)})), 0.25, False),
+    ("drawn out, tool laid with 75.5 mm of its handle past the top's end (start: 68 mm): not wholly on the counter",
+     lambda: drawn_out(lying(dy=0.0075)), 0.5, False),
+    ("drawn out, tool laid with 74.5 mm of its handle past the top's end (limit 75 mm)",
+     lambda: drawn_out(lying(dy=0.0065)), 1.0, True),
+    ("drawn out, tool laid turned 8 degrees: the wand's end and the hair 12 mm past the top's front edge",
+     lambda: drawn_out(turned(-8.0)), 0.25, False),
+    ("drawn out, tool laid turned 3 degrees: the wand's end 14 mm inside the top's front edge",
+     lambda: drawn_out(turned(-3.0)), 1.0, True),
+    ("drawn out and laid on the counter, still held: a fingertip 9 mm above the grip",
+     lambda: play(*path((0.035, 0.0), (-0.012, 0.02)),
                   (scene(lying(), hair_on(lying())), near_tool(scene(lying()), 0.009), 2.0)), 0.0, False),
-    ("caught and laid on the counter, a fingertip 14 mm above the grip",
-     lambda: play((scene(IN), FAR, 0.6), (scene(upright(0.020)), FAR, 0.2),
+    ("drawn out and laid on the counter, a fingertip 14 mm above the grip",
+     lambda: play(*path((0.035, 0.0), (-0.012, 0.02)),
                   (scene(lying(), hair_on(lying())), near_tool(scene(lying()), 0.014), 1.2)), 1.0, True),
     ("1.0 earned, then a fingertip comes back to the tool",
-     lambda: play((scene(IN), FAR, 0.6), (scene(upright(0.020)), FAR, 0.2), (scene(lying(), hair_on(lying())), FAR, 1.5),
+     lambda: play(*path((0.035, 0.0), (-0.012, 0.02)), (scene(lying(), hair_on(lying())), FAR, 1.5),
                   (scene(lying(), hair_on(lying())), near_tool(scene(lying()), 0.005), 0.5)), 0.0, False),
-    ("hand state unknown at the end", lambda: play((scene(IN), FAR, 0.6), (scene(upright(0.020)), FAR, 0.2),
+    ("hand state unknown at the end", lambda: play(*path((0.035, 0.0), (-0.012, 0.02)),
                                                   (scene(lying(), hair_on(lying())), FAR, 1.5),
                                                   (scene(lying(), hair_on(lying())), None, 0.1)), 0.0, False),
-    ("tool still sliding at 1 cm/s", lambda: caught_then(task.TOOL.state(pos=lying().pos, quat_xyzw=task.LYING,
-                                                                       lin_vel=(0.01, 0.0, 0.0))), 0.0, False),
+    ("tool still sliding at 1 cm/s", lambda: drawn_out(task.TOOL.state(pos=lying().pos, quat_xyzw=task.LYING,
+                                                                      lin_vel=(0.01, 0.0, 0.0))), 0.0, False),
     ("tool dropped off the vanity onto the floor earlier, then a full end state",
-     lambda: play((scene(lying(dz=-(CT - 0.020) - 0.002)), FAR, 0.2), (scene(IN), FAR, 0.6), (scene(upright(0.020)), FAR, 0.2),
+     lambda: play((scene(lying(dz=-(CT - 0.020) - 0.002)), FAR, 0.2), *path((0.035, 0.0), (-0.012, 0.02)),
                   (scene(lying(), hair_on(lying())), FAR, 1.2)), 0.0, False),
     ("tool's handle dipped 19 mm below the countertop beside the vanity, then a full end state (limit)",
-     lambda: play((scene(lying(dz=-0.019)), FAR, 0.2), (scene(IN), FAR, 0.6), (scene(upright(0.020)), FAR, 0.2),
+     lambda: play((scene(lying(dz=-0.019)), FAR, 0.2), *path((0.035, 0.0), (-0.012, 0.02)),
                   (scene(lying(), hair_on(lying())), FAR, 1.2)), 1.0, True),
     ("full, the clump moved 0.2 mm onto the pad after the last observation (the simulator's step order)",
-     lambda: moved_after(caught_then(lying()), hair_by=(0.0002, 0.0, 0.0)), 1.0, True),
+     lambda: moved_after(drawn_out(lying()), hair_by=(0.0002, 0.0, 0.0)), 1.0, True),
     ("full, but the tool scored is not the state last observed (moved 0.1 mm): invalid",
-     lambda: moved_after(caught_then(lying()), tool_by=(0.0001, 0.0, 0.0)), 0.0, False),
-    ("lot B: full in lot B's layout", lambda: caught_then(lying("B")), 1.0, True),
-    ("lot B: tool laid back in lot A's place", lambda: caught_then(lying("A")), 1.0, True),
+     lambda: moved_after(drawn_out(lying()), tool_by=(0.0001, 0.0, 0.0)), 0.0, False),
+    ("lot B: full in lot B's layout", lambda: drawn_out(lying("B")), 1.0, True),
+    ("lot B: tool laid back in lot A's place", lambda: drawn_out(lying("A")), 1.0, True),
 ]
 
 CASES = _Timelines(SPEC)

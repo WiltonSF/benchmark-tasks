@@ -262,8 +262,8 @@ def _link(i):
 
 LAST = f"w{N_LINKS - 1}"
 LYING = (0.0, 0.0, -math.sqrt(0.5), math.sqrt(0.5))  # wand toward the robot's right, hinges' axis away, frame z up
-OVERHANG = 0.045  # lot A: the wand meets the handle 45 mm in from the countertop's left end (the sleeve on the stone,
-# the grip beyond the top's end)
+OVERHANG = 0.065  # lot A: the wand meets the handle 65 mm in from the countertop's left end (the sleeve and 20 mm of the
+# grip on the stone, the rest of the grip and the cap, 68 mm, beyond the top's end; lot B 10 mm further in)
 TOOL_X, TOOL_Y = CTR_FRONT + 0.030, CTR_L - OVERHANG
 REST_Z = TOP + CT + SLEEVE_W / 2  # the lying tool's axis: 15 mm above the stone
 LIFT_GAP = 0.0005  # placed 0.5 mm above the stone
@@ -280,7 +280,7 @@ if os.environ.get("HAIR_PROBE"):  # trace-only probe: two plain cubes resting on
 LOTS = lots.declare(
     OBJECTS,
     lots.Lot("A"),
-    lots.Lot("B", place={TOOL.name: (TOOL_X, TOOL_Y - 0.020, REST_Z + LIFT_GAP)}),
+    lots.Lot("B", place={TOOL.name: (TOOL_X, TOOL_Y - 0.010, REST_Z + LIFT_GAP)}),
 )
 
 
@@ -366,14 +366,25 @@ def in_footprint(p):
     return CTR_FRONT - EPS <= p[0] <= CTR_BACK + EPS and CTR_R - EPS <= p[1] <= CTR_L + EPS
 
 
+HANDLE_OUT = 0.075  # at the end, at most this much of the handle may reach past the top's edge (it starts with 68 mm (A)
+# or 58 mm (B) past the left end); with the README's set-up check a real tool's balance point then stays at least 3 mm
+# over the stone
+
+
 def tool_on_counter(tool):
-    """The whole tool out of the basin, lying on the countertop: the sleeve (where the wand meets the handle) over the
-    stone, and every point along the tool between 10 mm below and 40 mm above the stone's surface, none lower inside the
-    basin's opening (the handle may reach past the top's end, as it starts; the wand's end may reach over the rim)."""
-    pts = tool_points(tool)
-    if not on_counter(pts[1]):
+    """The whole tool lying on the countertop: both ends of the sleeve over the stone; no more than 75 mm of the handle
+    past the top's edge (the handle's point 75 mm from its cap end inside the top's outline); every other point along the
+    tool (the wand's joints and end) inside the outline; and every point between 10 mm below and 40 mm above the stone's
+    surface, so nothing hangs into the basin (the wand's end may reach over the basin's rim)."""
+    p, r = np.asarray(tool.pos, float), _R(tool.quat_xyzw)
+    if not (on_counter(p) and on_counter(p + r @ np.array([-SLEEVE_L, 0.0, 0.0]))):
         return False
-    return all(TOP + CT - SAG - EPS <= p[2] <= TOP + CT + 0.040 + EPS for p in pts)
+    if not in_footprint(p + r @ np.array([-(HANDLE_L - HANDLE_OUT), 0.0, 0.0])):
+        return False
+    pts = tool_points(tool)
+    if not all(in_footprint(q) for q in pts[1:]):
+        return False
+    return all(TOP + CT - SAG - EPS <= q[2] <= TOP + CT + 0.040 + EPS for q in pts)
 
 
 def off_vanity(tool):
@@ -383,10 +394,10 @@ def off_vanity(tool):
 
 
 def tier(objects):
-    """The state's value before the release gate: 0.25 the hair out of the drain; 0.5 also out of the basin, resting
-    over the stone; 1.0 also the whole tool resting over the stone."""
+    """The state's value before the release gate: 0.25 the hair drawn out under load and out of the drain; 0.5 also at
+    the countertop's height; 1.0 also the whole tool lying on the countertop."""
     hair, tool = objects[HAIR_PART.name], objects[TOOL.name]
-    if not REC["caught"] or not hair_out_of_drain(hair):
+    if not REC["freed"] or not hair_out_of_drain(hair):
         return 0.0
     if not hair_on_counter(hair):
         return 0.25
@@ -424,8 +435,28 @@ def hands_clear(clouds, objects):
 
 STILL_V, DRIFT_POS = 3.0 * MM, 1.0 * MM
 HOLD_S = 1.0
-CATCH_S = 0.5  # the pad must stay in the clump this long for its hooks to snag the hair
-PULL = 0.010  # and then be drawn back up this far from its deepest point in the clump for the snagged hair to come away
+
+# -- the hair: snag, resistance while it is drawn out, breakaway (a declared rule; README "The hair") ---------------
+# The pad's barbs point back toward the handle, so they catch hair only when the pad is drawn back through the clump.
+DEPTH_IN = 0.010  # the pad's centre must first go this far into the clump (32 mm below the flange's top or deeper)
+SNAG_DRAW = 0.008  # then be drawn back up this far from its deepest point without leaving the clump: snagged
+# While the snagged clump is dragged off the stem and rod and up the bore, it resists: a force on the pad down the
+# drain's axis, opposing the pad's rise relative to the (fixed) drain: F_HAIR when it rises at V_FULL or faster, in
+# proportion below that, from the pad's rise over the last SMOOTH seconds (4 control steps; the target falls to nothing
+# once the pad has not risen over that window, like friction), and eased toward that value with a TAU time constant (so
+# the load cannot switch on and off from one step to the next and set the light pad chattering). Estimate: wet human hair breaks at roughly 0.5-1 N a
+# strand; 3 N is the pull carried by a few strands held on the barbs (README).
+F_HAIR = 3.0  # N
+V_FULL = 0.004  # m/s
+SMOOTH = 0.2  # s
+TAU = 0.15  # s
+V_TEAR = 0.10  # m/s of rise over SMOOTH: jerked faster than this, the hair strips off the barbs and stays in the drain
+PUSH_BACK = 0.005  # m: pushed back down this far below its highest point since the snag, the barbs let go
+FREE_Z = ZF  # the clump is free (off the stem and rod, out of the throat) once its centre reaches the flange's top
+LOADED_MIN = 0.015  # m: of the rise from the snag to the flange's top (22 mm or more), at least this much new height
+# (above the highest point reached so far) gained with half the load or more acting; drawn out with less (crept out
+# slower than 2 mm/s), the hair slips off and stays. Only new height counts, so small up-and-down strokes in place
+# cannot build the credit.
 
 
 def calm(objects):
@@ -442,7 +473,8 @@ def drifted(ref, now):
 
 def _fresh():
     return dict(known=False, invalid=False, t=None, held=0.0, ref=None, clear=False, still=False, value=None,
-                dropped=False, caught=False, in_hair=0.0, deepest=math.inf, stamp=None)
+                dropped=False, caught=False, freed=False, deepest=math.inf, high=-math.inf, last_z=None, loaded=0.0,
+                hist=[], speed=0.0, load=0.0, force=np.zeros(3), applied=0.0, breaks=0, why="", stamp=None)
 
 
 REC = _fresh()
@@ -456,6 +488,51 @@ def stamp(objects):
     return tuple(float(v) for v in out)
 
 
+def _let_go(why):
+    """The barbs lose the hair: it stays wound round the stem (the declared rule puts it back), and a new snag is
+    needed."""
+    REC.update(caught=False, deepest=math.inf, high=-math.inf, loaded=0.0, load=0.0, force=np.zeros(3), why=why,
+               breaks=REC["breaks"] + 1)
+
+
+def hair_step(pad, t, applied):
+    """The declared hair rule for one control step. ``pad``: the pad's centre now; ``applied``: the size of the
+    resisting force that acted on the pad since the last step. Sets REC["force"], the force for the next step."""
+    step = t - REC["hist"][-1][0] if REC["hist"] else 0.0
+    REC["hist"] = [(tt, q) for tt, q in REC["hist"] if tt >= t - SMOOTH - 1e-6] + [(t, pad.copy())]
+    t0, p0 = REC["hist"][0]
+    rise = float(pad[2] - p0[2]) / (t - t0) if t - t0 > 1e-6 else 0.0  # m/s up the drain's axis
+    REC["speed"], REC["force"] = rise, np.zeros(3)
+    if REC["freed"]:
+        return
+    z = float(pad[2])
+    if REC["caught"]:  # snagged and still held in the drain: count the rise made under load, then the breakaway rules
+        if z > REC["high"] and applied >= 0.5 * F_HAIR - EPS:  # only new height, gained under load
+            REC["loaded"] += z - REC["high"]
+        REC["last_z"], REC["high"] = z, max(REC["high"], z)
+        if rise > V_TEAR + EPS:
+            return _let_go("jerked out too fast")
+        if z < REC["high"] - PUSH_BACK - EPS:
+            return _let_go("pushed back down")
+        if z >= TOP + FREE_Z - EPS:
+            if REC["loaded"] >= LOADED_MIN - EPS:
+                REC.update(freed=True, load=0.0)
+                return
+            return _let_go("drawn out without the load")
+    elif in_hair(pad):  # the barbs catch hair only when drawn back through the clump after going into it
+        REC["deepest"] = min(REC["deepest"], z)
+        if REC["deepest"] <= TOP + HAIR_TOP - DEPTH_IN + EPS and z >= REC["deepest"] + SNAG_DRAW - EPS:
+            REC.update(caught=True, high=z, last_z=z, loaded=0.0, load=0.0, why="")
+        else:
+            return
+    else:
+        REC["deepest"] = math.inf  # left the clump without a snag
+        return
+    target = F_HAIR * min(1.0, max(0.0, rise) / V_FULL)
+    REC["load"] += (target - REC["load"]) * min(1.0, max(step, 0.0) / TAU)
+    REC["force"] = np.array([0.0, 0.0, -REC["load"]])
+
+
 def observe(objects, clouds, t):
     """Update the trial record from one control step's state and gripper surface samples (None: unknown)."""
     try:
@@ -465,19 +542,14 @@ def observe(objects, clouds, t):
     except (KeyError, TypeError, ValueError, AttributeError):
         ok = False
     dt = None if REC["t"] is None else float(t) - REC["t"]
+    applied = float(np.linalg.norm(REC["force"]))
+    REC["applied"], REC["force"] = applied, np.zeros(3)
     if not ok or clouds is None or (dt is not None and not 0.0 < dt <= 0.2):
         REC.update(known=False, invalid=True, held=0.0, t=float(t), stamp=None)
         return
     if off_vanity(tool):
         REC["dropped"] = True
-    if not REC["caught"] and dt is not None:
-        pad = pad_centre(tool)
-        if in_hair(pad):
-            REC["in_hair"] += dt
-            REC["deepest"] = min(REC["deepest"], float(pad[2]))
-        if (REC["in_hair"] >= CATCH_S - EPS and pad[2] >= REC["deepest"] + PULL - EPS
-                and math.hypot(pad[0] - BX, pad[1] - BY) <= BORE + EPS):
-            REC["caught"] = True
+    hair_step(pad_centre(tool), float(t), applied)
     value = tier(objects)
     clear = bool(hands_clear(clouds, objects))
     now = pts
@@ -491,9 +563,10 @@ def observe(objects, clouds, t):
 
 def score(objects):
     """0 for good once the tool has dropped off the vanity or the record is invalid. Otherwise, with both grippers
-    clear of the tool and the tool still for the last 1 s: 1.0 the hair caught on the tool's pad and the tool and the
-    hair resting on the countertop outside the basin; 0.5 the hair caught and resting on the countertop but some of
-    the tool in the basin; 0.25 the hair caught and out of the drain but left in the basin; 0 otherwise."""
+    clear of the tool and the tool still for the last 1 s, and only if the hair was snagged and drawn out of the drain
+    under its load: 1.0 the hair out of the drain at the countertop's height and the whole tool lying on the
+    countertop; 0.5 the hair out at the countertop's height but the tool not wholly on the countertop; 0.25 the hair
+    out of the drain but not at the countertop's height; 0 otherwise."""
     try:
         if not REC["known"] or REC["invalid"] or REC["dropped"] or REC["stamp"] != stamp(objects):
             return 0.0
@@ -560,7 +633,8 @@ HAIR_ON_PAD = np.array([PAD_LINKS * LINK_L / 2 - LINK_L, 0.0, 0.0])  # the clump
 
 
 def hair_pose(objects):
-    """Where the declared rule puts the clump: at its place in the drain until caught, then on the pad."""
+    """Where the declared rule puts the clump: at its place in the drain until snagged, then on the pad (back in its
+    place if the barbs let go before it is free)."""
     if not REC["caught"]:
         return HAIR_AT, np.array([0.0, 0.0, 0.0, 1.0])
     lp, lq = objects[TOOL.name].links[LAST]
@@ -580,10 +654,51 @@ def _put_hair(sim, objects):
     asset.write_root_velocity_to_sim(torch.zeros((1, 6), dtype=torch.float32, device=base.device))
 
 
+def _set_forces(base, name, forces):
+    import logging
+    import warnings
+
+    import torch
+
+    asset = base.scene[name]
+    dev = asset.device
+    f = torch.tensor([forces], dtype=torch.float32, device=dev)
+    log = logging.getLogger(type(asset).__module__)
+    level = log.level
+    log.setLevel(logging.ERROR)
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            asset.set_external_force_and_torque(f, torch.zeros_like(f), env_ids=torch.tensor([0], device=dev),
+                                                is_global=True)
+    finally:
+        log.setLevel(level)
+
+
+PAD_BODIES = tuple(f"w{i}" for i in range(N_LINKS - PAD_LINKS, N_LINKS))  # the two links that make up the pad
+
+
+def apply_hair_force(sim):
+    """The hair's resistance on the pad (split over its two links, so it acts at the pad's centre) for the next control
+    step. Its equal reaction acts on the drain, which is fixed to the basin."""
+    base = sim.env.unwrapped
+    names = list(base.scene[TOOL.name].body_names)
+    forces = [[0.0, 0.0, 0.0] for _ in names]
+    f = np.asarray(REC["force"], float)
+    if np.any(f):
+        for n in PAD_BODIES:
+            forces[names.index(n)] = [float(v) / len(PAD_BODIES) for v in f]
+    _set_forces(base, TOOL.name, forces)
+
+
 @parts.on_reset
 def _reset(sim):
     REC.clear()
     REC.update(_fresh())
+    try:
+        apply_hair_force(sim)
+    except Exception as e:  # noqa: BLE001
+        print(f"[hair] reset force: {e}", file=sys.stderr, flush=True)
 
 
 @parts.on_step
@@ -594,6 +709,11 @@ def _step(sim):
     except (ValueError, AttributeError, KeyError, IndexError):
         clouds = None
     observe(objects, clouds, float(sim.t))
+    try:
+        apply_hair_force(sim)
+    except Exception as e:  # noqa: BLE001  a missing load must not pass silently: the step's record is spoiled
+        REC.update(known=False, invalid=True)
+        print(f"[hair] force: {e}", file=sys.stderr, flush=True)
     try:
         _put_hair(sim, objects)
     except Exception as e:  # noqa: BLE001
@@ -607,7 +727,9 @@ def _step(sim):
                    tip=np.round(pts[-1] - [0, 0, TOP], 4).tolist(), handle=np.round(pts[0] - [0, 0, TOP], 4).tolist(),
                    joints={k: round(float(v), 3) for k, v in tool.joints.items()},
                    hair=np.round(np.asarray(hair.pos) - [0, 0, TOP], 4).tolist(), caught=REC["caught"],
-                   in_hair=round(REC["in_hair"], 2), value=REC["value"], held=round(REC["held"], 2),
+                   freed=REC["freed"], f=np.round(REC["force"], 3).tolist(), applied=round(REC["applied"], 3),
+                   speed=round(REC["speed"], 4), loaded=round(REC["loaded"], 4), breaks=REC["breaks"],
+                   why=REC["why"], value=REC["value"], held=round(REC["held"], 2),
                    clear=REC["clear"], still=REC["still"], dropped=REC["dropped"], score=score(objects),
                    rp=np.round(np.asarray(tool.pos) - [0, 0, TOP], 5).tolist(),
                    rq=np.round(np.asarray(tool.quat_xyzw), 5).tolist())
@@ -690,11 +812,15 @@ if os.environ.get("TRACE_OUT"):
 # The left arm takes the handle's grip from above, leaning 45 degrees forward, closing across it. It lifts the tool and
 # turns it so the wand points down to the right at 55 degrees from the horizontal, toward the drain, the hinged end
 # of the wand bending in the upright plane through the drain. It feeds the wand's end in under the left edge of the
-# open stopper's head, then pushes down so the end curls down the drain's bore beside the stopper, into the hair, holds
-# it there, and draws the wand back out along its own line. Last it turns the tool back to how it lay, lays it on the
+# open stopper's head, then pushes down so the end curls down the drain's bore beside the stopper, deep into the hair,
+# holds it there, and draws the wand back out along its own line, steadily, against the hair's resistance (the barbs
+# snag the hair on the way back up through the clump). Last it turns the tool back to how it lay, lays it on the
 # countertop where it was taken from, lets go and lifts clear. The right arm stays at rest.
 GRASP_TILT = math.radians(30.0)
-SQUEEZE = -(GRIP_R - 0.005)  # 5 mm past each side of the 26 mm grip
+SQUEEZE = -(GRIP_R - 0.008)  # 8 mm past each side of the 26 mm grip: about 40 N a finger. Measured on the GPU: with
+# it the round grip keeps its pose in the fingers when the tool is lifted off the stone and turned to the drain (to 0.1
+# degree, in both lots); with half that squeeze it turned 1-4 degrees there, varying from trial to trial. The hair's
+# load still turns it a few degrees in the fingers while the wand is drawn out.
 ELEV = math.radians(45.0)  # the wand's slope while it goes in
 ENTRY = np.array([BX, BY, TOP + ZF]) - 0.0070 * np.array([math.cos(PSI), math.sin(PSI), 0.0])  # the straight wand's
 # line crosses the flange's top here, 7 mm from the drain's axis
@@ -724,14 +850,15 @@ def tool_rot_inserting():
     return np.column_stack([x, y, np.cross(x, y)])
 
 
-# Measured on the GPU (trace, line-up pose): under its own weight the held tool sits 4.4 degrees off the grip's pose,
-# turned about this axis of the tool's frame (mostly its hinges' axis: the wand's end droops). The demo aims that much
-# the other way, so the wand points where intended.
-GRIP_SLIP_DEG, GRIP_SLIP_AXIS = 4.4, (0.085, 0.855, 0.51)
+# The held tool sits a little off the grip's pose, turned about this axis of the tool's frame (mostly its hinges' axis:
+# the wand's end lower), as it lay on the stone when the fingers closed (1.6-1.75 degrees, measured on the GPU in both
+# lots). The demo aims that much the other way, so the wand points where intended.
+GRIP_SLIP_DEG, GRIP_SLIP_AXIS = 1.8, (-0.06, 0.98, 0.15)
 _SLIP = parts._rot(GRIP_SLIP_AXIS, math.radians(GRIP_SLIP_DEG))
 R_INSERT = tool_rot_inserting() @ _SLIP.T @ TOOL_IN_HAND.T
-# Laying it back, the wand's end meets the stone first and the tool turns about 8 degrees in the grip, swinging the
-# wand's end back toward the basin (measured on the GPU); the demo lays it down turned 3 degrees the other way.
+# Laying it back, the wand's end meets the stone first and the tool can turn in the grip, swinging the wand's end back
+# toward the basin (8 degrees measured on the GPU with a lighter grip); the demo lays it down turned 3 degrees the other
+# way.
 PLACE_YAW = -3.0
 R_PLACE = parts._rot((0.0, 0.0, 1.0), math.radians(PLACE_YAW)) @ R_GRASP
 
@@ -811,8 +938,8 @@ def demo():
         _w(2.0, tcp_for_tip(ENTRY + t * 0.035), SQUEEZE, "feed down the bore", R_INSERT),
         _w(2.0, tcp_for_tip(ENTRY + t * FEED), SQUEEZE, "feed into the hair", R_INSERT),
         _w(1.5, tcp_for_tip(ENTRY + t * FEED), SQUEEZE, "hold in the hair", R_INSERT),
-        _w(2.5, tcp_for_tip(ENTRY + t * 0.012), SQUEEZE, "draw back", R_INSERT),
-        _w(2.0, tcp_for_tip(tip_at(0.036, 0.010)), SQUEEZE, "out of the drain", R_INSERT),
+        _w(3.0, tcp_for_tip(ENTRY + t * 0.012), SQUEEZE, "draw back", R_INSERT),
+        _w(2.5, tcp_for_tip(tip_at(0.036, 0.010)), SQUEEZE, "out of the drain", R_INSERT),
         _w(3.5, lift, SQUEEZE, "turn back over the counter, the wand's end tipped up", R_LIFT),
         _w(2.0, grip + np.array([0.020, 0.0, 0.015]), SQUEEZE, "over the counter's end", R_PLACE),
         _w(2.0, grip + np.array([0.0, 0.0, 0.004]), SQUEEZE, "lower onto the counter", R_PLACE),
