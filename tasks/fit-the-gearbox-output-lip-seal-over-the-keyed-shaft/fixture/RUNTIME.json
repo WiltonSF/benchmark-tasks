@@ -1,0 +1,20 @@
+{
+  "git": {
+    "IsaacLab-Arena": "c7edf3a9d5d8276565208f72422f8f8a0806d6cf",
+    "IsaacLab": "91a0906f93802eb859192dcb0bca879f891e92d6"
+  },
+  "versions": {
+    "yam-isaac-lab-arena": "no distribution metadata",
+    "inspect-robots": "1.0.0",
+    "isaaclab": "17.0.2",
+    "isaacsim": "6.1.0.0",
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "scipy": "1.17.0"
+  },
+  "sources": {
+    "yam_arena/task_file.py": "a10aa40c22998538916fc8703b6f63416db8385d973bd2b43b66e302a9ef0f70",
+    "yam_arena/demo.py": "cf7be86c21bba91b1e72bea11e586b3d9c89de591d496c5b9c13c71db203fa65",
+    "yam_arena/constants.py": "8c44cc2e96ac491255211f2e0b807dda4c1f7547db5a6c62b809764ef69ca2c2"
+  }
+}
