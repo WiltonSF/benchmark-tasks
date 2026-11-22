@@ -1,0 +1,5 @@
+{
+  "pan_frame_translation_tilt_rotation_invariant": true,
+  "slow_continuous_drift_scores_zero": true,
+  "maximum_measurement_error_m": 3.469446951953614e-17
+}

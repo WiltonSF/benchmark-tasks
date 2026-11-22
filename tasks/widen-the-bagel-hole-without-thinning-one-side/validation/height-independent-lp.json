@@ -1,0 +1,26 @@
+{
+  "method": "Independent3Dlinear programs over convex-hull halfspaces;minimum of sampled radial-section spans;not a native rollout.",
+  "cases": {
+    "retained native A": {
+      "angles": 640,
+      "conservative_bound_mm": 24.098920730210086,
+      "independent_LP_minimum_mm": 24.099100239068804,
+      "gap_mm": 0.00017950885871850786,
+      "tier": 1.0
+    },
+    "reviewer thin interface": {
+      "angles": 617,
+      "conservative_bound_mm": 9.839311490200435,
+      "independent_LP_minimum_mm": 9.839411491071267,
+      "gap_mm": 0.00010000087083232578,
+      "tier": 0.0
+    },
+    "intact uneven partial tier": {
+      "angles": 466,
+      "conservative_bound_mm": 20.134923505928292,
+      "independent_LP_minimum_mm": 20.135023505928295,
+      "gap_mm": 0.00010000000000287557,
+      "tier": 0.75
+    }
+  }
+}

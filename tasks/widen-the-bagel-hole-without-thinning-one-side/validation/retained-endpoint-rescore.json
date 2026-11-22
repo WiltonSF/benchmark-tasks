@@ -1,0 +1,29 @@
+{
+  "method": "Offline re-score from retained native centre positions/rest/flatten;fresh native evaluation still required.",
+  "layouts": {
+    "A": {
+      "score": 1.0,
+      "height_mm": 24.098920730210086,
+      "old_cell_height_mm": 24.32197433167642,
+      "d_mm": 48.81470200755262,
+      "D_mm": 53.69284476556322,
+      "independent_3nm_mesh_perturbation_heights_mm": [
+        24.09892436702671,
+        24.098917072497066,
+        24.0989207507501
+      ]
+    },
+    "B": {
+      "score": 1.0,
+      "height_mm": 24.566211525697994,
+      "old_cell_height_mm": 24.603901407374234,
+      "d_mm": 47.93938495985322,
+      "D_mm": 52.07630745919515,
+      "independent_3nm_mesh_perturbation_heights_mm": [
+        24.56621230836559,
+        24.566210542060823,
+        24.566215210505675
+      ]
+    }
+  }
+}

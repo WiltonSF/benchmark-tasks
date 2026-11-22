@@ -1,0 +1,12 @@
+native snapshots read without stale data PASS
+clear ready hands are accepted PASS
+between-control hand recontact interrupts hold gripper PASS
+between-control hand recontact interrupts hold tip_left PASS
+between-control hand recontact interrupts hold tip_right PASS
+substep overstretch is irreversible PASS
+returning damaged food does not clear history PASS
+unvalidated reset cannot be repaired into credit PASS
+known valid released positive control PASS
+overlapping double-loop endpoint PASS
+flipped intact ring remains legal PASS
+All offline guard counterexamples PASS

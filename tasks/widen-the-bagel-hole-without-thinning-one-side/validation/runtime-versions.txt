@@ -1,0 +1,2 @@
+{"python": "3.12.16", "packages": {"inspect-robots": "1.0.0", "inspect-robots-agent": "0.30.0", "isaaclab": "17.0.2"}}
+NVIDIA L40S, 565.57.01

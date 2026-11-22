@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-11-21T08:31:16.545746+00:00",
+  "LIBERO": {
+    "revision": "8f1084e3132a39270c3a13ebe37270a43ece2a01",
+    "full_bddl_definitions_fetched": 130,
+    "goal_predicate_counts": {
+      "And": 130,
+      "Turnon": 8,
+      "On": 61,
+      "Close": 11,
+      "In": 63,
+      "Open": 7,
+      "Turnoff": 1
+    }
+  },
+  "RoboCasa": {
+    "revision": "7bfc60c9d26c02506d4265cbe0e86b35e6e25d42",
+    "official_task_descriptions": 365,
+    "atomic": 65,
+    "composite": 300,
+    "closest_names": [
+      "CookieDoughPrep",
+      "MixCakeFrosting",
+      "PrepForTenderizing",
+      "ToastBagel"
+    ],
+    "free_ring_deformation_goal_found": false
+  },
+  "SimplerEnv": {
+    "source_url": "https://github.com/simpler-env/SimplerEnv/blob/main/simpler_env/__init__.py",
+    "environment_variants": 25,
+    "names": [
+      "google_robot_pick_coke_can",
+      "google_robot_pick_horizontal_coke_can",
+      "google_robot_pick_vertical_coke_can",
+      "google_robot_pick_standing_coke_can",
+      "google_robot_pick_object",
+      "google_robot_move_near_v0",
+      "google_robot_move_near_v1",
+      "google_robot_move_near",
+      "google_robot_open_drawer",
+      "google_robot_open_top_drawer",
+      "google_robot_open_middle_drawer",
+      "google_robot_open_bottom_drawer",
+      "google_robot_close_drawer",
+      "google_robot_close_top_drawer",
+      "google_robot_close_middle_drawer",
+      "google_robot_close_bottom_drawer",
+      "google_robot_place_in_closed_drawer",
+      "google_robot_place_in_closed_top_drawer",
+      "google_robot_place_in_closed_middle_drawer",
+      "google_robot_place_in_closed_bottom_drawer",
+      "google_robot_place_apple_in_closed_top_drawer",
+      "widowx_spoon_on_towel",
+      "widowx_carrot_on_plate",
+      "widowx_stack_cube",
+      "widowx_put_eggplant_in_basket"
+    ],
+    "free_plastic_shape_goal_found": false
+  }
+}

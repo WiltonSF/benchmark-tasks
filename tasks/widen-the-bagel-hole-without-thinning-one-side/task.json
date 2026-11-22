@@ -1,0 +1,20 @@
+{
+  "title": "Widen the bagel hole without thinning one side",
+  "category": "Societal relatability",
+  "instruction": "Shape the prepared bagel ring with an even open centre and leave it on the greased sheet.",
+  "context": "Home bagel shaping leaves a large open centre before boiling and baking. The recipe calls for a 1.5–2 inch opening. The manipulation tested is distributing permanent deformation around a cohesive food ring while keeping its narrowest wall intact, judged after unloading. Familiarity with eating bagels alone does not establish familiarity with making them.",
+  "setup": "Full sealed-wood/laminate preparation worktop, 1100x1300mm, top z=747.5mm; x forward, y left. Nordic Ware43100 aluminum half sheet:455x328x25mm outside,434x307mm clear floor,750g estimated. Pan origin (260,0,748.5)mm;455mm axis along x;floor top749.5mm. One102g King Arthur recipe ring starts with25mm hole,80mm outside diameter,30mm height,centre (230,+45,764.7)mm inA or (230,-45,764.7)mm inB. Original OXO73281 stainless scraper,152.4x101.6x38.1mm,247g maker mass,rests flat on adjacent counter at body origin (400,-300,766.55)mm inA or (400,+300,766.55)mm inB. Its original handle axis is31.75mm toward-y;blade centre z=-17.5mm and thickness1.5mm are contour estimates. Rear counter upstand25x1100x180mm at (720,0,837.5)mm. No mold,peg or elevated support. Food starts and ends on the sheet. Both lots are fixed;object_jitter=0. Trial1=A,trial2=B;report their mean. Screenshot showsA.",
+  "scoring": "Score0 permanently for a through-tear,new tear>5mm,cut-away or removed dough,any food crossing a counter edge or falling20mm below it,or raw-food contact with an uncovered/ruptured pad barrier. All credit requires the entire intact ring on the sheet,hands>5mm from food and scraper,scraper>5mm from food,and2s still after release,with<=1mm total drift. Use calibrated pan-rectified top/side photos and a ruler. Trace the complete hole/wall silhouettes;d/D are minimum/maximum hole diameters through the hole area centroid along64opposite ray pairs. Inspect all local necks. At every tier,minimum wall and height>=12mm. Score0 if d<30mm or D>65mm;else0.25 if d<40mm;else0.5 if d<45mm or D>55mm;else0.75. Raise0.75to1 only if maximum/minimum wall<=1.35 and outside diameter<=130mm. Folded,overlapping,unmeasurable or unknown states score0. Average lotsA/B.",
+  "run_limit": "2400 control steps per layout (120seconds at20Hz);2layouts.",
+  "fidelity": "102 g dough:16 free6.375 g convex cells and native soft bonds. Estimated60 N/m,.3 Ns/m,.2/s flow under fingertip-food load;actual cell volumes conserved;local compression. >1.8x extension or blade-through-core declares tear/cut. Film assumed intact;real trials inspect it. Rheology,traction and750 g pan mass uncalibrated. Same convex surfaces render,collide and score. Station worktop747.5 mm replaces proposed900 mm island. Two fixed layouts.",
+  "scores": "Corrected native demo:A=1.0,B=1.0,mean1.0. One earlier Dream:A=0.0,B=0.0;post-hoc regrade0/0 after height-only helper fix,not a fresh updated-helper run. No refusal;49recovered session expirations/lot. Task.py,dynamics,instruction unchanged. No physical calibration.",
+  "reset_notes": "1.Use fresh source recipe portion102±2g at22±2C.2.Mix10min,bulk rest90min,divide/round and rest30min.3.Make25±3mm initial hole,75–85mm outside,22–35mm height;reject invalid reset.4.Record time,mass,temperature,humidity and photographs;begin<=5min later.5.Apply1.0g food-grade canola oil across sheet;cover original pads with intact<=.2mm food-contact polyethylene film.6.Place food/tools asA orB.7.Discard food and film after each trial;wash/sanitize contacted original surfaces before next trial. Never re-knead or recycle a prior trial.",
+  "keywords": [
+    "bagel",
+    "plastic deformation",
+    "dough shaping",
+    "material redistribution",
+    "released geometry"
+  ],
+  "media": "M-MB2X95"
+}

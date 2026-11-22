@@ -1,0 +1,19 @@
+{
+  "method": "Regrade retained Dream trace under the corrected scorer:the hole/release/damage gates are unchanged;all recorded states have d<30mm irrespective of the changed height gate. This is not a fresh corrected-source policy run.",
+  "height_change_has_no_effect_on_material_or_demo_code": true,
+  "same_instruction": true,
+  "layouts": {
+    "A": {
+      "recorded_states": 2400,
+      "maximum_recorded_minimum_hole_diameter_mm": 25.833919190470507,
+      "old_score": 0.0,
+      "regraded_score": 0.0
+    },
+    "B": {
+      "recorded_states": 2400,
+      "maximum_recorded_minimum_hole_diameter_mm": 25.840364466999166,
+      "old_score": 0.0,
+      "regraded_score": 0.0
+    }
+  }
+}

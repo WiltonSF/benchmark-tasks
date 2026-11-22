@@ -1,0 +1,109 @@
+{
+  "source_files_sha256": {
+    "task.py": "abc7a90947b34ea1b39a663505a824177495d204457e55b0fbb3918b217f7d47",
+    "near_misses.py": "4b708f1ca44fd313c9fd360411a1b286c0f7c65263ee0758bd4eb27e8874c9fd",
+    "lots.py": "28b3b5512a76235fbcb88cb9601ed429b7f9a0f8b6c6bc97b0f82c50c027ed26",
+    "parts.py": "f4309b1169a2dcd836fcd6221376e63d8e32d45331ad2d64fd4d7dcf861dc3f2",
+    "model/height_tests.py": "5e00920a526843b1dcdc162737eae532a959ef73ab14b3b3a90f098fa65b63ef",
+    "model/guard_tests.py": "47a7c68d0f2ed047428d6a21fc20813fd2abd1ac96168ec7036da7ca762958fd",
+    "model/__init__.py": "ebcf6b69d88266dffcdc5c6fd5541db6282b0b52daf3a0ddc0b2ff90e5fc9bda",
+    "model/check_material.py": "f799d431faa41748e3d87d28ba35cac596b3599589cb7fc53850acaa31af6e7d"
+  },
+  "source_state": "corrected local-profile scorer;final native A/B completed",
+  "scripted_demo": {
+    "status": "success",
+    "results": {
+      "abstentions": {},
+      "errored_trials": 0,
+      "metrics": {
+        "task_score": 1.0
+      },
+      "total_scenes": 1,
+      "total_trials": 2
+    },
+    "stats": {
+      "completed_at": "2026-11-21T08:58:01.421763+00:00",
+      "duration_s": 1928.53996138,
+      "started_at": "2026-11-21T08:25:52.881811+00:00",
+      "total_steps": 3234
+    },
+    "layout_scores": {
+      "A": 1.0,
+      "B": 1.0
+    },
+    "source_files_sha256": {
+      "task.py": "abc7a90947b34ea1b39a663505a824177495d204457e55b0fbb3918b217f7d47",
+      "near_misses.py": "4b708f1ca44fd313c9fd360411a1b286c0f7c65263ee0758bd4eb27e8874c9fd",
+      "lots.py": "28b3b5512a76235fbcb88cb9601ed429b7f9a0f8b6c6bc97b0f82c50c027ed26",
+      "parts.py": "f4309b1169a2dcd836fcd6221376e63d8e32d45331ad2d64fd4d7dcf861dc3f2",
+      "model/height_tests.py": "5e00920a526843b1dcdc162737eae532a959ef73ab14b3b3a90f098fa65b63ef",
+      "model/guard_tests.py": "47a7c68d0f2ed047428d6a21fc20813fd2abd1ac96168ec7036da7ca762958fd",
+      "model/__init__.py": "ebcf6b69d88266dffcdc5c6fd5541db6282b0b52daf3a0ddc0b2ff90e5fc9bda",
+      "model/check_material.py": "f799d431faa41748e3d87d28ba35cac596b3599589cb7fc53850acaa31af6e7d"
+    },
+    "all_eight_sources_frozen_before_final_demo": true
+  },
+  "earlier_demo": {
+    "status": "success",
+    "results": {
+      "abstentions": {},
+      "errored_trials": 0,
+      "metrics": {
+        "task_score": 1.0
+      },
+      "total_scenes": 1,
+      "total_trials": 2
+    },
+    "stats": {
+      "completed_at": "2026-11-21T07:25:15.200180+00:00",
+      "duration_s": 1749.4378192659997,
+      "started_at": "2026-11-21T06:56:05.762369+00:00",
+      "total_steps": 3234
+    },
+    "instruction": "Shape the prepared bagel ring with an even open centre and leave it on the greased sheet.",
+    "layouts": 2,
+    "mean_score": 1.0
+  },
+  "dream_prior_source": {
+    "status": "success",
+    "results": {
+      "abstentions": {},
+      "errored_trials": 0,
+      "metrics": {
+        "task_score": 0.0
+      },
+      "total_scenes": 1,
+      "total_trials": 2
+    },
+    "stats": {
+      "completed_at": "2026-11-21T08:06:29.963944+00:00",
+      "duration_s": 2409.6020129730005,
+      "started_at": "2026-11-21T07:26:20.361940+00:00",
+      "total_steps": 4800
+    },
+    "same_instruction_and_frozen_source": true,
+    "layout_scores": {
+      "A": 0.0,
+      "B": 0.0
+    },
+    "termination": [
+      "max_steps",
+      "max_steps"
+    ],
+    "dry_run": false,
+    "refusal_or_abstention_recorded": false,
+    "returned_chunks": 100,
+    "automatic_retries_after_expiration": 98
+  },
+  "dream_current_source": {
+    "fresh_policy_execution": false,
+    "recorded_run_regraded_scores": {
+      "A": 0.0,
+      "B": 0.0
+    },
+    "basis": "All4800retained states fail the unchanged30mm opening gate. Only grading geometry changed;task.py,dynamics,reset,demo andRecord are unchanged.",
+    "task_py_matches_host_and_predates_recorded_Dream_and_final_demo": true,
+    "helper_changed_after_recorded_Dream": true
+  },
+  "physical_recipe_calibration_performed": false
+}

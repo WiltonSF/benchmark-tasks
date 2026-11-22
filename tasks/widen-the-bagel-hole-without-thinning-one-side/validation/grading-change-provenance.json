@@ -1,0 +1,26 @@
+{
+  "analysis": "Only a pure grading helper changed;task.py,reset/step/demo physics,parts,lots,andRecord are byte/AST unchanged.",
+  "unchanged_existing_source_files": [
+    "task.py",
+    "near_misses.py",
+    "lots.py",
+    "parts.py",
+    "model/guard_tests.py",
+    "model/check_material.py"
+  ],
+  "changed_existing_files": [
+    "model/__init__.py"
+  ],
+  "changed_existing_definitions": [
+    "geometry"
+  ],
+  "added_definition": [
+    "minimum_profile_height"
+  ],
+  "added_test_only_file": "model/height_tests.py",
+  "recorded_Dream_unchanged_hole_gate_failed_in_all_4800_states": true,
+  "fresh_corrected_helper_Dream_run_performed": false,
+  "same_instruction_and_task_py_before_both_runs": true,
+  "interpretation": "The earlier recorded policy run can be honestly reported with post-hoc0/0 regrading and the helper-version/session-renewal caveats. It must not be labelled a fresh corrected-helper policy run.",
+  "all_other_model_AST_nodes_identical": true
+}

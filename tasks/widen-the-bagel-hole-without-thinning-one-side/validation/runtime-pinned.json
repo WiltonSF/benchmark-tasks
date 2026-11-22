@@ -1,0 +1,14 @@
+{
+  "arena_git_revision": "c7edf3a9d5d8276565208f72422f8f8a0806d6cf",
+  "modified_asset_resolver_sha256": "991c3d0dcfc331bc4177379b538646407f78b7dbb6e21b7f6e310518c13aa33d",
+  "packages": {
+    "inspect-robots": "1.0.0",
+    "inspect-robots-agent": "0.30.0",
+    "inspect-robots-dream": "0.1.0",
+    "isaaclab": "17.0.2"
+  },
+  "dream_distributions": {
+    "dreamlabs-client": "1.1.7",
+    "inspect-robots-dream": "0.1.0"
+  }
+}
