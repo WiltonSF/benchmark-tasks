@@ -1,0 +1,25 @@
+{
+  "asset_version": "0.10.2",
+  "created_utc": "2026-11-22T20:05:19.295812+00:00",
+  "code_license": "MIT",
+  "docs_license": "CC BY 4.0",
+  "physical_route_revision": "0.10.1",
+  "status": "NEEDS-MORE; normal1/1 Dream0/0; independent NO-GO10/70/20; return projection unresolved",
+  "sha256": {
+    "task.py": "ecb750d988627ed4fba0062416f284dc1a77b7e46caecaf05a5655797560c10f",
+    "parts.py": "76dca0a3c69f457a9ca460d7258fe1dbffe0ee19e85682a7e9109a40d4ff758f",
+    "lots.py": "f2a660eddea564c7c9562864872c00cbaaa15874ec60e9345bd58eeb851bea77",
+    "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567",
+    "mechanism/__init__.py": "6f1aef11b41892b4ce32e83d23f31392704bd40b3f4a3d53165da3f6756932a8",
+    "mechanism/native.py": "a3d0feb4df593dee0a1d10d870bab9235e0488543627b7ceb084185efb185e84",
+    "mechanism/demo_path.json": "f1789328d3b01ffe3f2f98f2f11308f842009b8fe8328d6b84c97a26b95dab51",
+    "near_misses.py": "3906e9301b98ebb4bc06ec7d5566f46ebd1f91029933dba1bce3b7f79f268abf",
+    "fixture/dimensions.json": "fc39029226e943e50a27ab92bf2e20b9a6f920845889f93df5ac3b97bf83d83e",
+    "fixture/access.svg": "2ba1a141b2f4ed42d34fd5b92b9d2a7e69d65d8a536dc39400909e54a746ed43",
+    "fixture/extension.svg": "cd7e477b84b3e3c7db07d5c1577b98b61d11e3ba0e4a49eaed71350c89a62c21",
+    "fixture/parameters.md": "bc1fa011fd65645c647488c999b29aaf59c90e21c3c75e27fec5ca66b730cfce",
+    "fixture/measurement.md": "af202b6c3c4febfcab85b83efdea9611fdd727c30473dfe0addab07d2d296f71",
+    "fixture/price-check.md": "b671cb1feefb0d6e9990d88f6fffeac14da74991894dd501e0a276f1a874a029"
+  },
+  "last_metadata_update_utc": "2026-11-22T21:08:08.905963+00:00"
+}

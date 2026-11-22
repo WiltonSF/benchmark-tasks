@@ -1,0 +1,245 @@
+{
+  "version": "0.10.1",
+  "units": "mm",
+  "basis": "stated access and linkage geometry estimates; no OEM dimensions measured",
+  "lever_product": "Toyota 46201-52080-B0",
+  "bracket_product": "Toyota 46235-52020",
+  "board": {
+    "material": "birch plywood",
+    "size": [
+      440,
+      580,
+      18
+    ],
+    "fixed_to": "table with four through-bolts or equivalent clamps; table stiffness qualification required",
+    "shim_height_mm": 104.5,
+    "centre_relative_to_pivot": [
+      0,
+      150,
+      -59
+    ]
+  },
+  "pivot_from_arm_midpoint": [
+    670,
+    -100,
+    172.5
+  ],
+  "axis": "installed local x, yawed68.60717 degrees about world z",
+  "lever_length": 297,
+  "grip_diameter": 35,
+  "button_diameter": 15,
+  "seat_bolster_envelopes": {
+    "size": [
+      90,
+      560,
+      150
+    ],
+    "centres_relative_to_pivot": [
+      [
+        -155,
+        150,
+        25
+      ],
+      [
+        155,
+        150,
+        25
+      ]
+    ],
+    "clear_width": 220
+  },
+  "console_cheeks": {
+    "size": [
+      40,
+      420,
+      36
+    ],
+    "clear_width": 80,
+    "centres_relative_to_pivot": [
+      [
+        -60,
+        135,
+        -32
+      ],
+      [
+        60,
+        135,
+        -32
+      ]
+    ]
+  },
+  "console_rear": {
+    "size": [
+      80,
+      30,
+      36
+    ],
+    "centre_relative_to_pivot": [
+      0,
+      -60,
+      -32
+    ]
+  },
+  "load": {
+    "torque_Nm": "3+112.2*angle_rad",
+    "range_deg": [
+      0,
+      36
+    ],
+    "start_deg": 24,
+    "handle_check_radius_mm": 250,
+    "start_handle_force_N": 200,
+    "assumed_cable_radius_mm": 33.8363408066486,
+    "equivalent_tension_at_start_N": 1477.6487322730538,
+    "required_linear_spring_N_per_mm": 98,
+    "preload_N": 88.66206949335731,
+    "extension_at_24_deg_mm": 14.173333293670371,
+    "spring_product": "5 x MISUMI SWF25-50 in parallel; 19.6 N/mm each; 25 mm OD, 13.5 mm ID, 50 mm free length",
+    "spring_catalogue": "https://uk.misumi-ec.com/pdf/fa/2014/P2_0365-0366_F37_EN.pdf",
+    "spring_bank_precompression_mm": 0.9047149948301766,
+    "spring_bank_max_compression_at_27_deg_mm": 16.849714950209343,
+    "cable_product": "Loos GC18879M 3/16 inch commercial galvanized 7x19 cable, 4200 lbf minimum breaking strength",
+    "cartridge": {
+      "endplates_mm": [
+        100,
+        100,
+        6
+      ],
+      "spring_centres_mm": [
+        [
+          -20,
+          -20
+        ],
+        [
+          -20,
+          20
+        ],
+        [
+          20,
+          -20
+        ],
+        [
+          20,
+          20
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "guide_rods": "four M8 steel rods at (+/-40,+/-40) through endplates",
+      "guide_span_mm": 70,
+      "spring_guides": "five 12 mm diameter steel guide pins at spring centres",
+      "preload_adjustment": "M8 guided carriage adjuster offset from central spring; qualify with handle force gauge"
+    },
+    "spring_bank_max_compression_at_36_deg_mm": 22.16471493533573,
+    "max_tension_at_36_deg_N": 2172.1420636629023,
+    "termination_requirement": "Professionally swaged thimbled eyes; assembled certified working load >= 2.5 kN after termination efficiency and at least 5:1 strength factor. Reject uncertified cable ends.",
+    "anchor_requirement": "Two M8 class 8.8 bolts per steel cartridge endplate through steel backing plate; anchored board/table connection qualified to >= 2.5 kN cable tension and 100 N m bracket torque.",
+    "calibration_instrument": {
+      "product": "VEVOR OCS-L300 kg hanging scale",
+      "capacity_kg": 300,
+      "division_kg": 0.05,
+      "source": "https://www.vevor.com/crane-scale-c_10459/vevor-digital-crane-scale-660-lbs-300-kg-max-capacity-handheld-hanging-scale-with-cast-aluminum-case-lcd-display-0-1-lbs-division-3-unit-switch-portable-design-for-farm-hunting-fishing-orange-p_010480870666",
+      "installation": "Inline in the horizontal cable route, housing supported without axial shunt; adjust complete assembled spring curve. Read kg*9.80665 N. No physical calibration performed."
+    },
+    "enrollment_tension_N": [
+      88.66206949335731,
+      551.6576237532561,
+      1014.653178013155,
+      1477.6487322730538
+    ]
+  },
+  "enrollment": {
+    "start_angle_deg": [
+      23,
+      25
+    ],
+    "tooth_pitch_deg": [
+      3.5,
+      4.5
+    ],
+    "button_travel_mm": [
+      7.5,
+      8.5
+    ],
+    "button_force_at_5mm_N": [
+      5,
+      6
+    ],
+    "handle_force_at_24deg_N": [
+      200,
+      210
+    ]
+  },
+  "fabrication": "Anchor 18 mm floor board on 104.5 mm anchored risers to the table. Bolt OEM bracket through board using original mounting holes. Key the two adapter blocks onto exposed 12 x 26 mm steel bar at 100 and 150 mm radii, not onto the rubber grip. Attach offset spine and named 200 mm RRS handle. Leave stock button and its entire 8 mm travel unobstructed. Install all seat and console envelopes with listed local dimensions and full yawed geometry; they do not assist lever motion. Loading spring cartridge has fixed steel reaction plates and qualified cable ends.",
+  "qualification": "Unmeasured fixture proposal; maker spring and cable specifications verified. Five SWF25-50 springs have 22.165 mm compression at 36 deg below 25 mm; 3/16 inch GC18879M cable replaces underspecified 1/8 inch. Qualify complete terminated route at all listed angles before real trials.",
+  "yaw_deg": 68.60717430187768,
+  "extension": {
+    "product": "RRS DTMVHHBE 200 mm extension handle",
+    "source": "https://www.demon-tweeks.com/eu/rrs-extension-handle-for-hydraulic-handbrake-dtmvhhbe/",
+    "maker_intended_use": "RRS hydraulic handbrake; fitting to the Yaris requires the custom adapter below and is not maker-approved compatibility",
+    "length": 200,
+    "diameter_estimate": 30,
+    "axis_offset_x": -90,
+    "radii_from_pivot": [
+      592,
+      792
+    ],
+    "loaded_assembly_mass_kg_estimate": 1.57,
+    "adapter": {
+      "material": "6061 aluminum split blocks and 20 x 20 mm spine; standard stock",
+      "split_blocks_centres_y": [
+        100,
+        150
+      ],
+      "split_blocks_outer": [
+        40,
+        20,
+        40
+      ],
+      "keyed_pocket": [
+        12.2,
+        20,
+        26.2
+      ],
+      "block_fasteners": "two M6 class 8.8 screws per split block, counterbored outside the lever; transfer actual purchased bar section",
+      "crossbars": [
+        120,
+        20,
+        20
+      ],
+      "spine": [
+        20,
+        512,
+        20
+      ],
+      "spine_centre": [
+        -90,
+        346,
+        0
+      ],
+      "extension_connection": "split collet around actual 30 mm estimated base; transfer measured purchased diameter/thread before machining, without drilling the OEM lever",
+      "qualification": "100 N m about pivot and500 N transverse without slip or deformation; physical proof not performed"
+    },
+    "grasp_radius": 780,
+    "coating": {
+      "product": "3M GM614/TB614",
+      "thickness_mm": 1.07,
+      "radii": [
+        692,
+        792
+      ],
+      "effective_pair_static_dynamic_estimate": [
+        1.6,
+        1.4
+      ],
+      "enrollment": "dry pair must sustain112 N tangential traction under80 N total normal load; no measurement yet",
+      "material_combination": "Explicit max combination for estimated pair1.6/1.4; robot pad materials unchanged",
+      "basis": "3M trial-bag TDS: matedGM613/TB614 dry kinetic2.8, wet2.6. Not synthetic-leather or YAM data. Model1.6/1.4 remains an unmeasured pair estimate; physical traction qualification required."
+    },
+    "lever_adapter_mass_kg_estimate": 1.57,
+    "button_mass_kg_estimate": 0.02,
+    "total_moving_mass_kg_estimate": 1.59
+  }
+}
