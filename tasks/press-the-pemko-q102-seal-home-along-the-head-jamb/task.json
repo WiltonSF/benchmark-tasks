@@ -1,0 +1,19 @@
+{
+  "title": "Press the Pemko Q102BL seal home along the door head jamb",
+  "category": "Societal relatability",
+  "keywords": [
+    "weatherstrip",
+    "kerf",
+    "bimanual",
+    "door repair"
+  ],
+  "instruction": "Align the Pemko Q102BL seal with the head-jamb ends, press its fin home along the kerf, then let go.",
+  "context": "Homeowners replace exterior-door weatherstripping to keep drafts out. This task fits a loose full-length seal to a head jamb during frame assembly, before installation.",
+  "setup": "An 812.8 x 115.9 mm primed-poplar Pease exterior head jamb, 32-inch option, lies rabbet-up on a 950 x 160 x 18 mm plywood assembly deck on two 40 mm-high battens, with two back-edge BESSEY CM30 screw clamps. Deck top is 58 mm above the station table. Its kerf is 3.175 mm wide and 9.525 mm deep. An 812.8 mm Pemko Q102BL seal lies on the rabbet 20 mm to the right of flush and 15.525 mm short of home. Its simulated 34 connected spans are 23.906 mm long. A smooth 40 x 30 x 20 mm wood block lies at x=175, y=-190 mm in layout A and y=-230 mm in B. All other objects have the same start pose. Coordinates and estimated profile details are in README and fixture drawings.",
+  "scoring": "0 if damaged, held, moving or unreadable. After release, count the seal’s 34 marked spans seated to a bulb-to-stop gap of at most 1.5 mm: 0.25 for 9-30; 0.5 for at least 31. 1.0 needs all 34 seated, both ends within 2 mm of flush, hands and tool at least 10 mm clear, and 1 s still. Read with a ruler, feeler gauge and video.",
+  "run_limit": "2,400 control steps at 20 Hz (120 seconds), one trial per layout; --epochs 2.",
+  "reset_notes": "1. Remove the seal by peeling from an end; do not pull along the slot. 2. Inspect the fin, barbs and kerf; reject torn, crushed or loose specimens. Use pre-cut commercial stock; no curing or fabrication per trial. 3. Check jamb length 812.8 +/- 1 mm, kerf 3.175 +/- 0.025 mm, depth 9.525 +/- 0.1 mm, and the recorded force enrollment before reuse. 4. Re-clamp the jamb as shown. Lay the seal with a 20 +/- 1 mm axial offset, its fin tip 6 +/- 1 mm from the slot entrance. 5. Put the smooth block on the marked A or B outline. Reset target is under 3 minutes; this time has not been measured. Physical enrollment and native force comparison remain pending.",
+  "fidelity": "812.8 mm jamb; 34 tapered-barb spans, D6 bend 0.03/1.21 and twist 0.01 Nm/rad estimates. 12 N/span estimated from FOAM-TITE 11.65 N/in in a 0.080-in kerf, scaled/rounded up; Q102BL/1/8-in unmeasured. Each span needs two-step kerf contact >=12 N over >=0.25 mm first travel and >=0.00425 J work before home (triangular 0.708 mm taper estimate). Contact supplies reaction/retention; no capture/pose writes. >30deg kink or >3mm fin-edge opening fails.",
+  "scores": "Isaac Lab-Arena scripted demo: A=0.0, B=0.0 (mean 0.0). Dream-1 beta: A=0.0, B=0.0 (both step limits). No full-score reference demo or measured hardware result.",
+  "media": "M-EMCM24"
+}

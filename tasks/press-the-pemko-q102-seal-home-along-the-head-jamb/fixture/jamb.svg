@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560">
+<rect width="1000" height="560" fill="white"/>
+<g font-family="sans-serif" font-size="17" fill="#222">
+<text x="30" y="30">Frame-parts assembly fixture v1 — dimensions in mm; profile estimates require enrollment</text>
+<text x="30" y="65">PLAN: full-length head jamb, 812.8 x 115.9; rabbet upward on raised assembly deck</text>
+<rect x="70" y="90" width="812.8" height="115.9" fill="#deded6" stroke="black"/>
+<path d="M70 140H883" stroke="#555" stroke-width="3"/>
+<text x="370" y="132">kerf face, x=265</text>
+<rect x="70" y="215" width="812.8" height="14" fill="#333"/>
+<text x="90" y="252">Loose 812.8 mm seal: 20 mm right overhang; fin tip 6 mm short of slot</text>
+<rect x="126" y="94" width="24" height="30" fill="#888" stroke="black"/>
+<rect x="788" y="94" width="24" height="30" fill="#888" stroke="black"/>
+<text x="95" y="82">back-edge clamps at +/-330</text>
+<text x="30" y="300">END SECTION relative to deck top (enlarged; not product CAD)</text>
+<path d="M70 470H650V375H285V391H333V407H285V423H70Z" fill="#deded6" stroke="black" stroke-width="2"/>
+<text x="665" y="443">base 19.05</text><text x="665" y="385">stop +12.7</text>
+<path d="M285 391H333V407H285" fill="white" stroke="#222"/>
+<text x="340" y="405">kerf 3.175 x 9.525</text>
+<rect x="167" y="375" width="79" height="64" rx="12" fill="#333"/>
+<rect x="246" y="395" width="48" height="8" fill="#333"/>
+<text x="65" y="510">Bulb envelope 15.875 x 12.7; fin 9.525 long; tapered barb ridge is an unmeasured estimate</text>
+<text x="65" y="540">No strip capture. Exact-product insertion force and profile calibration remain open gates.</text>
+</g></svg>
