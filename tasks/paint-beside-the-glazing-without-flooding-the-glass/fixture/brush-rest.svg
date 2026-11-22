@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="360" viewBox="0 0 760 360" font-family="sans-serif" font-size="13">
+  <title>Brush rest: pine block 165 x 60 x 38 mm with a 110 mm notch (dimensions in mm, 3:1 drawing scale)</title>
+  <rect x="0" y="0" width="760" height="360" fill="#ffffff"/>
+  <text x="20" y="24" font-size="15">Brush rest (side view, 3:1). Clear pine, planed. Dimensions in mm.</text>
+  <!-- side view, origin at the ferrule end bottom: x scale 3 px/mm -->
+  <g transform="translate(60,250)">
+    <path d="M0,0 L495,0 L495,-118.5 L405,-118.5 L405,-54 L75,-54 L75,-114 L0,-114 Z" fill="#e6c89a" stroke="#000"/>
+    <text x="0" y="22">ferrule end</text>
+    <text x="410" y="22">handle end</text>
+    <line x1="0" y1="40" x2="495" y2="40" stroke="#000"/><text x="220" y="56">165</text>
+    <line x1="0" y1="-135" x2="75" y2="-135" stroke="#000"/><text x="25" y="-140">25</text>
+    <line x1="75" y1="-135" x2="405" y2="-135" stroke="#000"/><text x="220" y="-140">110 notch</text>
+    <line x1="405" y1="-135" x2="495" y2="-135" stroke="#000"/><text x="440" y="-140">30</text>
+    <line x1="525" y1="0" x2="525" y2="-118.5" stroke="#000"/><text x="532" y="-60">39.5 (handle-end pillar)</text>
+    <line x1="-20" y1="0" x2="-20" y2="-114" stroke="#000"/><text x="-55" y="-120">38</text>
+    <line x1="240" y1="0" x2="240" y2="-54" stroke="#000"/><text x="248" y="-25">18 notch floor</text>
+  </g>
+  <text x="20" y="320">Width (across the brush) 60 mm throughout. The ferrule pillar is 1.5 mm lower than the handle-end pillar so a</text>
+  <text x="20" y="338">2 in sash brush (18 mm ferrule, 15 mm handle) lies level, handle end on the 30 mm pillar, ferrule on the 25 mm pillar, bristles in the air.</text>
+</svg>
