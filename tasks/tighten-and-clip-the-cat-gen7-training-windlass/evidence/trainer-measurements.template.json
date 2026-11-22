@@ -1,0 +1,14 @@
+{
+  "measured": false,
+  "product": "NAR C-A-T Gen 7 blue trainer 30-0033",
+  "date_utc": null,
+  "specimen_id": null,
+  "instrument": null,
+  "method": null,
+  "raw_file": null,
+  "raw_sha256": null,
+  "winding_readings": [],
+  "snap_readings": [],
+  "pressure_points": [],
+  "note": "Empty template, not measurements. See fixture/CALIBRATION.md. Do not change measured to true without real readings and the raw evidence. Save completed evidence as trainer-measurements.json."
+}
