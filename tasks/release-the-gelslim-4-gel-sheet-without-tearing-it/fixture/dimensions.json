@@ -1,0 +1,108 @@
+{
+  "units": "mm",
+  "native_ring": {
+    "outside_corner_radius": 96.59956,
+    "outside_apothem": 83.65768,
+    "height": 18,
+    "section": [
+      {
+        "z": [
+          0,
+          5
+        ],
+        "inner_corner_radius": 67.73205
+      },
+      {
+        "z": [
+          5,
+          14.35
+        ],
+        "inner_corner_radius": 85.05256
+      },
+      {
+        "z": [
+          14.35,
+          15.35
+        ],
+        "inner_corner_radius": 86.20725
+      },
+      {
+        "z": [
+          15.35,
+          18
+        ],
+        "inner_corner_radius": 85.05256
+      }
+    ]
+  },
+  "acrylic": {
+    "corner_radius": 85.05256,
+    "apothem": 73.65768,
+    "thickness": 6.35
+  },
+  "gel": {
+    "corner_radius": 85.05256,
+    "thickness": 3
+  },
+  "estimates": {
+    "print_radial_allowance": 0.2,
+    "masses_g": {
+      "ring": 140,
+      "acrylic": 145,
+      "gel": 77,
+      "push_out_stand": 190
+    },
+    "spring_basis": "Return force0.3N at60mm lever and0.1rad opening,unpublished construction estimate.",
+    "press_fit_N": 2.5,
+    "press_fit_basis": "Holds the 140 g ring on the acrylic when the mold rests on the stand (ring weight 1.37 N) and lets go after 2 mm of push-out; the maker gives no number."
+  },
+  "fidelity": "Ring section measured from original STL, independently reconstructed as24 convex sectors. Acrylic polygon uses ring seat dimensions; original DXF coordinate units require conversion and rotation, not a17mm miniaturization.",
+  "material": "Maker BoM:XP-565 silicone,70g base plus7g activator;16-18h cure.",
+  "counter": {
+    "x_limits": [
+      -190,
+      910
+    ],
+    "y_limits": [
+      -650,
+      650
+    ],
+    "height_reference": "top z=0"
+  },
+  "material_surface_assumptions": {
+    "ring": "PLA, 0.2 mm layers, 0.4 mm nozzle, 80% infill (estimate)",
+    "acrylic": "1/4 in clear cast acrylic, paper backing left on its back as the maker instructs",
+    "counter": "clean dry sealed laminate",
+    "release_agent": "none"
+  },
+  "push_out_stand": {
+    "product": "Corning PYREX 3140-90 crystallizing dish, upturned",
+    "outside_diameter": 90,
+    "height": 50,
+    "material": "borosilicate glass"
+  },
+  "positions_mm": {
+    "frame": "x forward and y to the robot left from the midpoint between the two arm bases; heights above the counter",
+    "mold_centre": [
+      380,
+      0
+    ],
+    "mold_orientation": "corners toward +x and -x; flats face +y and -y",
+    "ring_bottom": 0,
+    "acrylic_bottom": 5,
+    "gel_top": 14.35,
+    "stand_centre_lot_A": [
+      200,
+      0
+    ],
+    "stand_centre_lot_B": [
+      226,
+      0
+    ],
+    "millimetre_rule_centre": [
+      560,
+      -220
+    ],
+    "counter_upstand": "x 711 to 729, 110 tall, full width"
+  }
+}
