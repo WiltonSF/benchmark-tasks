@@ -109,7 +109,11 @@ KNIFE = parts.Part('knife', pos=(0.240, -0.135, Z_KNIFE), yaw=-math.pi / 2, mass
 BLADE = [(np.array([.078, 0., -.003]), np.array([.056, .002, .018])), (np.array([.116, 0., -.008]), np.array([.020, .002, .008]))]
 EDGE = np.column_stack((np.linspace(.050, .126, 77), np.zeros(77), np.full(77, -.012)))
 SPINE = np.column_stack((EDGE[:, 0], np.zeros(77), np.where(EDGE[:, 0] <= .106, .006, -.004)))
-BLADE_PTS = np.vstack((EDGE, SPINE))
+# Both faces of the 2 mm thick blade (1 mm either side of the edge's plane), each sampled in eight rows from just above
+# the edge up to the spine (2.25 mm apart at the heel, 1 mm in the point section) and every 1 mm along the blade, so a
+# blade whose edge passes under the cheek's rim while its face or spine is in the flesh cannot cross the skin unseen.
+FACE = np.vstack([EDGE + f * (SPINE - EDGE) + np.array([0., side, 0.]) for f in np.arange(1, 9) / 8. for side in (-.001, .001)])
+BLADE_PTS = np.vstack((EDGE, FACE))
 N_EDGE = len(EDGE)
 
 # Upturned porcelain ramekin: open rim down, base up; its flat base is what the cheek's skin is pressed onto.
@@ -148,7 +152,14 @@ SMOOTH = 5             # control steps (0.25 s) over which the edge's motion is 
 LOAD_STEPS = 2         # control steps (0.1 s) over which the edge speed that sets the cutting load is taken
 MIN_SPEED = 0.001      # m/s: slower edge motion is not a stroke (no cut)
 FULL_SPEED = 0.010     # m/s: drag and feed resistance reach their full 1 N at this edge speed
-PUSH_MIN, PUSH_MAX, PUSH_R = 0.012, 0.035, 0.015
+# Push: full credit needs the skin's middle pushed up 28 mm, 2.5 mm past flat (the 25.5 mm deep cup turned out into a
+# dome, so every cut opens at the top and the cubes fan apart); over 35 mm (9.5 mm past flat) while held is a split.
+PUSH_MIN, PUSH_MAX, PUSH_R = 0.028, 0.035, 0.015
+# Declared skin-bending resistance while the ramekin's base presses into the skin: 0.2 N per mm, at most 5 N (reached
+# at 25 mm), changing by at most 0.5 N per control step; it pushes the cheek away from the base and the ramekin back
+# down (equal reaction). Full credit needs the full 5 N acting on the step before the push reads 28 mm.
+PUSH_K, PUSH_CAP, PUSH_RATE = 200., 5.0, 0.5
+PUSH_NEED = min(PUSH_K * PUSH_MIN, PUSH_CAP)
 BLADE_CLEAR, TOUCH, HAND_CLEAR = 0.010, 0.0015, 0.005
 SETUP_TOL = (0.004, 3.0)
 
@@ -217,7 +228,8 @@ _PATHS = {}
 def fresh():
     _REC.clear()
     _REC.update(armed=False, invalid=False, setup=None, zero=None, t=None, prev=None, minz=np.full(CX.shape, np.inf),
-                force_on=False, force=np.zeros(3), inverted=False, inv_cubes=0, push=0., clear=False, still=False,
+                force_on=False, force=np.zeros(3), push_force=0., push_dir=np.array([0., 0., 1.]), peak_push_force=0.,
+                press=0., from_below=False, touch=False, inverted=False, inv_cubes=0, push=0., clear=False, still=False,
                 level=0., since=None, stamp=None, knife_arm=[], pinch_arm=[], min_clear=1., pieces=None, pieces_key=None,
                 loaded_steps=0, peak_force=0.)
 
@@ -373,19 +385,33 @@ def record_cut(p):
     np.minimum.at(_REC['minz'], (j, i), q[:, 2])
 
 
-def ramekin_push(cheek, ram):
-    """Height (m) the ramekin's flat base reaches above the cheek's outer skin, at the base centre and around it."""
+def ramekin_push(cheek, ram, latched, touching):
+    """(push, split depth, press, from_below, touch), m. The flat base is sampled at its centre and on rings of 8, 16
+    and 24 mm radius (its edge), 45 points. touch: some base point is inside the cheek's outline and above its
+    undisturbed outer skin this step, at any height and whatever the ramekin's attitude. The base counts as pressing
+    (from_below) only if, on the first step it touches (it did not touch on the step before), the ramekin is base up
+    relative to the cheek (axes within 30 degrees) with the base's centre inside the cheek's outline and below its
+    cut face; it then stays pressing for as long as the base keeps touching with its centre inside the outline, so a
+    press driven past the face still counts. A ramekin on the cut-face side of the cheek (above a cheek lying skin
+    side down), one brought down onto it from that side (even through a lifted cheek), one slid in from the side, or
+    a cheek turned face down over it reads nothing. push: at the base's centre, within 15 mm of the cheek's middle
+    (past the cup's 25.5 mm depth the skin's middle is above its rim: turned out); split depth and press: the deepest
+    base point (the press sets the skin-bending resistance)."""
     r = rot(ram.quat_xyzw)
-    disc = [np.zeros(2)] + [rr * np.array([math.cos(a), math.sin(a)]) for rr in (.012, .022) for a in np.linspace(0, 2 * math.pi, 8, endpoint=False)]
+    disc = [np.zeros(2)] + [rr * np.array([math.cos(a), math.sin(a)]) for rr, k in ((.008, 8), (.016, 12), (.024, 24))
+                            for a in np.linspace(0, 2 * math.pi, k, endpoint=False)]
     pts = np.array([ram.pos + r @ np.array([d[0], d[1], RAM_TOP]) for d in disc])
     loc = to_local(cheek, pts)
     r2 = (loc[:, 0] / A) ** 2 + (loc[:, 1] / B) ** 2
     pen = np.where(r2 < 1., loc[:, 2] - outer_z(loc[:, 0], loc[:, 1]), -1.)
-    # The push counts only from the ramekin's flat base, base up, under the middle of the skin and below the cut face
-    # (a ramekin carried over the cheek pushes nothing). The split check uses every base point (base through the face).
-    centre_ok = (math.hypot(loc[0, 0], loc[0, 1]) <= PUSH_R and r[2, 2] > math.cos(math.radians(30))
-                 and loc[0, 2] <= 0.)
-    return float(pen[0]) if centre_ok else -1., float(pen.max())
+    worst = float(pen.max())
+    touch = worst > 0.
+    aligned = float(rot(cheek.quat_xyzw)[:, 2] @ r[:, 2]) > math.cos(math.radians(30))
+    from_below = touch and aligned and r2[0] < 1. and (latched or (not touching and loc[0, 2] <= 0.))
+    if not from_below:
+        return -1., -1., 0., False, touch
+    centre_ok = math.hypot(loc[0, 0], loc[0, 1]) <= PUSH_R and r[2, 2] > math.cos(math.radians(30))
+    return (float(pen[0]) if centre_ok else -1.), worst, worst, True, touch
 
 
 def update(objects, clouds, t):
@@ -464,14 +490,24 @@ def update(objects, clouds, t):
                 zero('the knife cut through the skin')
     _REC['force'] = force; _REC['force_on'] = bool(np.linalg.norm(force) > 0.)
     _REC['peak_force'] = max(_REC['peak_force'], float(np.linalg.norm(force)))
-    # Declared hedgehog: pressing the held cheek's skin centre onto the ramekin's base, 12-22 mm past the skin.
-    push, worst = ramekin_push(cheek, ram)
+    # Declared hedgehog: pressing the held cheek's skin centre onto the ramekin's base, 28 mm or more past the skin.
+    # The resistance acting over the last step (what the hand had to push against to get here).
+    applied = _REC['push_force']
+    push, worst, press, from_below, touch = ramekin_push(cheek, ram, _REC['from_below'], _REC['touch'])
     _REC['push'] = max(_REC['push'], push)
+    # Declared skin-bending resistance: grows with how far the base presses into the skin, capped, rising by at most
+    # PUSH_RATE per step, falling at once with the press, and gone as soon as the base stops pressing.
+    want = min(PUSH_K * press, PUSH_CAP)
+    f_push = min(want, _REC['push_force'] + PUSH_RATE)
+    _REC.update(push_force=f_push, push_dir=rot(cheek.quat_xyzw)[:, 2].copy(), press=press, from_below=from_below, touch=touch,
+                peak_push_force=max(_REC['peak_push_force'], f_push))
     # Split: the base pushed past a full inside-out turn (35 mm) while a hand holds the cheek.
     if worst > PUSH_MAX and pinch_arm:
         zero('the skin was pushed more than 35 mm in (split)')
     upright = rot(cheek.quat_xyzw)[2, 2] > math.cos(math.radians(30))
-    if not _REC['inverted'] and push >= PUSH_MIN and pinch_arm and upright:
+    # Full push: 28 mm or more (the skin turned past flat), against the full 5 N resistance a steady press meets there,
+    # so a jab that outruns the resistance does not count.
+    if not _REC['inverted'] and push >= PUSH_MIN and applied >= PUSH_NEED - 1e-6 and pinch_arm and upright:
         _REC['inverted'] = True
         _REC['inv_cubes'] = pieces()['cubes']
     clear = all(hand_distance(clouds[a], s, objects[s.name]) > HAND_CLEAR for a in ARMS for s in MOVE)
@@ -619,14 +655,16 @@ def clouds(sim):
     return out
 
 
-def apply_force(sim, force):
+def apply_force(sim, force, push=0., push_dir=(0., 0., 1.)):
+    """Cutting load (knife +, cheek -) and skin-bending resistance (cheek pushed along its own up axis, ramekin back)."""
     import torch
     base = sim.env.unwrapped
-    for name, sign in (('knife', 1.), ('cheek', -1.)):
+    cut = np.asarray(force, float); up = np.asarray(push_dir, float) * float(push)
+    for name, vec in (('knife', cut), ('cheek', up - cut), ('ramekin', -up)):
         obj = base.scene[name]; dev = obj.device
         f = torch.zeros((1, 1, 3), device=dev); m = torch.zeros_like(f)
-        f[0, 0, :] = torch.tensor([float(v) * sign for v in force], device=dev)
-        # Declared resultant: applied at each body's centre of mass; its moment about the knife grip is not simulated.
+        f[0, 0, :] = torch.tensor([float(v) for v in vec], device=dev)
+        # Declared resultants: applied at each body's centre of mass; their moments are not simulated.
         obj.set_external_force_and_torque(f, m, env_ids=torch.tensor([0], device=dev), is_global=True)
 
 
@@ -695,14 +733,15 @@ def reset(sim):
 def step(sim):
     try:
         st = sim.states(); hands = clouds(sim); update(st, hands, float(sim.t))
-        apply_force(sim, _REC['force'])
+        apply_force(sim, _REC['force'], _REC['push_force'], _REC['push_dir'])
         if int(round(sim.t * 20)) % 4 == 0:
             show_cuts()
         if os.environ.get('TRACE_OUT'):
             from yam_arena.constants import TCP_OFFSET
             base = sim.env.unwrapped; origin = parts._np(base.scene.env_origins[0])
             row = {k: _REC.get(k) for k in ('t', 'zero', 'invalid', 'setup', 'clear', 'still', 'level', 'since', 'inverted',
-                                             'inv_cubes', 'push', 'knife_arm', 'pinch_arm', 'loaded', 'min_clear', 'loaded_steps', 'peak_force')}
+                                             'inv_cubes', 'push', 'knife_arm', 'pinch_arm', 'loaded', 'min_clear', 'loaded_steps', 'peak_force',
+                                             'push_force', 'press', 'peak_push_force', 'touch', 'from_below')}
             row['force'] = np.round(_REC['force'], 3).tolist()
             row['hands'] = {}
             for arm in ARMS:
@@ -733,8 +772,9 @@ LONG_Y = (-0.016, 0.0, 0.016)           # cuts along the cheek, from the far edg
 LONG_END = -0.011
 HOLD_X = -0.050                         # steadying pinch across the cheek's near end
 HOLD_TILT = 45.                         # ...leaning its fingertips toward the far end, keeping its wrist back
-INSET = 0.0035                          # every cut starts and ends 3.5 mm inside the cheek's edge
-AIM = 0.003                             # point aimed 3 mm above the skin (4 mm in the first 8 mm, 2 mm in the last 12 mm)
+INSET = 0.0035                          # every cut starts and ends 3.5 mm inside the cheek's edge...
+CROSS_END = 0.0015                      # ...except that cuts across end 5 mm inside the edge where they finish
+AIM = 0.003                             # point aimed 3 mm above the skin (see aim_at for the ends of each cut)
 LIFT = 0.06
 # Fixed per-layout corrections (m, cheek frame) for the knife arm's tracking error, from traced runs; never read live.
 # (dx, dy, lead, dz at the point's entry, dz while scoring, end lead, dz at the end), cheek frame, m: the knife arm
@@ -743,11 +783,12 @@ LIFT = 0.06
 # dz at the end raises the last waypoint of a cut (the cuts across end close to the rim, and in traced runs of both
 # layouts a stop sprang the point 2-3 mm on into the rising skin there). Measured from traced runs of each layout and
 # frozen; never read live.
-CAL = {'A': {'cross': (-.0012, .0017, .0056, .0005, -.0011, .0005, .0025),
+CAL = {'A': {'cross': (-.0012, .0017, .0056, .0005, -.0011, .0005, .0035),
              'long': (-.0008, .0006, .0047, -.0002, -.0007, .0003, 0.)},
-       'B': {'cross': (-.0017, .0035, .0057, .0008, -.0004, .0027, .0015),
+       'B': {'cross': (-.0017, .0035, .0057, .0008, -.0004, .0027, .0025),
              'long': (.0009, .0020, .0053, .0007, -.0006, .0019, 0.)}}
 SCORE_SPEED = 0.014                     # m/s along a cut while scoring
+PRESS = 0.0425                          # m: how far below the ramekin's base the demo sends the cheek's lowest skin point
 D0 = tilt.rotation(0.)
 GRIP_TURN = math.pi
 
@@ -777,8 +818,9 @@ def knife_wp(dur, tip, phi, label):
 
 def aim_at(family, s, total):
     """Commanded height of the point above the skin (m) at distance s along a cut of length total: 1 mm higher over
-    the first 8 mm and 1 mm lower over the last 12 mm (before the per-layout corrections in CAL)."""
-    return AIM + (.001 if s < .008 else (-.001 if family == 'cross' else -.001) if total - s < .012 else 0.)
+    the first 8 mm; over the last 12 mm, 1 mm lower on a cut across and 0.5 mm higher on a cut along (where traced
+    points ran 2-3 mm below their waypoints) - before the per-layout corrections in CAL."""
+    return AIM + (.001 if s < .008 else (-.001 if family == 'cross' else .0005) if total - s < .012 else 0.)
 
 
 SAFE_BELOW = 0.0005                     # m: deepest the commanded point may sit below the skin's inner surface
@@ -831,7 +873,8 @@ def stroke(points, family, lot, cal=True):
 def line_points(family, value, forward):
     if family == 'cross':
         yb = B * math.sqrt(1 - (value / A) ** 2) - INSET
-        ys = np.linspace(yb, -yb, max(3, int(round(2 * yb / .008)) + 1))
+        ye = yb - CROSS_END   # cuts across stop further in from the edge they finish at (the blade's upper front reaches ahead)
+        ys = np.linspace(yb, -ye, max(3, int(round((yb + ye) / .008)) + 1))
         pts = [(value, y) for y in ys]
     else:
         xa = A * math.sqrt(1 - (value / B) ** 2) - INSET
@@ -913,8 +956,9 @@ def turnout_plan(lot):
     w_mid = half_width(0., -.015, 0.)
     lift = np.array([0, 0, .045])
     over = np.array([rp[0], rp[1], mid[2] + .045])
-    # Press: the cheek's lowest skin point goes 16 mm below the ramekin's base.
-    press = np.array([rp[0], rp[1], rp[2] + RAM_TOP - .016 + H - .002])
+    # Press: the cheek's lowest skin point is sent PRESS below the ramekin's base; the arm gives under the declared
+    # skin-bending resistance, so the skin's middle ends less far up (frozen from traced runs).
+    press = np.array([rp[0], rp[1], rp[2] + RAM_TOP - PRESS + H - .002])
     back = mid + np.array([0, 0, .002])
     g = -(w_mid - .004)
     return [tilt.Waypoint(1.6, xyz(mid + [0, 0, .04]), -.045, 'over the middle of the cheek', yaw=cy),
@@ -923,7 +967,7 @@ def turnout_plan(lot):
             tilt.Waypoint(1.2, xyz(mid + lift), g, 'lift the cheek', yaw=cy),
             tilt.Waypoint(1.7, xyz(over), g, 'over the ramekin', yaw=cy),
             tilt.Waypoint(1.7, xyz(press), g, 'press the skin centre onto the ramekin', yaw=cy),
-            tilt.Waypoint(0.8, xyz(press), g, 'hold the skin pushed up', yaw=cy),
+            tilt.Waypoint(1.2, xyz(press), g, 'hold the skin pushed up', yaw=cy),
             tilt.Waypoint(1.1, xyz(over), g, 'lift off the ramekin', yaw=cy),
             tilt.Waypoint(1.7, xyz(back + lift), g, 'carry back', yaw=cy),
             tilt.Waypoint(1.3, xyz(back), g, 'set it down skin side down', yaw=cy),
