@@ -15,6 +15,6 @@
   "run_limit": "2400 control steps (120 s at 20 Hz)",
   "reset_notes": "Simulation: every trial writes the exact start poses (object_jitter 0), rejoins all six florets and checks the start against the layout within 4 mm and 3 degrees; a failed start scores 0 and is reported invalid. Real trial: a fresh head trimmed and checked as in README (six crowns 30-50 mm, stalks counted and measured), board and knife washed and dried, knife stood on its handle at the marked spot.",
   "fidelity": "Rigid 250 g head: 34 mm stem, six identical 16 mm shoots in one plane, 34-38 mm crowns, florets held by fixed joints. The blade has no collider; while its edge is in a stalk, resistance acts on knife and stalk: 0.4 N/mm of edge in the section against the advance plus 0.15 N/mm drag against the motion (estimated; 8.8 N on a square cut). Force at the knife's centre of mass; its twist on the grip is not applied. Only edge path cut under that force counts; the knife bounces 2-5 mm in the cut.",
-  "scores": "Dream-1 run: 0.0 (A 0.0, B 0.0; step limit; the arms moved toward the florets and the knife, never held stem and knife together, no cut). Earlier versions of this task: two Dream-1 runs, 0.0 each (A 0.0, B 0.0), and one stopped unfinished when the code changed. Scripted demo, cutting resistance on: 1.0 (A 1.0, B 1.0; all six florets cut, no crown damaged, done at 95 s).",
-  "media": "M-Y5EAZL"
+  "scores": "Dream-1: 0.0 (A 0.0, B 0.0; step limit; arms moved toward florets and knife but never held stem and knife together; no cut). Earlier versions: two Dream-1 runs at 0.0, one stopped after a code change. Scripted demo with cutting resistance: 1.0 (A 1.0, B 1.0; six florets cut, no crown damaged, 95 s).",
+  "media": "M-34VKH8"
 }
