@@ -1,0 +1,11 @@
+{
+  "asset_version": 2,
+  "units": "mm",
+  "kind": "reconstruction from published dimensions; not recovered native maker CAD",
+  "geometry_source": "https://softroboticstoolkit.com/book/fr-make-actuator-body",
+  "files": {
+    "actuator.scad": "49f3d1fba863096afc73d906f43c6b8e5fbb752258d3a2b65aef43d301ce3b97",
+    "README.md": "e5b29a8e96f35e87de8a19ca92b3696b9c3d9b1ead9315b86727a5dba34685b7"
+  },
+  "validation": "Analytic CSG cavity/core clearance checks; no OpenSCAD mesh export or physical print/casting qualification performed."
+}
