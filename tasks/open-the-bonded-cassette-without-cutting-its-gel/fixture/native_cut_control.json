@@ -1,0 +1,23 @@
+{
+  "kind": "native unsuccessful trajectory control, not physical gel inspection",
+  "run": "demo-20261122T001118",
+  "layout": "B",
+  "official_task_score": 0.0,
+  "previous_recorded_clean_t": 46.24999999999951,
+  "first_recorded_zero_t": 46.499999999999496,
+  "why": "blade swept >=1 mm through native gel",
+  "first_recorded_cumulative_blade_path_in_model_gel_mm": 2.649566917479908,
+  "final_cumulative_blade_path_mm": 2.7159876536516716,
+  "all15_sites_released_at_end": true,
+  "final_edge_witnesses": [
+    1,
+    1,
+    1
+  ],
+  "whole_trial_zero_persisted": true,
+  "physics_and_scoring_ast_identical_to_final_source": true,
+  "physics_and_scoring_ast_sha256": "9f4c28bd5ebf075eac75708a35696705d421dc29cadac71690997c1bbf3920b1",
+  "only_demo_ast_changed": true,
+  "source_task_sha256": "4a5c29b21d3affefdf118deda84e2fc1a7b9d684157bbea8f1f8a1300c442ef9",
+  "final_task_sha256": "bef2b3cd782ffe1e86c5c3a2d4350e30a32b773b7d30aa770a1cd32b38523678"
+}

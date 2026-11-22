@@ -1,0 +1,19 @@
+{
+  "title": "Open the bonded cassette without cutting its gel",
+  "category": "Other",
+  "keywords": [
+    "laboratory",
+    "gel",
+    "seam",
+    "prying"
+  ],
+  "instruction": "Open this precast-gel cassette and leave its intact gel supported on one original plate, with the other plate separate.",
+  "context": "Opening a native precast protein-gel cassette is an off-machine preparation step before blot transfer. It requires locally releasing bonded styrene margins beside an adhering hydrated sheet. No chemical assay quality or AI-development impact is claimed.",
+  "setup": "NP0321BOX native 100 x 100 mm cassette, two estimated 2 mm styrene plates and an 80 x 80 x 1 mm hydrated gel at (325,0) mm, on an inverted 100 x 50 mm crystallizing dish. Original EI9010 knife: 130 mm handle, 90 x 45 mm blade, at (185,-220) mm in A, (215,-255) mm in B. A full-size inert 110 x 120 x 160 mm disconnected cell housing stands rearward. Metres and complete geometry in README. Real opening kit approximately $321 for ten trials including original gels/knife, dish, ruler/light and inert housing. Two lots, averaged.",
+  "scoring": "Whole-trial 0 after a new gel cut >=1 mm, an unworked bonded site opened >4 mm or displaced >8 mm, gel >3 mm from both original adhesion anchors, or a part/tool below the counter by >10 mm or outside its stated centre bounds. Otherwise highest released, still 1 s endpoint, hands >=30 mm clear: .25 one entire bonded edge released; .5 two; .75 all three, plates >=10 mm apart and intact gel retained on either original plate; 1 also both plates, knife and dish supported. A released edge must have shown >=2 mm opening over >=10 mm in side video/ruler. Backlit photographs and 10x loupe inspect the gel. Exact geometry and material-rule proxies in README. Lots A/B averaged.",
+  "run_limit": "2400 steps (120 seconds at 20 Hz), per layout",
+  "reset_notes": "1. Use a fresh unopened original NP0321BOX cassette, record lot, expiry, hydration and sample/run state. 2. Remove comb and foot tape without opening a bonded side. 3. Verify intact gel with backlit reference images; set the native cassette notched plate up on the dish. 4. Place the knife at the chosen A/B coordinates. 5. No setter acts during an episode. Replace the consumed cassette after any seam release. A native unused cassette is the mechanical qualification lot; post-run state is a separately recorded validation condition.",
+  "fidelity": "2 mm plates, masses and 10 mm lip estimated. Gel: 6.4 g rigid slab with blade/strain damage rules; wells/foot simplified. Bonds use 6DOF springs (700 N/m normal,1500 lateral,0.2 Nm/rad;12 N/axis,0.15 Nm/axis caps) with estimated 140 N/m normal floor. Release needs 0.20 N blade load,0.6 mm opening and 14 mm proximity. Both faces have 0.12 N estimated adhesion; cutting has 0.6 N drag/reaction. Two fixed lots; gel tint aids viewing.",
+  "scores": "Frozen demo: A1.00/B1.00, mean1.00; both success at1898 steps. Sole fresh Dream-1: A0.00/B0.00, mean0.00; both hit2400-step limits, no refusal or runtime error.",
+  "media": "M-98VPXP"
+}
