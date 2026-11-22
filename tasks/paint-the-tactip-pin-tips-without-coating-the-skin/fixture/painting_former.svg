@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="520" viewBox="0 0 620 520" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <title>TacTip skin painting former, side section, 1:2 scale drawing (dimensions in mm)</title>
+  <rect width="620" height="520" fill="#ffffff"/>
+  <text x="20" y="28" font-size="16">TacTip skin painting former (PLA), side view, dimensions in mm</text>
+  <text x="20" y="48">Scale: 4 px = 1 mm. Origin O = centre of the dome; the everted skin is drawn dashed over it.</text>
+  <!-- origin O at (250, 400); 4 px per mm; +z up -->
+  <g transform="translate(250,400)" stroke="#000" fill="none" stroke-width="1.5">
+    <!-- handle 20 square z35..75 -->
+    <rect x="-40" y="-300" width="80" height="160" fill="#f6c49b"/>
+    <!-- flange r40 z31..35 -->
+    <rect x="-160" y="-140" width="320" height="16" fill="#f6c49b"/>
+    <!-- shank r12 z25..31 -->
+    <rect x="-48" y="-124" width="96" height="24" fill="#f6c49b"/>
+    <!-- body r19 z0..25 -->
+    <rect x="-76" y="-100" width="152" height="100" fill="#f6c49b"/>
+    <!-- dome r19 -->
+    <path d="M -76 0 A 76 76 0 0 0 76 0" fill="#f6c49b"/>
+    <!-- skin: r20 skirt to z25 and dome; pin tips r22 -->
+    <path d="M -80 -100 L -80 0 A 80 80 0 0 0 80 0 L 80 -100" stroke="#333" stroke-dasharray="5,3"/>
+    <path d="M -88 0 A 88 88 0 0 0 88 0" stroke="#888" stroke-dasharray="2,3"/>
+    <circle cx="0" cy="0" r="3" fill="#000"/>
+  </g>
+  <g font-size="12" fill="#000">
+    <text x="300" y="400">O (dome centre)</text>
+    <text x="300" y="115">handle: 20 x 20 square, z 35 to 75</text>
+    <text x="420" y="270">flange: 80 dia, 4 thick, z 31 to 35</text>
+    <text x="310" y="292">shank: 24 dia, z 25 to 31</text>
+    <text x="340" y="350">body: 38 dia, z 0 to 25</text>
+    <text x="340" y="440">dome: 19 radius</text>
+    <text x="340" y="458">skin (dashed): 1 mm Vytaflex 60 over the former, skirt to z 25</text>
+    <text x="340" y="476">pin tips (dotted): 22 radius, 532 pins, 2 mm long (estimate)</text>
+    <text x="20" y="505">Grip: the hand holds the handle between z 39 and 75. Hangs in a 250 mL Pyrex 1000-250 beaker by the flange.</text>
+  </g>
+</svg>
