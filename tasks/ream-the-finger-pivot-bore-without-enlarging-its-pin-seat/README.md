@@ -10,6 +10,10 @@ reamer off-axis bell-mouths an ear beyond the maker's 6.70 mm design clearance (
 more than designed), pushing it hard splits a thin ear, and
 turning it on the 3.3 mm routing-pin seat 12 mm away ruins that press fit.
 
+In real trials the cast finger is reused: each ear holds a replaceable press-in ABS bushing, 3 mm long like the ear,
+whose bore is printed tight in the same way, so a trial consumes two bushings (0.21 g of ABS) and the reset takes about
+5 minutes (see "Real-trial finger" below and `fixture/README.md`).
+
 **Category:** Impact on AI timelines. Robot hands for research labs are still built and finished by hand.
 
 ## Run
@@ -34,7 +38,8 @@ inspect-robots run --embodiment yam_arena --policy <policy> -E task=tasks/ream-t
 
 | Object | Product / source | Size, material, mass |
 |---|---|---|
-| Finger | Yale OpenHand Model T42 pin-flexure finger, original STL `finger_pf_torsion_t42.STL` (openhand-hardware commit b10197d), printed in ivory ABS | 117.6 x 30.6 x 31.75 mm; pivot bore CAD 6.70 mm through two 3 mm ears (z 24.25-27.25 and 4.50-7.50) with a 16.75 mm open spring pocket between; 3.325 mm routing-pin seat 12.4 mm from the pivot. Cast pad (Vytaflex 30, black) and flexure (PMC-780, amber) per the maker's HDM process; cavity fill estimated |
+| Finger | Yale OpenHand Model T42 pin-flexure finger, original STL `finger_pf_torsion_t42.STL` (openhand-hardware commit b10197d), printed in ivory ABS | 117.6 x 30.6 x 31.75 mm; pivot bore CAD 6.70 mm through two 3 mm ears (z 24.25-27.25 and 4.50-7.50) with a 16.75 mm open spring pocket between; 3.325 mm routing-pin seat 12.4 mm from the pivot. Cast pad (Vytaflex 30, black) and flexure (PMC-780, amber) per the maker's HDM process; cavity fill estimated. Real trials: a reusable cast carrier of this STL whose two ears hold replaceable press-in ABS bushings (9.40 mm OD x 3.00 mm, flush) with the same tight bore |
+| Load plate (real trials) | Phidgets KIT4007_0 weighing-scale frame (156 x 156 mm anodised aluminium top and bottom plates) with its 0-25 kg FRC4116_0 load cell, read by a Phidgets DAQ1500_0 bridge interface at 50 samples/s through a HUB0007_0 USB hub | under the vise; everything else raised by its height so its top is the bench level; logs the downward push on the finger (not simulated as a part: the simulator reads the reamer's push directly) |
 | Drill-press vise | LittleMachineShop.com 2.5 in drill press vise (63.5 mm jaws, 38.1 mm jaw depth, 63.5 mm opening, 2.0 kg) | cast-iron body, steel jaws; base 107 x 66 x 20 mm and bed height 32 mm estimated from the listing |
 | Parallel spacer | 6 x 25 x 36 mm ground steel parallel | between the fixed jaw and the finger's back face |
 | Ratcheting T-handle tap wrench | McMaster-Carr 2544A5 (1/4-1/2 in taps, 0.188-0.313 in jaws, 4-1/4 in long) | ratchet housing 18 mm dia x 80 mm with the sliding T-bar (90 x 6.4 mm) through its top: this is what the gripper holds and swings; chuck nut 21 mm dia x 22 mm below it is the ratchet's output and holds the reamer; direction knob set to clockwise; sizes estimated from the listing |
@@ -45,13 +50,36 @@ inspect-robots run --embodiment yam_arena --policy <policy> -E task=tasks/ream-t
 The Yale finger guide names a 0.2510 in reamer, McMaster 2791A33 (6 in long); 8307A513 is the same cutting diameter
 in a 3-1/2 in length, which keeps the wrench low enough to lift over the knuckle.
 
-**Finger preparation (reproducibility).** Fingers are printed flat in ABS (the STL's z, the pivot axis, vertical) on
-an FDM printer at 0.2-0.25 mm layers without supports in the bore, then cast per the maker's HDM steps. The CAD bore
-carries the maker's 0.35 mm free-clearance allowance "assuming the part is printed perfectly"; small vertical holes in
-FDM ABS commonly come out 0.2-0.5 mm under size (estimate), which is why the guide reams them. The scene models a
-6.25 mm print (estimate). Enrolment before a trial: the 6.350 mm go pin does not enter the upper ear at 5 N, a 6.20 mm pin
-does, and the routing-pin seat takes its 3.175 mm pin only as a press fit. A stock of cast fingers is prepared in
-advance (casting takes hours); each trial uses one.
+**Real-trial finger: a reusable carrier with replaceable bore bushings (reproducibility).** A finger is printed flat
+in ABS (the STL's z, the pivot axis, vertical) on an FDM printer at 0.2-0.25 mm layers and cast per the maker's HDM
+steps once, then reused for every trial (a second one is kept as a spare). Its only change from the maker's STL is
+that each ear's 6.70 mm bore is opened to a 9.30 mm socket through the 3 mm ear; the ears keep their faces,
+thickness, 16.75 mm spacing and axis. Each socket takes a press-in ABS bushing (`fixture/bushing.stl`, made by
+`fixture/bushings.py`): a tube 9.40 mm OD x 3.00 mm long, flush with both ear faces, drawn with the maker's 6.70 mm
+bore and printed with the axis vertical in the same ABS at the same settings, so its bore comes out tight in the same
+way as a one-piece ear. The maker's CAD bore carries a 0.35 mm free-clearance allowance "assuming the part is printed
+perfectly"; small vertical holes in FDM ABS commonly come out 0.2-0.5 mm under size (estimate), which is why the guide
+reams them. The scene models a 6.25 mm print (estimate). The reamer cuts the same 3 mm ring of the same printed ABS,
+held all round by the press fit as the solid ear holds it, so the cutting torque and push should match a one-piece
+ear (reasoned from the same material, print orientation, length and cut; not measured). Bushings are printed in
+batches ahead of time (about 40 a build plate, 0.11 g each); a trial uses two.
+
+The whole reset, bushing swap and enrolment included, takes about 5 minutes per trial; the steps, tools and drawings
+are in `fixture/README.md`. The spring pocket between the ears is open on one side, so the lower bushing goes in and
+the used upper one comes out sideways through it. Enrolment, so every trial starts with the same reaming task in both
+ears:
+1. each bushing, pushed on its top face at 50 N (5.1 kg on a kitchen scale) in the reaming direction with nothing
+   under it, does not move, and sits flush with both faces of its ear (no step felt with a fingernail): it holds at
+   least twice the 25 N limit and, by the same friction on its 4.7 mm radius, about 0.2 N m of torque, above the
+   0.15 N m cutting torque estimate;
+2. the 6.350 mm go pin does not enter either bushing at 5 N (both ears start tight);
+3. one 6.20 mm pin passes through both bushings in a single push at 5 N or less (both bores are at least 6.20 mm and
+   their axes in line within about 0.15 mm);
+4. under a 10x loupe, no cut, burr or chamfer on either ear face, the scaffold's top face or the routing-pin seat's
+   mouth, and no cut or dent in the pad or flexure. (The carrier's routing-pin seat is checked once, when it is made:
+   the finger's 3.175 mm dowel pin goes in only as a press fit.)
+A bushing that fails 1-3 is discarded and replaced; a carrier that fails 4, or whose socket lets two fresh bushings
+in a row fail 1, is replaced by the spare. A paint-pen witness line is drawn across each bushing and its ear face.
 
 Lot A: vise with its pivot bore at (0.290, -0.085) m (x away from the arm bases, y to the robot's left), knuckle
 overhanging toward the right arm, finger body toward the robot's left; tool stand at (0.200, -0.200) m. Lot B: the
@@ -81,10 +109,17 @@ leaves it millimetres off its start pose.)
 - the reamer is still inside the knuckle when the trial ends (the bore cannot be gauged).
 
 In a real trial these zero rules are read as: the 6.70 mm no-go pin entering either ear 2 mm at 2 N (bell-mouth);
-a cut, burr or countersink on an ear face, the knuckle wall, the scaffold face or the routing-pin seat's mouth under
-a 10x loupe; a cut or dent in the urethane;
-more than 25 N averaged over 0.25 s on a platform scale under the vise; a lean of the wrench over 5 degrees against a
-machinist's square in a side video; a backward turn of a paint stripe on the chuck nut's side in the side video; the vise's position against a pencil outline; the reamer left in the bore.
+a cut or countersink on an ear face outside the reamed bore's edge, on the knuckle wall, the scaffold face or the
+routing-pin seat's mouth under a 10x loupe (the thin burr that normal reaming leaves at a bore's exit edge does not
+count); a cut or dent in the urethane; more than 25 N on the load-plate log under the vise as the mean of any 13
+consecutive samples (0.26 s at 50 samples a second; the log minus the tare taken with the vise and finger on the
+plate is the push on the finger, which in a trial comes from the reamer), or a bushing found pushed out of flush
+after the trial (it needed more than its 50 N hold, which would split a one-piece ear); a lean of the wrench over
+5 degrees against a machinist's square in either of two side videos taken 90 degrees apart; a backward turn of the
+chuck nut read from four paint stripes 90 degrees apart on its side in the side videos; the vise's position against
+a pencil outline; the reamer left in the bore. A bushing whose witness line is offset while it is still flush turned
+in its socket instead of being cut: that trial is void and is run again with a new pair (the simulated ear cannot
+turn).
 
 **Otherwise**, read after the trial with class ZZ gauge pins pushed by hand: go 6.350 mm (0.2500 in) at up to 5 N,
 no-go 6.70 mm (0.2638 in) at 2 N:
@@ -97,8 +132,9 @@ no-go 6.70 mm (0.2638 in) at 2 N:
 | 0.25 | the go pin enters the upper ear at least 1.5 mm | gauge pin marked at 1.5 mm |
 | 0 | anything less, or any rule above | |
 
-Trials are run on lots A and B and averaged. Progress is counted from the as-printed bore, which the go pin does not
-enter (enrolment check before each trial), so doing nothing scores 0.
+Trials are run on lots A and B and averaged. Progress is counted from the as-printed bushing bores, which the go pin
+does not enter (enrolment checks before each trial), so doing nothing scores 0. In a real trial "an ear" is the ear
+with its bushing: the gauge pins are read through the bushings.
 
 ### How the simulator measures it (task.py)
 
@@ -148,6 +184,10 @@ PhysX cannot cut. The ears' CAD bores are colliders; the printed undersize and i
   that stiffness: 0.6 mm at the demo's 3 N, 5 mm at the 25 N limit. Only the cut line counts for the gauge reading.
 - The 6.70 mm no-go pin is the maker's design bore: the scorer zeroes a bore reamed larger than designed (the
   "bell-mouth"), not one that merely passes the go pin.
+- Real trials ream a press-in ABS bushing in each ear (`fixture/README.md`). The simulator draws each ear and its
+  bushing as one piece: same 3 mm length, faces and axis, same as-printed undersize (6.25 mm) and cutting load, so the
+  cut, the guidance and the gauge readings are the same. A reamer more than 4.5 mm from the axis is cutting the
+  bushing's outer rim (it is 9.40 mm across) or the carrier's socket wall, a visible gouge in both cases.
 
 ## Bypasses (each checked in `near_misses.py`, 51 checks)
 
@@ -195,22 +235,58 @@ One hand is enough by design (the vise holds the finger, as at a real bench); th
   its way through two separated ears under a force limit, beside a seat it must not touch, and nothing is inserted
   that stays.
 
-## Reset (by hand, about 3 minutes)
+## Reset (by hand, about 5 minutes)
 
-1. Fit a fresh as-printed finger (go pin does not enter the upper ear at 5 N, routing-pin seat accepts its pin only
-   as a press fit) in the vise: back face on the parallel against the fixed jaw, knuckle 19.5 mm past the jaw end.
-2. Tighten the vise; set it with the bore at (0.290, -0.085) m: lot A knuckle toward the right arm, lot B the vise
-   turned 180 degrees about the bore (knuckle toward the left).
-3. Hang the wrench by its chuck nut in the stand's slot, T-bar at 60 degrees to the slot, ratchet knob on
+1. Unclamp the finger and stand it the right way up on a kitchen scale with its knuckle on the 4.5 mm seating block,
+   the block's hole under the lower ear. Push the reamed upper bushing down into the spring pocket with an 8 mm flat
+   punch and take it out of the pocket's open side; push the reamed lower bushing down into the block's hole with the
+   punch reaching through the empty upper socket.
+2. Fit two new bushings from the printed stock, chamfered end first: the lower one put into the pocket sideways onto
+   the lower socket and pressed until it stops on the block's solid end (flush), then held at 50 N with the block's
+   hole under it; the upper one pressed flush through an M6 washer, then held at 50 N on its own face. Draw the
+   witness lines and run the four enrolment checks above (a failed bushing is replaced; a marked carrier is replaced
+   by the spare).
+3. Clamp the finger in the vise: back face on the parallel against the fixed jaw, knuckle 19.5 mm past the jaw end.
+   Set the vise, standing on the load plate, with the bore at (0.290, -0.085) m: lot A knuckle toward the right arm,
+   lot B the vise and plate turned 180 degrees about the bore (knuckle toward the left; plate centres in
+   `fixture/README.md`). Tare the plate and start its log.
+4. Hang the wrench by its chuck nut in the stand's slot, T-bar at 60 degrees to the slot, ratchet knob on
    clockwise; set the stand at the lot's position (A: 0.200, -0.200 m; B: 0.335, -0.235 m), slot opening toward
    the robot.
-4. Arms at their ready pose.
+5. Arms at their ready pose.
+
+Consumed per trial: two reamed bushings (0.21 g of ABS together, under 0.01 USD). The finger, its cast pad and flexure
+are reused.
+
+## Real-trial equipment and cost
+
+Besides the robot, three cameras (overhead and two sides 90 degrees apart; phones will do), a laptop and an FDM
+printer. A price without "estimate" is the list price on the named seller's page in November 2026; the rest are
+estimates.
+
+| Item | Source | Price (USD) |
+|---|---|---|
+| 2.5 in drill-press vise | LittleMachineShop.com SKU 4140 | 74.95 |
+| 6 x 25 mm ground parallel | any toolmaker's parallel or ground flat stock | about 15 (estimate) |
+| Ratcheting T-handle tap wrench | McMaster-Carr 2544A5 | about 50 (estimate; comparable 1/4-1/2 in ratcheting T-handles list at 47-69) |
+| 0.2510 in carbide reamer, 3-1/2 in long | McMaster-Carr 8307A513 | about 90 (estimate; 6-flute carbide reamers near this size list at 64-160) |
+| Class ZZ gauge pins: 6.350 mm (0.2500 in) go, 6.70 mm no-go, 6.20 mm enrolment | e.g. Vermont Gage via Zoro, 2.99 each, sold in packs of 8 | 72 (three packs) |
+| Load plate | Phidgets KIT4007_0 (40) + DAQ1500_0 (35) + HUB0007_0 (26) | 101 |
+| Shims and spacers raising arm bases, stand and bench items by the plate's height | plywood or printed | about 10 (estimate) |
+| Kitchen scale, 10 kg | any | about 15 (estimate) |
+| Tool stand | mild steel, drawing in `fixture/README.md` | about 15 (estimate) |
+| Reset tools | 8 mm flat-ended pin punch, M6 flat washer, printed 4.5 mm seating block | about 10 (estimate) |
+| Inspection | 10x loupe, machinist's square, 150 mm steel rule, paint pens | about 30 (estimate) |
+| Two carrier fingers, made once | ABS print plus the maker's casting step (Smooth-On VytaFlex 30 and PMC-780 trial units, 0.9 kg each) and the finger's own 3.175 mm dowel pin | about 80 (estimate) |
+| Bushings and printed bench items | ABS filament, 1 kg | about 20 (estimate) |
+| **Total** | | **about 580**, then under 0.01 per trial |
 
 ## Fidelity
 
 See `fidelity` in task.json. Licences: the only third-party asset shipped in this folder is the finger STL, from the
 Yale OpenHand project (openhand-hardware, commit b10197d), Creative Commons Attribution-NonCommercial 3.0, used
-unmodified with attribution in a non-commercial research benchmark. The robot, table, lights and cameras come from
+unmodified with attribution in a non-commercial research benchmark (the real-trial carrier opens its two ear bores
+to sockets, as `fixture/README.md` describes). The robot, table, lights and cameras come from
 the program's yam-isaac-lab-arena embodiment and are not redistributed here. Everything else is built from boxes and cylinders in
 `task.py`.
 
