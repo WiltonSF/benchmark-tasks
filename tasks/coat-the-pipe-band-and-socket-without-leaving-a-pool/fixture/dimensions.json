@@ -1,0 +1,20 @@
+{
+  "units": "mm; x away from the arms, y to the robot's left, z above the bench",
+  "pipe": {"product": "1-1/2 in Schedule 40 PVC pipe (Charlotte Pipe, ASTM D1785/D2665)", "OD": 48.26, "min_wall": 3.68,
+           "source": "maker's catalogue (1.900 in OD, 0.145 in min wall)", "offcut_length": 100, "top_above_bench": 115,
+           "axis_xy": [290, -220], "depth_line_below_top": 18.26},
+  "coupling": {"product": "Charlotte Pipe PVC DWV coupling, part no. 100, 1-1/2 in, hub x hub", "length": 39.69, "stop": 3.175,
+               "hub_depth": 18.26, "source_length_stop": "maker's catalogue (1-9/16 in, 1/8 in)",
+               "socket_diameter_estimate": 48.3, "outside_diameter_estimate": 56.0, "mouth_above_bench": 105,
+               "stop_face_above_bench": 86.74, "axis_xy": [200, -100]},
+  "vise": {"type": "small cast-iron bench vise (estimate)", "base": [120, 100, 15], "jaw": [70, 18],
+           "jaw_top_pipe": 68, "jaw_top_coupling": 58},
+  "can": {"product": "Oatey Rain-R-Shine medium blue PVC cement, 8 fl oz (237 mL), item 30891", "diameter_estimate": 70,
+          "shoulder_height_estimate": 87, "neck_diameter_estimate": 36, "neck_top_estimate": 95, "neck_opening_estimate": 30,
+          "cement_left_mL": 140, "cement_surface_above_can_bottom": 40, "mass_kg_estimate": 0.25,
+          "lot_A_xy": [180, -270], "lot_B_xy": [245, -345]},
+  "dauber": {"type": "the can's own lid dauber (estimates)", "lid_diameter": 40, "lid_height": 16, "wire_diameter": 2.5,
+             "wire_length": 45, "swab_diameter": 19, "swab_length": 25, "mass_g": 12},
+  "declared_rule": {"press_min": 1.0, "press_max": 5.0, "load_area_mm2_per_dip": 3200, "dip_depth": 8,
+                    "windows": "6 rows x 48 columns on the band and on the socket wall, 3.04 x 3.16 mm"}
+}
