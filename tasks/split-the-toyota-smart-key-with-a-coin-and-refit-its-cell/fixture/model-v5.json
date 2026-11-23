@@ -1,0 +1,1802 @@
+{
+  "asset_version": 5,
+  "units": "metres, kilograms, radians, newtons",
+  "status": "estimated geometry and forces; no hardware calibration",
+  "shell": "Stallion R-SHELL-79 / Toyota HYQ14FBA four button",
+  "objects": [
+    {
+      "name": "desk_mat",
+      "pos": [
+        0.32,
+        0,
+        0.748
+      ],
+      "mass": null,
+      "shapes": [
+        {
+          "kind": "box",
+          "size": [
+            0.44,
+            0.5,
+            0.001
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": [
+            0.31,
+            0.38,
+            0.4
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        }
+      ],
+      "joints": []
+    },
+    {
+      "name": "fob_pickup_rest",
+      "pos": [
+        0.32,
+        0.025,
+        0.7505000000000001
+      ],
+      "mass": null,
+      "shapes": [
+        {
+          "kind": "box",
+          "size": [
+            0.01,
+            0.01,
+            0.0215
+          ],
+          "at": [
+            -0.02,
+            0.0,
+            0.01075
+          ],
+          "color": [
+            0.7,
+            0.67,
+            0.56
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.01,
+            0.01,
+            0.0215
+          ],
+          "at": [
+            0.02,
+            0.0,
+            0.01075
+          ],
+          "color": [
+            0.7,
+            0.67,
+            0.56
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        }
+      ],
+      "joints": []
+    },
+    {
+      "name": "coin_rest",
+      "pos": [
+        0.235,
+        -0.165,
+        0.7485
+      ],
+      "mass": 0.15,
+      "shapes": [
+        {
+          "kind": "box",
+          "size": [
+            0.064,
+            0.064,
+            0.002
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.001
+          ],
+          "color": [
+            0.7,
+            0.62,
+            0.41
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.064,
+            0.002,
+            0.006
+          ],
+          "at": [
+            0.0,
+            -0.031,
+            0.005
+          ],
+          "color": [
+            0.7,
+            0.62,
+            0.41
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.064,
+            0.002,
+            0.006
+          ],
+          "at": [
+            0.0,
+            0.031,
+            0.005
+          ],
+          "color": [
+            0.7,
+            0.62,
+            0.41
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.002,
+            0.06,
+            0.006
+          ],
+          "at": [
+            -0.031,
+            0.0,
+            0.005
+          ],
+          "color": [
+            0.7,
+            0.62,
+            0.41
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.002,
+            0.06,
+            0.006
+          ],
+          "at": [
+            0.031,
+            0.0,
+            0.005
+          ],
+          "color": [
+            0.7,
+            0.62,
+            0.41
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.024,
+            0.003,
+            0.004
+          ],
+          "at": [
+            0.0,
+            -0.003,
+            0.027
+          ],
+          "color": [
+            0.7,
+            0.62,
+            0.41
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.024,
+            0.003,
+            0.004
+          ],
+          "at": [
+            0.0,
+            0.003,
+            0.027
+          ],
+          "color": [
+            0.7,
+            0.62,
+            0.41
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.024,
+            0.012,
+            0.023
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.0135
+          ],
+          "color": [
+            0.7,
+            0.62,
+            0.41
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        }
+      ],
+      "joints": []
+    },
+    {
+      "name": "new_cell_tray",
+      "pos": [
+        0.35,
+        -0.18,
+        0.7475
+      ],
+      "mass": 0.15,
+      "shapes": [
+        {
+          "kind": "box",
+          "size": [
+            0.064,
+            0.064,
+            0.002
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.001
+          ],
+          "color": [
+            0.25,
+            0.5,
+            0.28
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.064,
+            0.002,
+            0.006
+          ],
+          "at": [
+            0.0,
+            -0.031,
+            0.005
+          ],
+          "color": [
+            0.25,
+            0.5,
+            0.28
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.064,
+            0.002,
+            0.006
+          ],
+          "at": [
+            0.0,
+            0.031,
+            0.005
+          ],
+          "color": [
+            0.25,
+            0.5,
+            0.28
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.002,
+            0.06,
+            0.006
+          ],
+          "at": [
+            -0.031,
+            0.0,
+            0.005
+          ],
+          "color": [
+            0.25,
+            0.5,
+            0.28
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.002,
+            0.06,
+            0.006
+          ],
+          "at": [
+            0.031,
+            0.0,
+            0.005
+          ],
+          "color": [
+            0.25,
+            0.5,
+            0.28
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.008,
+            0.008,
+            0.032
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.018
+          ],
+          "color": [
+            0.25,
+            0.5,
+            0.28
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        }
+      ],
+      "joints": []
+    },
+    {
+      "name": "old_cell_tray",
+      "pos": [
+        0.32,
+        0.045,
+        0.7485
+      ],
+      "mass": null,
+      "shapes": [
+        {
+          "kind": "box",
+          "size": [
+            0.11,
+            0.1,
+            0.002
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.001
+          ],
+          "color": [
+            0.55,
+            0.25,
+            0.2
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.11,
+            0.003,
+            0.006
+          ],
+          "at": [
+            0.0,
+            -0.0485,
+            0.005
+          ],
+          "color": [
+            0.55,
+            0.25,
+            0.2
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.11,
+            0.003,
+            0.006
+          ],
+          "at": [
+            0.0,
+            0.0485,
+            0.005
+          ],
+          "color": [
+            0.55,
+            0.25,
+            0.2
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.003,
+            0.094,
+            0.006
+          ],
+          "at": [
+            -0.0535,
+            0.0,
+            0.005
+          ],
+          "color": [
+            0.55,
+            0.25,
+            0.2
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.003,
+            0.094,
+            0.006
+          ],
+          "at": [
+            0.0535,
+            0.0,
+            0.005
+          ],
+          "color": [
+            0.55,
+            0.25,
+            0.2
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        }
+      ],
+      "joints": []
+    },
+    {
+      "name": "toyota_smart_key",
+      "pos": [
+        0.32,
+        0.025,
+        0.78
+      ],
+      "mass": 0.018,
+      "shapes": [
+        {
+          "kind": "box",
+          "size": [
+            0.07,
+            0.04,
+            0.002
+          ],
+          "at": [
+            0.0,
+            0.0,
+            -0.0065
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.023,
+            0.04,
+            0.0058
+          ],
+          "at": [
+            -0.0235,
+            0.0,
+            -0.003
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.046,
+            0.006,
+            0.0058
+          ],
+          "at": [
+            0.012,
+            0.017,
+            -0.003
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.021,
+            0.006,
+            0.0058
+          ],
+          "at": [
+            -0.0005,
+            -0.017,
+            -0.003
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.006,
+            0.028,
+            0.0058
+          ],
+          "at": [
+            0.032,
+            0.0,
+            -0.003
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.009,
+            0.028,
+            0.0058
+          ],
+          "at": [
+            -0.0065,
+            0.0,
+            -0.003
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.046,
+            0.026,
+            0.0016
+          ],
+          "at": [
+            0.012,
+            0.0,
+            -0.0008
+          ],
+          "color": [
+            0.14,
+            0.4,
+            0.24
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.003,
+            0.003,
+            0.0039
+          ],
+          "at": [
+            -0.006,
+            -0.008,
+            -0.00355
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.003,
+            0.003,
+            0.0039
+          ],
+          "at": [
+            -0.006,
+            0.008,
+            -0.00355
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.003,
+            0.003,
+            0.0039
+          ],
+          "at": [
+            0.03,
+            -0.008,
+            -0.00355
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.003,
+            0.003,
+            0.0039
+          ],
+          "at": [
+            0.03,
+            0.008,
+            -0.00355
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.0014,
+            0.0044,
+            0.002
+          ],
+          "at": [
+            0.0015601612826224593,
+            -0.004324322785725513,
+            0.001
+          ],
+          "color": [
+            0.62,
+            0.65,
+            0.68
+          ],
+          "axis": "z",
+          "quat": [
+            0.0,
+            0.0,
+            -0.9807852804032305,
+            0.195090322016128
+          ],
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.0014,
+            0.0044,
+            0.002
+          ],
+          "at": [
+            0.004009693372592013,
+            -0.007990306627407986,
+            0.001
+          ],
+          "color": [
+            0.62,
+            0.65,
+            0.68
+          ],
+          "axis": "z",
+          "quat": [
+            0.0,
+            0.0,
+            -0.9238795325112868,
+            0.38268343236508967
+          ],
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.0014,
+            0.0044,
+            0.002
+          ],
+          "at": [
+            0.00767567721427448,
+            -0.010439838717377537,
+            0.001
+          ],
+          "color": [
+            0.62,
+            0.65,
+            0.68
+          ],
+          "axis": "z",
+          "quat": [
+            0.0,
+            0.0,
+            -0.8314696123025455,
+            0.5555702330196021
+          ],
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.0014,
+            0.0044,
+            0.002
+          ],
+          "at": [
+            0.011999999999999999,
+            -0.0113,
+            0.001
+          ],
+          "color": [
+            0.62,
+            0.65,
+            0.68
+          ],
+          "axis": "z",
+          "quat": [
+            0.0,
+            0.0,
+            -0.7071067811865476,
+            0.7071067811865475
+          ],
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.0014,
+            0.0044,
+            0.002
+          ],
+          "at": [
+            0.016324322785725518,
+            -0.010439838717377537,
+            0.001
+          ],
+          "color": [
+            0.62,
+            0.65,
+            0.68
+          ],
+          "axis": "z",
+          "quat": [
+            0.0,
+            0.0,
+            -0.5555702330196021,
+            0.8314696123025453
+          ],
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.0014,
+            0.0044,
+            0.002
+          ],
+          "at": [
+            0.019990306627407986,
+            -0.007990306627407988,
+            0.001
+          ],
+          "color": [
+            0.62,
+            0.65,
+            0.68
+          ],
+          "axis": "z",
+          "quat": [
+            0.0,
+            0.0,
+            -0.3826834323650899,
+            0.9238795325112867
+          ],
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.0014,
+            0.0044,
+            0.002
+          ],
+          "at": [
+            0.022439838717377536,
+            -0.004324322785725521,
+            0.001
+          ],
+          "color": [
+            0.62,
+            0.65,
+            0.68
+          ],
+          "axis": "z",
+          "quat": [
+            0.0,
+            0.0,
+            -0.19509032201612858,
+            0.9807852804032304
+          ],
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.02,
+            0.005,
+            0.002
+          ],
+          "at": [
+            0.023,
+            -0.0175,
+            -0.0024
+          ],
+          "color": [
+            0.62,
+            0.65,
+            0.68
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        },
+        {
+          "kind": "hull",
+          "size": [
+            0.002999999999999999,
+            0.006,
+            0.0058
+          ],
+          "at": [
+            0.0115,
+            -0.017,
+            -0.003
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": [
+            [
+              0.01,
+              -0.02,
+              -0.0059
+            ],
+            [
+              0.013,
+              -0.015,
+              -0.0059
+            ],
+            [
+              0.013,
+              -0.014,
+              -0.0059
+            ],
+            [
+              0.01,
+              -0.014,
+              -0.0059
+            ],
+            [
+              0.01,
+              -0.02,
+              -0.0001
+            ],
+            [
+              0.013,
+              -0.015,
+              -0.0001
+            ],
+            [
+              0.013,
+              -0.014,
+              -0.0001
+            ],
+            [
+              0.01,
+              -0.014,
+              -0.0001
+            ]
+          ],
+          "faces": [
+            [
+              3,
+              2,
+              1,
+              0
+            ],
+            [
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              0,
+              1,
+              5,
+              4
+            ],
+            [
+              1,
+              2,
+              6,
+              5
+            ],
+            [
+              2,
+              3,
+              7,
+              6
+            ],
+            [
+              3,
+              0,
+              4,
+              7
+            ]
+          ],
+          "friction": null
+        },
+        {
+          "kind": "hull",
+          "size": [
+            0.0020000000000000018,
+            0.004333333,
+            0.0058
+          ],
+          "at": [
+            0.034,
+            -0.0161666665,
+            -0.003
+          ],
+          "color": [
+            0.12,
+            0.13,
+            0.15
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": [
+            [
+              0.035,
+              -0.018333333,
+              -0.0059
+            ],
+            [
+              0.035,
+              -0.014,
+              -0.0059
+            ],
+            [
+              0.033,
+              -0.014,
+              -0.0059
+            ],
+            [
+              0.033,
+              -0.015,
+              -0.0059
+            ],
+            [
+              0.035,
+              -0.018333333,
+              -0.0001
+            ],
+            [
+              0.035,
+              -0.014,
+              -0.0001
+            ],
+            [
+              0.033,
+              -0.014,
+              -0.0001
+            ],
+            [
+              0.033,
+              -0.015,
+              -0.0001
+            ]
+          ],
+          "faces": [
+            [
+              3,
+              2,
+              1,
+              0
+            ],
+            [
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              0,
+              1,
+              5,
+              4
+            ],
+            [
+              1,
+              2,
+              6,
+              5
+            ],
+            [
+              2,
+              3,
+              7,
+              6
+            ],
+            [
+              3,
+              0,
+              4,
+              7
+            ]
+          ],
+          "friction": null
+        }
+      ],
+      "joints": [
+        {
+          "name": "cover",
+          "shapes": [
+            {
+              "kind": "box",
+              "size": [
+                0.066,
+                0.034,
+                0.002
+              ],
+              "at": [
+                0.0,
+                0.0,
+                0.0065
+              ],
+              "color": [
+                0.12,
+                0.13,
+                0.15
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.066,
+                0.005,
+                0.0058
+              ],
+              "at": [
+                0.0,
+                0.0145,
+                0.003
+              ],
+              "color": [
+                0.12,
+                0.13,
+                0.15
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.0448,
+                0.005,
+                0.0058
+              ],
+              "at": [
+                -0.0106,
+                -0.0145,
+                0.003
+              ],
+              "color": [
+                0.12,
+                0.13,
+                0.15
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.005,
+                0.024,
+                0.0058
+              ],
+              "at": [
+                -0.0305,
+                0.0,
+                0.003
+              ],
+              "color": [
+                0.12,
+                0.13,
+                0.15
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.005,
+                0.024,
+                0.0058
+              ],
+              "at": [
+                0.0305,
+                0.0,
+                0.003
+              ],
+              "color": [
+                0.12,
+                0.13,
+                0.15
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.02,
+                0.005,
+                0.002
+              ],
+              "at": [
+                0.023,
+                -0.0175,
+                0.0024
+              ],
+              "color": [
+                0.62,
+                0.65,
+                0.68
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.01,
+                0.016,
+                0.0006
+              ],
+              "at": [
+                -0.022,
+                0.0,
+                0.0078
+              ],
+              "color": [
+                0.32,
+                0.33,
+                0.35
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.01,
+                0.016,
+                0.0006
+              ],
+              "at": [
+                -0.007,
+                0.0,
+                0.0078
+              ],
+              "color": [
+                0.32,
+                0.33,
+                0.35
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.01,
+                0.016,
+                0.0006
+              ],
+              "at": [
+                0.008,
+                0.0,
+                0.0078
+              ],
+              "color": [
+                0.32,
+                0.33,
+                0.35
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "box",
+              "size": [
+                0.01,
+                0.016,
+                0.0006
+              ],
+              "at": [
+                0.023,
+                0.0,
+                0.0078
+              ],
+              "color": [
+                0.32,
+                0.33,
+                0.35
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": null,
+              "faces": null,
+              "friction": null
+            },
+            {
+              "kind": "hull",
+              "size": [
+                0.0011999999999999997,
+                0.005000000000000001,
+                0.0058
+              ],
+              "at": [
+                0.0124,
+                -0.0145,
+                0.003
+              ],
+              "color": [
+                0.12,
+                0.13,
+                0.15
+              ],
+              "axis": "z",
+              "quat": null,
+              "collide": true,
+              "points": [
+                [
+                  0.0118,
+                  -0.017,
+                  0.0001
+                ],
+                [
+                  0.013,
+                  -0.015,
+                  0.0001
+                ],
+                [
+                  0.013,
+                  -0.012,
+                  0.0001
+                ],
+                [
+                  0.0118,
+                  -0.012,
+                  0.0001
+                ],
+                [
+                  0.0118,
+                  -0.017,
+                  0.0059
+                ],
+                [
+                  0.013,
+                  -0.015,
+                  0.0059
+                ],
+                [
+                  0.013,
+                  -0.012,
+                  0.0059
+                ],
+                [
+                  0.0118,
+                  -0.012,
+                  0.0059
+                ]
+              ],
+              "faces": [
+                [
+                  3,
+                  2,
+                  1,
+                  0
+                ],
+                [
+                  4,
+                  5,
+                  6,
+                  7
+                ],
+                [
+                  0,
+                  1,
+                  5,
+                  4
+                ],
+                [
+                  1,
+                  2,
+                  6,
+                  5
+                ],
+                [
+                  2,
+                  3,
+                  7,
+                  6
+                ],
+                [
+                  3,
+                  0,
+                  4,
+                  7
+                ]
+              ],
+              "friction": null
+            }
+          ],
+          "pivot": [
+            -0.033,
+            0.0,
+            0.0
+          ],
+          "axis": [
+            0,
+            -1,
+            0
+          ],
+          "lower": 0.0,
+          "upper": 1.65,
+          "mass": 0.012,
+          "spring": 8.0,
+          "damping": 0.008,
+          "max_effort": 2.0,
+          "target": -0.06,
+          "friction": 0.0,
+          "dynamic_friction": 0.0,
+          "parent": "base"
+        }
+      ]
+    },
+    {
+      "name": "quarter",
+      "pos": [
+        0.235,
+        -0.165,
+        0.78563
+      ],
+      "mass": 0.00567,
+      "shapes": [
+        {
+          "kind": "prism",
+          "size": [
+            0.01213,
+            0.00175,
+            32.0
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": [
+            0.76,
+            0.78,
+            0.8
+          ],
+          "axis": "x",
+          "quat": [
+            0.0,
+            0.0,
+            0.7071067811865475,
+            0.7071067811865476
+          ],
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        }
+      ],
+      "joints": []
+    },
+    {
+      "name": "old_cell",
+      "pos": [
+        0.332,
+        0.025,
+        0.7816000000000001
+      ],
+      "mass": 0.003,
+      "shapes": [
+        {
+          "kind": "cylinder",
+          "size": [
+            0.01,
+            0.0032,
+            0.0
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": [
+            0.76,
+            0.78,
+            0.8
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        }
+      ],
+      "joints": []
+    },
+    {
+      "name": "new_cell",
+      "pos": [
+        0.35,
+        -0.18,
+        0.7831
+      ],
+      "mass": 0.003,
+      "shapes": [
+        {
+          "kind": "cylinder",
+          "size": [
+            0.01,
+            0.0032,
+            0.0
+          ],
+          "at": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": [
+            0.76,
+            0.78,
+            0.8
+          ],
+          "axis": "z",
+          "quat": null,
+          "collide": true,
+          "points": null,
+          "faces": null,
+          "friction": null
+        }
+      ],
+      "joints": []
+    }
+  ],
+  "opening": {
+    "coin_moment_Nm": 0.12,
+    "hinge_preload_Nm": 0.48,
+    "spring_Nm_rad": 8.0,
+    "minimum_turn_rad": 0.03490658503988659,
+    "work_J": 0.001984
+  },
+  "closing": {
+    "travel_rad": 0.02,
+    "estimated_tip_deflection_m": 0.0012,
+    "stiffness_Nm_rad": 36.0,
+    "damping_Nm_s_rad": 0.05,
+    "elastic_peak_Nm": 0.72,
+    "estimated_stored_energy_J": 0.0072,
+    "compressive_contact_gate_N": 12.0,
+    "closing_contact_moment_gate_Nm": 0.72
+  },
+  "source_sha256": "ff61ca78f24e1872dc2efe783f976cd58d0dfb22cf1a6c2f2282214a4b9d07fc"
+}
