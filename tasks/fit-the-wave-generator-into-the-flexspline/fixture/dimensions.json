@@ -1,0 +1,25 @@
+{
+  "units": "mm (positions in the world frame: m, x away from the arm bases, y to the robot's left, z up)",
+  "gear": {
+    "product": "Harmonic Drive CSF-14-50-2A-R component set (ratio 50), mass 0.09 kg (catalogue)",
+    "circular_spline": {"pilot_od": 50.0, "tooth_tip_d": 35.6, "width": 8.0, "bolt_circle": 44.0, "bolts": "8 x M3",
+                        "note": "pilot, bolt circle and bolts from the catalogue outline table; tooth tip and width estimated from the drawing"},
+    "flexspline": {"bore_before_insertion": 31.0, "rim_od": 35.4, "cup_length": 28.5, "open_end_lead_in": 1.0,
+                   "note": "cup length from the catalogue (B); bore, rim and lead-in estimated"},
+    "wave_generator": {"plug_od": 30.4, "plug_height": 8.0, "plug_chamfer": 1.2, "oldham_disc_od": 23.0,
+                       "oldham_disc_height": 3.0, "hub_od": 16.0, "hub_height": 6.6, "hub_bore": 6.0,
+                       "overall_height": 17.6, "insertion_depth_g": 0.4, "mass_kg": 0.030,
+                       "note": "overall height (H), hub bore (øV) and insertion depth (G) from the catalogue; diameters and mass estimated"}
+  },
+  "housing": {"od": 72.0, "top_above_bench": 60.0, "cradle_plate": [120, 120, 10], "material": "PETG housing, PLA cradle",
+              "drawing": "joint_housing.scad"},
+  "layout": {
+    "housing_axis": [0.290, -0.090],
+    "tray_lot_A": [0.195, -0.225], "tray_lot_B": [0.385, -0.215],
+    "tray": "aluminium parts tray 140 x 100 x 15 mm, 4 mm floor; the wave generator stands plug down at its centre",
+    "bench_items": "NEMA 17 stepper (42 x 42 x 48 mm) on a printed 60 x 60 x 8 mm adapter plate at (0.540, 0.020); printed joint cover 72 x 20 mm at (0.540, -0.090)"
+  },
+  "mesh_rule": {"mouth_mm": 1.5, "home_mm": 8.4, "feed_mm_per_turn": 4.0, "press_min_N": 1.5,
+                "dedoidal_straight_push_N": 20.0, "dedoidal_hold_s": 0.25, "tilt_jam_deg": 3.0, "tilted_press_N": 8.0,
+                "bearing_overload_N": 30.0, "mesh_torque_Nm": "not modelled"}
+}
