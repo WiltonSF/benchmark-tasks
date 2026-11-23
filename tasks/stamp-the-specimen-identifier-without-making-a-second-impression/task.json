@@ -1,0 +1,19 @@
+{
+  "title": "Stamp 123 on the specimen: orient and register each punch for one clean strike",
+  "category": "Other",
+  "keywords": [
+    "bimanual",
+    "metal marking",
+    "impact",
+    "specimen identification"
+  ],
+  "instruction": "Stamp 123 on the brass specimen without making a second impression, then put the tools back.",
+  "context": "Permanent specimen identifiers preserve traceability through materials testing. This laboratory preparation task tests registration and orientation of three separate irreversible character impressions, including counterholding a punch during a single hammer strike. Unlike starting a nail or pressing an ink seal, displaced, rotated or repeated impressions cannot be corrected by further work.",
+  "setup": "TEKTON HMA51108 8oz ball-peen hammer (345g,281.94mm long,22.86mm flat face,25.4mm eye) in a cradle; Young Bros08091 stamps1/2/3 (12.7mm square x73.025mm,9.525mm characters;90g each estimated) in a3-socket holder (16mm sockets,x340mm); brass50x50x3mm on steel backing in a bolted Taytools465968 vise. Two coupon x positions18mm apart, tool starts unchanged. See fixture/dimensions.md and SVGs;approximately$194 kit.",
+  "scoring": "0 permanently for wrong/extra/repeated marks, die slip>0.5mm during impact, stock escape, bare hammer/hand contact or damage. After release, hands50mm clear and still1s:0.25/0.5/0.75 for1/2/3 complete digits in123 slots;1 additionally baseline<=1mm,pitch12+/-1mm,rotation<=10deg,tools parked within15mm. Each digit needs90% reference length,no gap>0.5mm,centre within4mm,rotation<=20deg for partial credit. Photo/ruler and strike video; exact rules in fixture/inspection.md.",
+  "run_limit": "3,600 control steps (180 seconds at20Hz), two fixed layouts, object_jitter=0.",
+  "reset_notes": "1. Replace with a blank annealed brass coupon; check flatness and dimensions.2. Seat it on backing at the marked A or B x stop; preset vise jaws and remove stop.3. Place punches and hammer at published cradle starts.4. Check blank, grip clearance and camera scale; record before photo. Operator reset under1minute estimated; no casting or drying.",
+  "fidelity": "Native-size tools/vice; specific240Hz contacts and pre-impact kinetic energy drive W=H*L*d^2,H0.6GPa estimated. Reciprocal native loads pass through hammer,punch,hand,brass and backing. Actual loaded pose/tilt and slip determine marks; no pose trigger. Wood-pad torsion radius10mm(min8) estimated. Subgrid plasticity,Gothic outlines,taper,damage and impact peaks approximate; no physical brass calibration or scorer-agreement study.",
+  "scores": "Scripted demo: A=0.0,B=0.0(mean0.0). Dream-1: A=0.0,B=0.0(mean0.0),2400 steps/layout, both hit the step limit. No full-score demo: punch rocking leaves incomplete grooves; impact slip and tool parking also fail.",
+  "media": "M-BNGE3J"
+}
