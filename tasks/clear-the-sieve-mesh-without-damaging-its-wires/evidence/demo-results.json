@@ -1,0 +1,22 @@
+{
+ "A": {
+  "score": 1.0,
+  "first_release_s": 19.9,
+  "all20_collected_s": 34.9,
+  "full_score_s": 63.2,
+  "steps": 1265,
+  "peak_bristle_load_N": 1.59,
+  "damage": false,
+  "off_counter": false
+ },
+ "B": {
+  "score": 1.0,
+  "first_release_s": 20.15,
+  "all20_collected_s": 37.1,
+  "full_score_s": 63.2,
+  "steps": 1265,
+  "peak_bristle_load_N": 1.66,
+  "damage": false,
+  "off_counter": false
+ }
+}
