@@ -1,0 +1,5 @@
+[lots] trial 0: lot A
+[lots] trial 1: lot B
+run status: completed
+outcome: 2 hit step limit
+  task_score: 0

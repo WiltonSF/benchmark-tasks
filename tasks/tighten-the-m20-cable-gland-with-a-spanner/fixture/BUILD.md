@@ -1,0 +1,13 @@
+# Fixture v1 — millimetres
+
+Use a Hammond 1591ESBK enclosure with the lid removed, x depth110.6,y width190.4,z height60.8. Drill one20.5 mm hole in its near end wall, centred along y and35 mm above the bench. Fit HUMMEL 1.209.2000.50 body and its M20 locknut. The wall is2.4 mm nominal. Two small padded screw clamps grip the side walls: simulated clamp feet at x355,y=-100 and130, extending onto the box rims. Verify no body spin or enclosure movement under4.5 Nm. Never use a stand to turn the nut or hold the cable for the robot.
+
+Two cable U supports have18 x35 mm feet, floor29 mm above the bench, and10 mm lips leaving a15 mm open top slot. Lips reach36 mm. Smooth PETG or wood is suitable. Place centres(25,15) and(195,15). These support the loose cable but do not clamp it. The gripper travels behind the front support. Verify the specified cable rests with its centre at35 +/-1 mm without a permanent clamp or hidden setup spacer.
+
+GEDORE 89424 /6575570 spanner: nominal217 mm/total215 mm,24 mm jaw,15-degree set,9 mm head. The sleeve is centred165 mm along the handle from the24 mm jaw centre. Finished outside24 x60 x50 mm; internal channel follows the actual handle, nominal10 x18 mm. Fabricate two hollow PETG halves with3 mm walls/ribs and twoM3 through screws, nut traps and washers,34 mm pitch along the sleeve. Approximate sleeve mass50 g. File mating faces flat. Proof-load the sleeve on the actual wrench with35 N transverse force and reject slip over1 mm. The simulation treats this bolted tool attachment as rigid, not as a weld to the gripper.
+
+Tool rest: a50 x75 x10 mm sleeve support at(205,200); a60 x40 x8.2 mm head support at(195,50). Tool jaw centre is(205,50,35), handle points+y. The idle head's angled jaw rests on its support and the sleeve rests at height10. LotB shifts only the tool20 mm toward-x, still on the same supports. Verify the tool stays within1 mm/1 degree of its prepared pose for5 seconds before enrollment.
+
+Witness dial:50 mm diameter,36 ten-degree marks, blue pointer on cap. Green spans90-198 degrees after one full turn; red starts270 degrees on the second turn. These sectors repeat and require video for the preceding turn count. All angular/retention/damage marks remain provisional until the three-specimen calibration in README has been completed. No physical qualification is claimed.
+
+One-time fixture materials are estimated under$10. Specimens are commercial stock. Resetting enrolled parts is estimated at2-3 minutes; there is no casting, drying or curing. fixture.svg is the dimension drawing; it is not to scale. The hole, sleeve channel and tool proof loads must be checked against actual parts before physical trials.

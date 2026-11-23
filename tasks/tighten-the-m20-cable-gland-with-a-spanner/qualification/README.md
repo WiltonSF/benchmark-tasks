@@ -1,0 +1,7 @@
+# Incomplete native qualification evidence
+
+Current matching-source scripted demo: lot A0.0, lot B0.0,2,381 actions/119.05 simulated seconds each. Dream-1: lot A0.0, lot B0.0,2,400 actions/120 simulated seconds each; both hit the step limit, with no abstentions or errored trials. Exactly one Dream invocation was used. No physical robot trial or hardware calibration exists.
+
+Videos and setup show lot A. force-audit.jsonl and dream-force-audit.jsonl contain both lots. score.txt and dream-score.txt are runner outputs. provenance.json records the frozen current runtime, unchanged instruction, source timestamp, per-lot outcomes and current environment. media-check.json records successful full H.264/yuv420p decode and file hashes; both videos are under50 MB. The full unmodified current-source factory/check.py passed both lots; offline-check.txt and offline-check-result.json preserve the result.
+
+Scored compression work, one-second stillness and retention remained unqualified in both scripted lots. Dream recorded no correct insertion or meaningful cap rotation in either lot. The configured4.5 Nm brake, transient projected reactions and synthetic scorer controls do not verify sustained tool transmission or calibrated hardware force. The parent README states the unresolved contact-work, damage, tool-use history and calibration gaps. These files must not be presented as a successful demonstration.

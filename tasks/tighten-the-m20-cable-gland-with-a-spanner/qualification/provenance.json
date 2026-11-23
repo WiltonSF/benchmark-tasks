@@ -1,0 +1,231 @@
+{
+  "schema_version": 2,
+  "artifact_status": "PARTIAL-READY package; demo and Dream incomplete, offline factory PASS; physical calibration not performed",
+  "assets_version": "fixture-v1",
+  "native_run": "demo-20261122T225729",
+  "native_policy": "yam_scripted",
+  "epochs": 2,
+  "instruction": "Feed the cable into the box to its sheath mark, tighten the gland through one full turn into the green band, park the spanner, and release both hands.",
+  "source_files_sha256": {
+    "near_misses.py": "155684747b93a2333e108b0efdc812858c03282656e422a1c51640208346372e",
+    "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567",
+    "lots.py": "f2a660eddea564c7c9562864872c00cbaaa15874ec60e9345bd58eeb851bea77",
+    "task.py": "cfa700eb0e6f03ce48d85fb0fc0fd5d1aafc35c750223b494589c731ba14f266",
+    "parts.py": "f98a5c9aa27e7af46f293ee43c734a992f35a67ed40461e30f2ac30f0769a76e",
+    "observation/__init__.py": "c8d9dc48a9ded99bc6ea5d52937bdf907a51371e17b1685c06d2d7ca074d6e5d"
+  },
+  "frozen_at_utc": "2026-11-22T22:57:03.357650+00:00",
+  "source_task_mtime_utc": "2026-11-22T22:56:23.650532+00:00",
+  "environment": {
+    "python": "3.12.16 (main, Nov 11 2026, 00:15:59) [Clang 23.1.3 ]",
+    "platform": "Linux-5.15.0-126-generic-x86_64-with-glibc2.35",
+    "packages": {
+      "isaaclab": "17.0.2",
+      "isaaclab-arena": "0.3.0",
+      "inspect-robots": "1.0.0",
+      "inspect-robots-agent": "0.30.0",
+      "yam-arena": "0.1.0",
+      "numpy": "2.3.1",
+      "torch": "2.11.0+cu128",
+      "isaacsim": "6.1.0.0"
+    },
+    "git_commits": {
+      "arena": "c7edf3a9d5d8276565208f72422f8f8a0806d6cf",
+      "yam": "0059d02a1a91bc6834c1d0846022891df0c78730"
+    }
+  },
+  "results": {
+    "A": {
+      "control_steps": 2381,
+      "simulated_seconds": 119.04999999999538,
+      "final_score": 0.0,
+      "peak_score": 0.0,
+      "max_cap_radians": 0.17771776020526886,
+      "max_cap_turns": 0.028284660011888667,
+      "peak_native_cap_reaction_Nm": 5.262639999389648,
+      "max_scored_compression_work_J": 0.0,
+      "max_sampled_finger_contact_N": 44.95821762084961,
+      "final_release_clear": true,
+      "final_stillness_seconds": 0.0,
+      "retention_test_completed": false,
+      "ever_invalid": false
+    },
+    "B": {
+      "control_steps": 2381,
+      "simulated_seconds": 119.04999999999538,
+      "final_score": 0.0,
+      "peak_score": 0.0,
+      "max_cap_radians": 0.6472730040550232,
+      "max_cap_turns": 0.10301669812529736,
+      "peak_native_cap_reaction_Nm": 4.500983238220215,
+      "max_scored_compression_work_J": 0.0,
+      "max_sampled_finger_contact_N": 48.06675720214844,
+      "final_release_clear": true,
+      "final_stillness_seconds": 0.0,
+      "retention_test_completed": false,
+      "ever_invalid": false
+    }
+  },
+  "native_runner_results": [
+    {
+      "epoch": 0,
+      "lot": "A",
+      "score": 0.0,
+      "termination_reason": "policy_stop",
+      "termination_details": null,
+      "trial_metadata": {
+        "actions": "actions/20261122_225729_53900b43/scene-0-e0.jsonl"
+      }
+    },
+    {
+      "epoch": 1,
+      "lot": "B",
+      "score": 0.0,
+      "termination_reason": "policy_stop",
+      "termination_details": null,
+      "trial_metadata": {
+        "actions": "actions/20261122_225729_53900b43/scene-0-e1.jsonl"
+      }
+    }
+  ],
+  "dream": {
+    "status": "COMPLETED",
+    "run": "dream-20261122T232323",
+    "max_steps": 2400,
+    "epochs": 2,
+    "results": [
+      {
+        "epoch": 0,
+        "lot": "A",
+        "score": 0.0,
+        "termination_reason": "max_steps",
+        "termination_details": null,
+        "trial_metadata": {
+          "actions": "actions/20261122_232324_3ae5a512/scene-0-e0.jsonl"
+        }
+      },
+      {
+        "epoch": 1,
+        "lot": "B",
+        "score": 0.0,
+        "termination_reason": "max_steps",
+        "termination_details": null,
+        "trial_metadata": {
+          "actions": "actions/20261122_232324_3ae5a512/scene-0-e1.jsonl"
+        }
+      }
+    ],
+    "summary": {
+      "A": {
+        "control_steps": 2400,
+        "simulated_seconds": 119.99999999999532,
+        "final_score": 0.0,
+        "peak_score": 0.0,
+        "max_cap_radians": -5.075288063080552e-13,
+        "max_cap_turns": -8.07757182854561e-14,
+        "peak_native_cap_reaction_Nm": 9.136277845378515e-11,
+        "max_scored_compression_work_J": 0.0,
+        "max_sampled_finger_contact_N": 0.5053933262825012,
+        "final_release_clear": true,
+        "final_stillness_seconds": 0.0,
+        "retention_test_completed": false,
+        "ever_inserted": false,
+        "ever_invalid": false
+      },
+      "B": {
+        "control_steps": 2400,
+        "simulated_seconds": 119.99999999999532,
+        "final_score": 0.0,
+        "peak_score": 0.0,
+        "max_cap_radians": -5.115900108057514e-13,
+        "max_cap_turns": -8.142207905617148e-14,
+        "peak_native_cap_reaction_Nm": 9.136274375931563e-11,
+        "max_scored_compression_work_J": 0.0,
+        "max_sampled_finger_contact_N": 8.24885082244873,
+        "final_release_clear": true,
+        "final_stillness_seconds": 0.0,
+        "retention_test_completed": false,
+        "ever_inserted": false,
+        "ever_invalid": false
+      }
+    },
+    "abstentions": {},
+    "errored_trials": 0
+  },
+  "physical_trials": "NOT PERFORMED",
+  "notes": "Only checker-flagged B pickup/return TCP+8mm was changed from prior prototype; geometry, physical scoring/force model and instruction unchanged. Native reactions are not hardware measurements. Snug work/retention/calibration remain unqualified.",
+  "media": [
+    {
+      "run": "demo-20261122T225729",
+      "file": "demo.mp4",
+      "bytes": 10922998,
+      "sha256": "6045cda99dfe4c9ac5565e411ff6c7a2bec1e17a3763c0b20a5aefc313444e3d",
+      "decode_returncode": 0,
+      "input_video": "Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 1920x360, 731 kb/s, 20 fps, 20 tbr, 10240 tbn (default)",
+      "resolution": [
+        1920,
+        360
+      ],
+      "fps": 20.0,
+      "decoded_frames": 2382,
+      "duration": "00:01:59.10"
+    },
+    {
+      "run": "dream-20261122T232323",
+      "file": "dream.mp4",
+      "bytes": 2919355,
+      "sha256": "369b0d14ac45cda15cc62226cf63b87703a7bcaa474bd8f8a9d290ffd9ebfa15",
+      "decode_returncode": 0,
+      "input_video": "Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 960x176, 192 kb/s, 20 fps, 20 tbr, 10240 tbn (default)",
+      "resolution": [
+        960,
+        176
+      ],
+      "fps": 20.0,
+      "decoded_frames": 2401,
+      "duration": "00:02:00.05"
+    }
+  ],
+  "host_final_runtime": {
+    "source_files_sha256": {
+      "near_misses.py": "155684747b93a2333e108b0efdc812858c03282656e422a1c51640208346372e",
+      "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567",
+      "lots.py": "f2a660eddea564c7c9562864872c00cbaaa15874ec60e9345bd58eeb851bea77",
+      "task.py": "cfa700eb0e6f03ce48d85fb0fc0fd5d1aafc35c750223b494589c731ba14f266",
+      "parts.py": "f98a5c9aa27e7af46f293ee43c734a992f35a67ed40461e30f2ac30f0769a76e",
+      "observation/__init__.py": "c8d9dc48a9ded99bc6ea5d52937bdf907a51371e17b1685c06d2d7ca074d6e5d"
+    },
+    "task_mtime_utc": "2026-11-22T22:56:23.650532+00:00",
+    "status": "ALL RUNTIME PYTHON MATCHES LOCAL FREEZE"
+  },
+  "offline_check": {
+    "status": "PASS",
+    "source_task_sha256": "cfa700eb0e6f03ce48d85fb0fc0fd5d1aafc35c750223b494589c731ba14f266",
+    "checker_sha256": "6d2d4ba2e0550c3513b523d4c1980a46b2a08b9dca7da1a6a3e84e2c294d1c8e",
+    "full_cli_completed": true,
+    "command": "factory/check.py <task-folder> (full unmodified CLI)",
+    "arms": {
+      "A-right": {
+        "IK_mm": 0.09,
+        "IK_degrees": 0.012
+      },
+      "A-left": {
+        "IK_mm": 0.1,
+        "IK_degrees": 0.013
+      },
+      "B-right": {
+        "IK_mm": 0.09,
+        "IK_degrees": 0.012
+      },
+      "B-left": {
+        "IK_mm": 0.14,
+        "IK_degrees": 0.418
+      }
+    },
+    "all_fixed_object_penetration_mm": 0.0,
+    "synthetic_endpoint_history_release_controls": 18,
+    "controls_status": "PASS; not physical feasibility evidence",
+    "completed_recorded_at_utc": "2026-11-22T23:55:42.218112+00:00",
+    "full_cli_log_sha256": "4cf5b4251b45cdb4e6a7d196aa874ebdd36fc5a006da0c16c9a3502e30f50a35"
+  }
+}

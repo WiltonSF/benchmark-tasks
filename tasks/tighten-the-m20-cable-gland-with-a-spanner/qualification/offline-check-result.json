@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "source_task_sha256": "cfa700eb0e6f03ce48d85fb0fc0fd5d1aafc35c750223b494589c731ba14f266",
+  "checker_sha256": "6d2d4ba2e0550c3513b523d4c1980a46b2a08b9dca7da1a6a3e84e2c294d1c8e",
+  "full_cli_completed": true,
+  "command": "factory/check.py <task-folder> (full unmodified CLI)",
+  "arms": {
+    "A-right": {
+      "IK_mm": 0.09,
+      "IK_degrees": 0.012
+    },
+    "A-left": {
+      "IK_mm": 0.1,
+      "IK_degrees": 0.013
+    },
+    "B-right": {
+      "IK_mm": 0.09,
+      "IK_degrees": 0.012
+    },
+    "B-left": {
+      "IK_mm": 0.14,
+      "IK_degrees": 0.418
+    }
+  },
+  "all_fixed_object_penetration_mm": 0.0,
+  "synthetic_endpoint_history_release_controls": 18,
+  "controls_status": "PASS; not physical feasibility evidence",
+  "completed_recorded_at_utc": "2026-11-22T23:55:42.218112+00:00",
+  "full_cli_log_sha256": "4cf5b4251b45cdb4e6a7d196aa874ebdd36fc5a006da0c16c9a3502e30f50a35"
+}
