@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "products": {
+    "bottle": "Eisco PH0122B",
+    "balance": "AWS LB-501",
+    "catch_pan": "CAMCO20753"
+  },
+  "seed": {
+    "water_ml": 44,
+    "air_ml": [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ],
+    "polar_deg": 67,
+    "azimuth_deg": "90+k*180/11,k=0..11",
+    "layouts": [
+      "A",
+      "B"
+    ],
+    "object_jitter_m": 0
+  },
+  "forces": {
+    "water_density_kg_m3": 998,
+    "gravity_m_s2": 9.81,
+    "pinning_N": 0.00097,
+    "wall_drag_Ns_m": 0.025,
+    "buoyancy_cap_N": 1.2,
+    "drag_cap_N": 0.6,
+    "smoothing_s": 0.12,
+    "capillary_drag_Ns_m": 20,
+    "capillary_force_cap_N": 0.12,
+    "foam_stiffness_N_m": 20000,
+    "foam_damping_Ns_m": 40
+  },
+  "validation": "Uncalibrated reduced-order model. See run evidence and README; no physical trial."
+}
