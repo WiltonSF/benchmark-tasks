@@ -1,0 +1,21 @@
+{
+  "angle_deg": 15,
+  "lever40mm_point_rise_mm": 10.35276180410083,
+  "lip_bottom_rise_mm": 10.836615070796059,
+  "spring_follower_travel_mm": 11.000177140525572,
+  "each_stack_free_mm": 32.96,
+  "seat_gap_closed_mm": 31.96,
+  "seat_gap_open_mm": 20.95982285947443,
+  "solid_stack_mm": 7.4,
+  "remaining_to_solid_mm": 13.559822859474428,
+  "equivalent_N_per_mm": 0.736,
+  "force_at_foot_ideal_N": 4.566789820100028,
+  "force_at_foot_simulated_N": 4.890952251407084,
+  "gravity_allowance_N": 0.3,
+  "model_gravity_allowance_N": 0.55,
+  "force_at_foot_model_total_N": 5.440952251407084,
+  "spring_load_each_N": 4.416065187713411,
+  "start_height_mm": 175.25,
+  "top_height_mm": 190.0,
+  "yoke_slot_centre_initial_mm": 154.0
+}

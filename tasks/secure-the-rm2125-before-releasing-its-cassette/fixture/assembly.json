@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "units": "mm for origins; SI for joint quantities",
+  "cassette_start_height_mm": 175.25,
+  "cassette_upper_height_mm": 190.0,
+  "joints": [
+    {
+      "part": "handwheel",
+      "joint": "wheel",
+      "type": "Hinge",
+      "parent": "base",
+      "origin_mm": [
+        380.0,
+        -255.0,
+        140.0
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "lower": -12.566370614359172,
+      "upper": 12.566370614359172,
+      "mass_kg": 0.45,
+      "spring": 0.0,
+      "target": 0.0,
+      "max_effort": 0.58
+    },
+    {
+      "part": "handwheel",
+      "joint": "handle",
+      "type": "Slider",
+      "parent": "wheel",
+      "origin_mm": [
+        306.3878406783227,
+        -314.5,
+        182.5
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "lower": 0.0,
+      "upper": 0.01,
+      "mass_kg": 0.055,
+      "spring": 0.0,
+      "target": 0.0,
+      "max_effort": 4.0
+    },
+    {
+      "part": "specimen_guide",
+      "joint": "head",
+      "type": "Slider",
+      "parent": "base",
+      "origin_mm": [
+        329.25,
+        -18.340000000000018,
+        187.08840000000004
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "lower": -0.04425,
+      "upper": 0.01475,
+      "mass_kg": 0.35,
+      "spring": 0.0,
+      "target": 0.0,
+      "max_effort": 200.0
+    },
+    {
+      "part": "specimen_guide",
+      "joint": "clamp",
+      "type": "Hinge",
+      "parent": "head",
+      "origin_mm": [
+        334.5,
+        55.0,
+        201.45000000000002
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "lower": -0.01,
+      "upper": 0.27052603405912107,
+      "mass_kg": 0.18,
+      "spring": 1.4,
+      "target": -0.04285714285714286,
+      "max_effort": 2.0
+    },
+    {
+      "part": "knife_guard",
+      "joint": "guard",
+      "type": "Hinge",
+      "parent": "base",
+      "origin_mm": [
+        250.5,
+        55.0,
+        117.0
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "lower": 0,
+      "upper": 3.3161255787892263,
+      "mass_kg": 0.055,
+      "spring": 0.0,
+      "target": 0.0,
+      "max_effort": 50.0
+    }
+  ]
+}

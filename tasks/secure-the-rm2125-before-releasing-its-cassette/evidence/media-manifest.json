@@ -1,0 +1,77 @@
+{
+  "runtime": {
+    "task.py": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+    "parts.py": "3fb3c9edf4d06879c67ed65435d3f55be182ebbd6c0c434d327e3d686f12acac",
+    "lots.py": "f2a660eddea564c7c9562864872c00cbaaa15874ec60e9345bd58eeb851bea77",
+    "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567"
+  },
+  "instruction": "Move the specimen cassette from the microtome into the grey tray.",
+  "instruction_sha256": "ef01e1d1a32f9c97095227706cb5de9687e2d64dafea5f1b8f32e243bfb1678a",
+  "order": [
+    "A",
+    "B"
+  ],
+  "demo_scores": [
+    1,
+    1
+  ],
+  "dream_scores": [
+    0,
+    0
+  ],
+  "files": {
+    "dream-B.mp4": {
+      "sha256": "59e7fca532315c413dcb75190506cfbe3ca9561792a4c166ac138d8d7a092e68",
+      "bytes": 2929321
+    },
+    "dream.mp4": {
+      "sha256": "d051093cae6d126adf61582553f48370a6bd863dc3ba016134a65cd0c61c0bca",
+      "bytes": 5899162
+    },
+    "demo-B.mp4": {
+      "sha256": "d7ab55a914e4ff2c8b0caca292890c1e94cbd5f43287b1932aa1fcb69f665a83",
+      "bytes": 6012390
+    },
+    "dream-A.mp4": {
+      "sha256": "64a2ed1d84695eb76700f5d51796acabd651becad7d901473300d7d3d2e9feec",
+      "bytes": 2969918
+    },
+    "dream-B-end.png": {
+      "sha256": "6a198c9d22b0e9ecc213df0acf88624d37811517b07a98d2344ed9a8089fbe93",
+      "bytes": 138069
+    },
+    "dream-A-end.png": {
+      "sha256": "69fa97062dd06867e620e57e704c07dd320d1b7c5f1ba448dd109328523a5072",
+      "bytes": 179075
+    },
+    "demo-paired-provenance.json": {
+      "sha256": "37c4219b3b1c0c872dbe222dc890b01c6ecf9f6ac9caffdff44929c00bcc6a72",
+      "bytes": 1080
+    },
+    "setup.png": {
+      "sha256": "9bc41217e0f53b73e21227a4344eef22f86ed6973df8a9a431ffb8b47e03d1ba",
+      "bytes": 158756
+    },
+    "demo-A.mp4": {
+      "sha256": "8a81d47fa6798ed44d40eaf04cbc2b053e095092fcd63fe8b704fcb3f2b7f5fc",
+      "bytes": 6129926
+    },
+    "demo.mp4": {
+      "sha256": "dc190ff2a9fb6f8c894739eba0a87a1b73ebb65841aecb1d0b38be0bd02b72f8",
+      "bytes": 12141868
+    },
+    "demo-A-end.png": {
+      "sha256": "5f9de99ee6b9be4be0faf1d1370de4030ab1c8aa82ad507e0036c60da5adb016",
+      "bytes": 534481
+    },
+    "dream-paired-provenance.json": {
+      "sha256": "6b0855e266d04892ac46c7ab496829fa42f6e232b1f12673de7dea5c7514c788",
+      "bytes": 1087
+    },
+    "demo-B-end.png": {
+      "sha256": "744a843f6ca66175bd3e77cc4908639a9c2b17ea3e6e5f9dc238ce415f53c41d",
+      "bytes": 513557
+    }
+  },
+  "publication": "Local files only; media ID remains unassigned for a separately authorized upload. No submission."
+}

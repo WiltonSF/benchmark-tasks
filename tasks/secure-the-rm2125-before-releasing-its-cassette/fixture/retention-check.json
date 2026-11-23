@@ -1,0 +1,29 @@
+{
+  "runtime_sha256": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+  "dog_y_mm": 63,
+  "dog_to_spine_end_mm": 1,
+  "dog_to_inner_collar_mm": 3.4,
+  "thread_engagement_mm": 4.25,
+  "dog_engagement_mm": 1,
+  "blade_pressure_bar_mm": [
+    3.175,
+    82,
+    19.05
+  ],
+  "bar_top_mm": 103,
+  "edge_top_mm": 105,
+  "bar_guard_sweep_min_gap_mm": [
+    2.0,
+    187.60000000000002,
+    2
+  ],
+  "sample_step_deg": 0.1,
+  "between_sample_reserve_mm": 0.1,
+  "head_below_blade_gap_mm": 0.3,
+  "heel_z_mm": 88.5,
+  "screw_z_mm": 92.5,
+  "blade_reaction_reference_z_mm": 100,
+  "upper_reaction_fraction": 0.34782608695652173,
+  "ledge_to_bar_gap_mm": 0.15,
+  "limitations": "Simplified exact boxes/CSG dimensions only. Pressure bar/anchors/threads/inserts are proposed fabrication;5N blade and10N axle retention and loaded force/lift proofs remain unperformed."
+}

@@ -1,0 +1,86 @@
+{
+  "units": "mm above bench at initial head position",
+  "follows_head": true,
+  "boxes": [
+    {
+      "name": "pivot_bearing_lug",
+      "center_mm": [
+        334.5,
+        76,
+        201.45
+      ],
+      "size_mm": [
+        14,
+        8,
+        14
+      ]
+    },
+    {
+      "name": "pivot_axle",
+      "center_mm": [
+        334.5,
+        -46,
+        201.45
+      ],
+      "size_mm": [
+        4.7625,
+        264,
+        4.7625
+      ]
+    },
+    {
+      "name": "pivot_collar",
+      "center_mm": [
+        334.5,
+        69.9,
+        201.45
+      ],
+      "size_mm": [
+        10,
+        4,
+        10
+      ]
+    },
+    {
+      "name": "pivot_grub",
+      "center_mm": [
+        339.7,
+        69.9,
+        200.4
+      ],
+      "size_mm": [
+        6.8,
+        3,
+        5.6
+      ],
+      "note": "Conservative envelope across -0.01rad..15.5deg shaft rotation; co-rotates with keyed rocker."
+    },
+    {
+      "name": "pivot_collar",
+      "center_mm": [
+        334.5,
+        82.1,
+        201.45
+      ],
+      "size_mm": [
+        10,
+        4,
+        10
+      ]
+    },
+    {
+      "name": "pivot_grub",
+      "center_mm": [
+        339.7,
+        82.1,
+        200.4
+      ],
+      "size_mm": [
+        6.8,
+        3,
+        5.6
+      ],
+      "note": "Conservative envelope across -0.01rad..15.5deg shaft rotation; co-rotates with keyed rocker."
+    }
+  ]
+}

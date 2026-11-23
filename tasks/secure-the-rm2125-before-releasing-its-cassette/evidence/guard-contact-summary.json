@@ -1,0 +1,20 @@
+{
+  "runtime_sha256": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+  "method": "Absolute measured native guard contact moment about hinge divided by37.577mm knob radius; angles10\u2013160degrees with nonzero contact. Tangential equivalent, not total finger gripping force. Gravity can assist the fold; no constant1N minimum is imposed.",
+  "lots": [
+    {
+      "lot": "A",
+      "samples": 151,
+      "min_N": 0.0028078895008501114,
+      "median_N": 0.19664386930325264,
+      "peak_N": 2.28720366287355
+    },
+    {
+      "lot": "B",
+      "samples": 152,
+      "min_N": 0.0028078895008501114,
+      "median_N": 0.20464467879331483,
+      "peak_N": 0.9583455936001102
+    }
+  ]
+}

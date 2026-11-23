@@ -1,0 +1,26 @@
+{
+  "runtime_sha256": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+  "pivot_components": 6,
+  "full_stroke_comparisons": 450,
+  "minimum_fixed_or_frame_gap_mm": [
+    1.6500000000000057,
+    "pivot_axle",
+    "physical_frame_10"
+  ],
+  "bearing_radial_clearance_mm": 0.043749999999999734,
+  "inner_post_axle_clearance_mm": 0.6187499999999773,
+  "collar_cheek_gap_mm": 0.1,
+  "nominal_axial_float_mm": 0.2,
+  "dog_clearance_mm": 0.1,
+  "maximum_rocker_axial_play_mm": 0.3,
+  "dog_pocket_engagement_mm": 1.0,
+  "collar_crown_radial_gap_mm": 1,
+  "grub_clamp_gap_mm": 2.4000000000000057,
+  "full_stroke_mm": 59,
+  "rotation_deg": [
+    0,
+    15.5
+  ],
+  "rotation_sample_deg": 0.25,
+  "limitations": "Exact cylindrical bore/axle and radial collar arguments plus conservative hardware envelopes. Analytical only; no assembled or measured hardware result. Native proxy omits axle and bearing details."
+}

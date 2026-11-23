@@ -1,0 +1,25 @@
+{
+  "pad_guide_radial_clearance_mm": 0.18,
+  "pad_guide_relief_exit_margin_mm": 2.0,
+  "runtime_sha256": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+  "scad_sha256": "6c1d17c9a316a289034e65581a53c38d06bda9b19978999e4d8796fdf48f3ddc",
+  "component_count": 36,
+  "fixed_shape_count": 39,
+  "full_stroke_mm": 59,
+  "comparisons": 1404,
+  "minimum_fixed_gap_mm": [
+    0.1800000000000006,
+    "carriage_pad",
+    "specimen_guide:1",
+    "continuous stroke"
+  ],
+  "minimum_moving_bridge_gap_mm": [
+    0.5,
+    "third_nut_washer",
+    21
+  ],
+  "tube_radial_clearance_mm": 0.5,
+  "third_shank_clearance_mm": 1.0,
+  "overlaps": 0,
+  "limitations": "Analytical conservative envelopes and bores; no STL export, printing, load test, or robot clearance validation for omitted fittings. Frame rerouted11mm; native-run evidence is reported separately."
+}

@@ -1,0 +1,60 @@
+{
+  "model": "dreamlabs/dream-1-beta",
+  "dry_run": false,
+  "control_hz": 20.0,
+  "max_steps_per_lot": 2400,
+  "epochs": 2,
+  "instruction": "Move the specimen cassette from the microtome into the grey tray.",
+  "instruction_sha256": "ef01e1d1a32f9c97095227706cb5de9687e2d64dafea5f1b8f32e243bfb1678a",
+  "policy_requests_per_lot": [
+    50,
+    50
+  ],
+  "inference_attempts_per_lot": [
+    99,
+    99
+  ],
+  "generated_rows_per_lot": [
+    2400,
+    2400
+  ],
+  "rows_beyond_limits_per_lot": [
+    2064,
+    1742
+  ],
+  "termination_reasons": [
+    "max_steps",
+    "max_steps"
+  ],
+  "eval_status": "success",
+  "execution_error_present": false,
+  "explicit_refusal_annotations": [],
+  "refusal_note": "Policy telemetry has no explicit refusal annotation unless listed above. No refusal intent is inferred from zero task scores or invalid predicted joint rows.",
+  "seed": 0,
+  "eval_log": "adhoc_51c5e731.json",
+  "runtime": {
+    "task.py": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+    "parts.py": "3fb3c9edf4d06879c67ed65435d3f55be182ebbd6c0c434d327e3d686f12acac",
+    "lots.py": "f2a660eddea564c7c9562864872c00cbaaa15874ec60e9345bd58eeb851bea77",
+    "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567"
+  },
+  "task_scores": [
+    0.0,
+    0.0
+  ],
+  "mean_task_score": 0.0,
+  "eval_status_meaning": "success means completed evaluation, not task success",
+  "policy_config": {
+    "action_horizon": 1,
+    "replan_interval": null,
+    "temperature": null
+  },
+  "runner_metadata": {
+    "inspect_robots_version": "1.0.0",
+    "environment_revision": "13862c3cfeb2",
+    "git_commit": null,
+    "embodiment": "yam_arena",
+    "environment_revision_note": "Runner environment_revision is the task source prefix, not a framework commit."
+  },
+  "arena_checkout_commit": "c7edf3a9d5d8276565208f72422f8f8a0806d6cf"
+}

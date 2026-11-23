@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="740" viewBox="0 0 1100 740">
+<rect width="1100" height="740" fill="white"/><g font-family="monospace" fill="#222" font-size="17">
+<text x="35" y="35">Clamp spring bridge, rev 2; dimensions mm; four Lee LC022D03S springs</text>
+<text x="35" y="65">Two vertical columns, 12 mm apart along y; each column has two springs in series.</text>
+<path d="M 120 125 H 540 V 150 H 120 Z M 120 125 V 470 H 140 V 150 M 520 150 V 470 H 540 V 125" fill="#ddd" stroke="#222"/>
+<path d="M 230 150 V 445 M 430 150 V 445" stroke="#666" stroke-width="6"/>
+<path d="M 210 170 L 250 185 L 210 200 L 250 215 L 210 230 L 250 245 L 210 260 M 410 170 L 450 185 L 410 200 L 450 215 L 410 230 L 450 245 L 410 260 M 210 290 L 250 305 L 210 320 L 250 335 L 210 350 L 250 365 L 210 380 M 410 290 L 450 305 L 410 320 L 450 335 L 410 350 L 450 365 L 410 380" stroke="#165" fill="none" stroke-width="3"/>
+<rect x="207" y="263" width="46" height="20" fill="#bbb" stroke="#222"/><rect x="407" y="263" width="46" height="20" fill="#bbb" stroke="#222"/>
+<rect x="190" y="390" width="280" height="25" fill="#fcc" stroke="#222"/>
+<text x="575" y="140">Bridge roof underside: closed arm top +44.96.</text>
+<text x="575" y="170">6 x42 pins fixed4 mm into moving plunger.</text><text x="575" y="200">Flat spring seats at roof underside44.96.</text>
+<text x="575" y="230">Each spacer: 8 x 6.2 x 1.2 annular washer.</text><text x="575" y="260">Column free length incl. spacer:32.96.</text>
+<text x="575" y="290">Closed gap31.96 -> preload1.00 total.</text><text x="575" y="320">15deg gap20.960; stack solid7.40.</text>
+<text x="575" y="350">Solid clearance13.560 at open stop.</text><text x="575" y="380">Plunger block: 24 x 20 x 5, 6.0 mm pins;6.4 mm roof guides.</text>
+<text x="35" y="515">Mount at x294.5,y-145: outboard arm,40 mm forward of pivot; schematic not to scale.</text>
+<text x="35" y="550">Cheeks:33 x4 x46 at y +/-15; front has shallow tube relief. Guide pins allow11.00 mm travel.</text>
+<text x="35" y="585">Use an8 mm roller and5 mm plunger:13 mm stack. Arm extends5 mm beyond roller contact.</text>
+<text x="35" y="620">Bridge follows head: integral X/Z coupling at y+23,z+37.8; two through-bolts and ribs to the foot.</text>
+<text x="35" y="655">Operating foot: 101 mm down and40 mm forward of pivot; force check4.567 N ideal /4.891 N model.</text>
+<text x="35" y="695">Pins rise through roof:9/51 mm closed ends; a15.5deg stop limits opening, never coil bind.</text></g></svg>

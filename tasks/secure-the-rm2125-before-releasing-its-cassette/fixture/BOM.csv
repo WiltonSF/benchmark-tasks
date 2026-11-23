@@ -1,0 +1,28 @@
+item,quantity,product_or_catalogue_size,estimated_line_USD,source,price_status
+clamp springs,4,Lee Spring LC022D03S,32.16,https://www.leespring.com/product/compression-spring-lc022d03s-stainless-steel,maker price checked Nov22
+MDF panels,2,ProWood109097 half-inch2x4ft,56.00,https://www.homedepot.com/b/Lumber-Composites-Plywood-Project-Panels/1-2/2-ft-x-4-ft/MDF/N-5yc1vZc7hmZ1z0mcqnZ1z11dmmZ1z1abxg,retailer price checked Nov22
+spring scale,1,Home Science Tools BS-SCALE3 0-10N,5.95,https://www.homesciencetools.com/product/spring-scale-1000-g-10-newton/,seller price checked Nov22
+steel shaft and guide rods,1,Everbilt0004 5/16inch x3ft rod cut310+250+250mm,7.26,https://www.homedepot.com/p/Everbilt-5-16-in-x-3-ft-Plain-Steel-Solid-Round-Rod-0004/332733889,retailer price checked Nov22
+printed parts filament,2,Bambu PETG HF2kg; rocker and load supports100% infill,50.00,https://us.store.bambulab.com/products/petg-hf,budget estimate
+crank pin,1pack,Zoro Select M39070.100.0030 10x30mm steel pins5pack,3.99,https://www.zoro.com/zoro-select-standard-dowel-pin-10-mm-nominal-dia-30-mm-l-steel-5-pk-m390701000030/i/G3423850/,seller price checked Nov22
+friction washers,2,Everbilt815888 neoprene5/8inch x2inch,5.50,https://www.homedepot.com/p/Everbilt-5-8-in-x-2-in-Black-Neoprene-Washer-815888/204276369,retailer price checked Nov22
+lock pin,1pack,Zoro Select M39070.080.0040 8x40mm steel5pack,5.00,https://www.zoro.com/zoro-select-standard-dowel-pin-8-mm-nominal-dia-40-mm-l-steel-5-pk-m390700800040/i/G3423975/,budget estimate not current quote
+spring guide pins,1,6mm steel rod cut to2x42mm,4.00,major hardware retailer standard rod,budget estimate
+O rings,1pack,AG-M15X8 nitrile8x1.5mm,5.00,https://www.zoro.com/o-rings-buna-n70-metric-o-ring-15mm-x-8mm-ag-m15x8/i/G909222500/,budget estimate not current quote
+collars,2,printed split8mm shaft collars plus two10mm OD x4mm pivot collars with4.85mm finished bores/M3x6 grubs,0.00,printable.scad plus fasteners below,included filament
+fasteners,1lot,Everbilt M3 grub screws M4x20 screws one M4x50 DIN912 carriage bolt four M4x40 DIN912 through-bolts two M4x30 DIN965 countersunk screws DIN125 M4 9mm OD washers M4 nuts #8 wood screws and6mm washers,14.00,major hardware retailer standard catalogue sizes,budget allowance
+blade stand-in,1,KandS87157 stainless strip dull80x8mm cut,3.00,https://www.hammondhardware.com/p/k-and-stainless-steel-strip-stock-614121071575,budget estimate
+bench through-bolt anchors,8sets,M4x80 DIN965 countersunk bolts DIN9021 M4 wide washers and M4 nuts; four housing/four holder; existing wooden bench top20-40mm,12.00,standard metric catalogue sizes,budget allowance; drilling bench permitted in physical trial
+adhesive and ballast,1lot,TitebondII5003 and steel washers,12.00,major hardware retailer standard products,budget estimate
+pivot axles,1,Everbilt49520 3/16inch x36inch steel rod cut264+150mm,4.56,https://www.homedepot.com/p/202183494,retailer price checked Nov22
+spring frame tube,1,Everbilt1101 1/2inch x3ft 18ga plain steel round tube; cuts277+90+51+42mm,18.62,https://www.homedepot.com/p/332735304,retailer price checked Nov23
+fixed support hardware,1lot,M4x20 DIN912 four M4 brass inserts 6mm long four M3x35 DIN965 screws four M3 nuts four M3x6 grub screws four M3 brass inserts 3mm long OD4mm,12.00,standard metric catalogue sizes,budget allowance
+guide brace floor fasteners,1lot,two M4x12 DIN965 two M4x25 DIN965 four6mm-long M4 brass inserts plus printed19.5mm feet,10.00,standard metric catalogue sizes,budget allowance
+rocker dog point coupling,1,Accu SSD-M3-6-A2 M3x6 DIN915 dog point or metric equivalent,1.00,https://www.accu.co.uk/dog-point-set-screws/5161-SSD-M3-6-A2,budget allocation within existing fastener allowance; not current quote
+rocker metal spine,1,Everbilt0503 1/4inch x3ft plain steel square bar cut211mm,8.88,https://www.homedepot.com/p/332734018,retailer price checked Nov23
+load-path fasteners,1lot,two M3x16 DIN965 spine bolts;four M3x30 DIN965 roof bolts;two M3x6 guide grub screws;one M4x30 DIN965 hanger bolt; nuts/DIN125 washers,8.00,standard metric catalogue sizes,budget allowance
+pivot finishing drill,1,4.8mm DIN338 HSS twist drill; finish printed clamp-bearing bores to4.80–4.85mm,6.00,standard metric drill from major hardware retailer,budget allowance; tools otherwise owned
+blade pressure bar,1,Everbilt0704 steel flatbar3/4x1/8inch x3ft; cut82mm,13.98,https://www.homedepot.com/p/332734014,retailer price checked Nov23
+blade retainer hardware,1lot,two M4x12 DIN965 screws;two6mm-long M4 brass inserts OD6mm,2.00,standard metric catalogue sizes,budget allowance
+shim donor and feeler gauge,1,OEMTOOLS25025 26blade gauge;0.002/0.004inch leaves cut for nominal0.05/0.1mm shims,16.99,https://www.jegs.com/i/oemtools-693-25025-master-feelr-gauge-26bl,seller price checked Nov23; whole set charged
+TOTAL,,,317.89,,before shipping and tax assumes existing printer and tools

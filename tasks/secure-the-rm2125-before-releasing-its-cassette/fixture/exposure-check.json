@@ -1,0 +1,31 @@
+{
+  "runtime_sha256": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+  "exposed_edge_mm": 2.0,
+  "blade_span_mm": 80.0,
+  "bar_top_mm": 102.99999999999997,
+  "edge_top_mm": 104.99999999999997,
+  "guard_angles_deg": [
+    175,
+    190
+  ],
+  "sample_step_deg": 0.05,
+  "minimum_guard_blade_separating_gap_mm": [
+    2.3942334408826067,
+    190.0000000000034,
+    0
+  ],
+  "conservative_between_sample_reserve_mm": 0.025,
+  "minimum_main_cover_in_plane_margin_mm": 2.590512341883887,
+  "tab_to_blade_end_gap_mm": 3,
+  "blade_color": [
+    0.85,
+    0.88,
+    0.92
+  ],
+  "bar_color": [
+    0.66,
+    0.69,
+    0.72
+  ],
+  "limitations": "Analytical geometry and contrast only; visibility must also be inspected in current native media. Dull hardware stand-in unbuilt; no cutting simulation or hardware safety certification."
+}

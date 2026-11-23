@@ -1,0 +1,30 @@
+{
+  "runtime_sha256": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+  "native_gravity_at15_N": 0.5448060167165429,
+  "physical_mass_estimate_kg": 0.19016374977943318,
+  "physical_gravity_estimate_at15_N": 0.25341083515956875,
+  "physical_gravity_allowance_N": 0.3,
+  "steel_E_MPa": 200000.0,
+  "steel_G_MPa": 77000.0,
+  "PETG_bending_E_MPa": 2050.0,
+  "shaft_effective_I_factor": 0.7,
+  "shaft_deflection_mm": 0.09577176539548295,
+  "shaft_bending_stress_MPa": 29.483712520749027,
+  "steel_spine_lip_loss_mm": 0.3290183451311988,
+  "frame_tip_bound_mm": 0.5130280339809001,
+  "hanger_web_deflection_mm": 0.060567027698863636,
+  "guide_elastic_mm": 0.06417263250312445,
+  "guide_with_seating_mm": 0.12417263250312445,
+  "bearing_and_relief_play_mm": 0.08749999999999947,
+  "axis_motion_bound_mm": 0.9010394595783707,
+  "foot_elastic_mm": 0.1678949341060466,
+  "arm_elastic_mm": 0.1344509569126699,
+  "loaded_lip_loss_conditional_estimate_mm": 0.9601528106342316,
+  "loaded_lip_lift_min_mm": 9.87644718936577,
+  "nominal_lip_lift_mm": 10.8366,
+  "wheel_force_60_to_0_deg_N": [
+    6.823529411764705,
+    8.88888629574934
+  ],
+  "requirements": "Before enrollment: finish bores4.80\u20134.85mm; spine proof0.55Nm without slip; actual15degree opening and10.84+/-1mm lip lift simultaneously at3.5\u20135.3N foot force;10N horizontal workholding proof; reject motion or loss outside tolerance. Unbuilt, unmeasured; simplified linear-elastic conditional estimates do not validate joints or hardware."
+}

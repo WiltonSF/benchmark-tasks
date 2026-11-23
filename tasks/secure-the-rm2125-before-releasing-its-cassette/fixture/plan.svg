@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="850" viewBox="120 -380 780 650">
+<rect x="120" y="-380" width="780" height="650" fill="white"/>
+<g font-family="monospace" font-size="9" fill="#222">
+<text x="140" y="-350">RM2125 RTS procedure fixture: plan; all dimensions mm; scene rev 1</text>
+<rect x="360.000" y="-235.000" width="472.000" height="438.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="820.000" y="-235.000" width="12.000" height="438.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="372.000" y="191.000" width="448.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="402.000" y="-235.000" width="430.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="360.000" y="-235.000" width="26.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="360.000" y="-235.000" width="26.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="360.000" y="-235.000" width="472.000" height="438.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="360.000" y="-229.000" width="12.000" height="180.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="360.000" y="71.000" width="12.000" height="126.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="280.000" y="-263.000" width="84.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="396.000" y="-263.000" width="84.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="364.000" y="-263.000" width="32.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="364.000" y="-263.000" width="32.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="364.000" y="-263.000" width="32.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="364.000" y="-263.000" width="9.500" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="386.500" y="-263.000" width="9.500" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="365.000" y="-263.000" width="30.000" height="16.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="360.000" y="-263.000" width="40.000" height="16.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="340.000" y="-275.000" width="80.000" height="60.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="280.000" y="-279.000" width="200.000" height="12.000" fill="#dddbce" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="376.000" y="-280.000" width="8.000" height="310.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="342.000" y="19.000" width="76.000" height="12.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="349.452" y="25.000" width="10.000" height="28.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="294.388" y="-370.000" width="24.000" height="80.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="302.388" y="-331.000" width="8.000" height="64.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<circle cx="380.0" cy="-255.0" r="2" fill="red"/><text x="383.0" y="-259.0">handwheel.wheel</text>
+<circle cx="306.3878406783227" cy="-314.5" r="2" fill="red"/><text x="309.3878406783227" y="-318.5">handwheel.handle</text>
+<rect x="347.030" y="-8.970" width="7.940" height="7.940" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="347.030" y="111.030" width="7.940" height="7.940" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="354.000" y="-14.000" width="22.000" height="138.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="354.000" y="-14.000" width="22.000" height="138.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="344.000" y="-12.000" width="14.000" height="14.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="354.500" y="-9.000" width="8.000" height="8.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="356.000" y="-9.000" width="43.000" height="8.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="375.000" y="-10.000" width="10.000" height="10.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="389.000" y="-10.000" width="10.000" height="10.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="344.000" y="108.000" width="14.000" height="14.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="354.500" y="111.000" width="8.000" height="8.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="356.000" y="111.000" width="43.000" height="8.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="375.000" y="110.000" width="10.000" height="10.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="389.000" y="110.000" width="10.000" height="10.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="310.000" y="30.000" width="24.000" height="50.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="310.000" y="30.000" width="24.000" height="8.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="310.000" y="72.000" width="24.000" height="8.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="304.000" y="40.000" width="22.000" height="30.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="290.000" y="40.000" width="20.000" height="30.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="338.000" y="35.000" width="84.000" height="20.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="338.000" y="35.000" width="84.000" height="20.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="328.000" y="35.000" width="10.000" height="20.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="422.000" y="35.000" width="10.000" height="20.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="315.000" y="70.000" width="40.000" height="80.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="333.000" y="88.000" width="12.000" height="12.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="333.000" y="-175.000" width="12.000" height="277.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="294.500" y="-128.000" width="44.500" height="12.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="288.500" y="-128.000" width="12.000" height="12.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="278.500" y="-132.000" width="32.000" height="16.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="278.000" y="-162.000" width="33.000" height="34.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="310.000" y="-14.000" width="20.000" height="138.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="310.000" y="30.000" width="20.000" height="50.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="321.000" y="-14.000" width="38.000" height="18.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="321.000" y="106.000" width="38.000" height="18.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="278.000" y="-162.000" width="33.000" height="4.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="278.000" y="-132.000" width="33.000" height="4.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="326.500" y="-178.000" width="25.000" height="24.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="326.500" y="-172.000" width="16.000" height="12.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="326.500" y="-170.000" width="16.000" height="8.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="291.500" y="40.000" width="48.000" height="30.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="293.000" y="40.000" width="3.000" height="30.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="335.000" y="-150.500" width="10.000" height="211.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="327.000" y="44.000" width="15.000" height="22.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="289.000" y="-157.000" width="49.000" height="24.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="287.500" y="-157.000" width="14.000" height="24.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<circle cx="329.25" cy="-18.340000000000018" r="2" fill="red"/><text x="332.25" y="-22.340000000000018">specimen_guide.head</text>
+<circle cx="334.5" cy="55.0" r="2" fill="red"/><text x="337.5" y="51.0">specimen_guide.clamp</text>
+<rect x="210.000" y="0.000" width="100.000" height="110.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="240.000" y="5.000" width="40.000" height="100.000" fill="#383d44" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="280.000" y="5.000" width="14.000" height="100.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="292.750" y="15.000" width="0.500" height="80.000" fill="#d8e0ea" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="244.500" y="-7.000" width="12.000" height="8.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="244.500" y="109.000" width="12.000" height="8.000" fill="#a8afb7" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="204.500" y="5.000" width="46.000" height="100.000" fill="#d62114" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="204.500" y="5.000" width="4.000" height="100.000" fill="#d62114" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="204.500" y="98.000" width="24.000" height="94.000" fill="#d62114" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="204.500" y="150.000" width="24.000" height="30.000" fill="#d62114" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<circle cx="250.5" cy="55.0" r="2" fill="red"/><text x="253.5" y="51.0">knife_guard.guard</text>
+<rect x="296.750" y="34.800" width="6.500" height="40.400" fill="#efefe5" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="290.750" y="40.000" width="6.000" height="30.000" fill="#efd893" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="141.000" y="161.000" width="148.000" height="108.000" fill="#72777f" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="141.000" y="161.000" width="4.000" height="108.000" fill="#72777f" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="285.000" y="161.000" width="4.000" height="108.000" fill="#72777f" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="145.000" y="161.000" width="140.000" height="4.000" fill="#72777f" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<rect x="145.000" y="265.000" width="140.000" height="4.000" fill="#72777f" fill-opacity=".18" stroke="#555" stroke-width=".5"/>
+<text x="140" y="230">Shell: 438 wide x 472 deep x 265 high. Wheel diameter 200; knob radius 85; crank radius 29.5.</text>
+<text x="140" y="245">Exact sizes/centres: geometry.csv. Pivots: assembly.json. Captive spring-stack detail: spring-mount.svg.</text>
+</g></svg>

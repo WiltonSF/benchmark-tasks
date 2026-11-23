@@ -1,0 +1,66 @@
+{
+  "runtime_sha256": "13862c3cfeb268f8eb0c7e06bad66d340ecacb44400dc8b15f6bb8f1469ffa15",
+  "added_fixed_components": 32,
+  "swept_comparisons": 111456,
+  "minimum_swept_gap_mm": [
+    2.0026678704874175,
+    "steel_blade_pressure_bar",
+    "guard:2"
+  ],
+  "guard_sample_deg": 0.25,
+  "guard_between_sample_reserve_mm": 0.5,
+  "limitations": "Analytical geometry only; bores and intended base unions excluded. No printing, load test or hardware result.",
+  "recorded_rows": 2375,
+  "recorded_components": 98,
+  "native_pad_contacts": {
+    "A": [
+      -0.3436632534371711,
+      35.75000000000011,
+      "left",
+      "tip_right",
+      "carriage_pad"
+    ],
+    "B": [
+      -0.34559869675629784,
+      35.70000000000011,
+      "left",
+      "tip_right",
+      "carriage_pad"
+    ]
+  },
+  "native_upper_proxy_lots": {
+    "A": [
+      0.18984604480925782,
+      34.60000000000017,
+      "left",
+      "link4",
+      "native_upper_proxy_5"
+    ],
+    "B": [
+      0.6961352226929307,
+      34.60000000000017,
+      "left",
+      "link4",
+      "native_upper_proxy_5"
+    ]
+  },
+  "recorded_lots": {
+    "A": [
+      0.6287104219665025,
+      34.60000000000017,
+      "left",
+      "link4",
+      "physical_upper_clamp_5"
+    ],
+    "B": [
+      1.1346092039455016,
+      34.60000000000017,
+      "left",
+      "link4",
+      "physical_upper_clamp_5"
+    ]
+  },
+  "hull_box_pairs": 146632500,
+  "recorded_sha256": "86bf8f2c29590df47381012675cb39f66ca2065b0292002de7235ba3f98aa672",
+  "recorded_limit": "All logged joint samples screened with conservative AABB lower bounds plus complete hull/box SAT whenever AABB bounds are below5mm. Motion between telemetry samples and dynamic contact response not validated."
+}
