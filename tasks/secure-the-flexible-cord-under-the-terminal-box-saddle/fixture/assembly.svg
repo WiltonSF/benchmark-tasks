@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="680" viewBox="0 0 1000 680">
+<rect width="1000" height="680" fill="white"/>
+<g font-family="sans-serif" font-size="19" fill="#17232f"><text x="35" y="38">Custom cord saddle — revision 3 — dimensions mm</text><text x="35" y="68">Hammond 1550G: 222 × 146 footprint, nominal height 51; see casting note</text>
+<g stroke="#17232f" stroke-width="2" fill="none"><rect x="55" y="110" width="500" height="140"/><circle cx="125" cy="180" r="23"/><circle cx="485" cy="180" r="23"/><path d="M125 270H485M125 258V282M485 258V282"/><path d="M55 295H555M55 283V307M555 283V307"/></g>
+<text x="200" y="175">Bar: 50 × 14 × 3 steel</text><text x="200" y="204">2 × Ø4.6 through</text><text x="260" y="275">36 centers</text><text x="278" y="320">50</text>
+<g stroke="#17232f" stroke-width="2" fill="none"><rect x="55" y="385" width="520" height="180"/><circle cx="135" cy="475" r="18"/><circle cx="495" cy="475" r="18"/><circle cx="95" cy="425" r="17"/><circle cx="535" cy="425" r="17"/><circle cx="95" cy="525" r="17"/><circle cx="535" cy="525" r="17"/></g>
+<text x="185" y="460">Saddle: 52 × 16 × 18 Al</text><text x="190" y="490">2 × M4 × 0.7 through</text><text x="100" y="605">Mount pattern (±22,±5): saddle M3 tap / floor Ø3.4; bottom z=4, top z=22</text>
+<g stroke="#17232f" stroke-width="2"><rect x="665" y="395" width="260" height="90" fill="#d1d4d8"/><circle cx="795" cy="368" r="27" fill="#858c95"/><rect x="670" y="326" width="250" height="15" fill="#939ba4"/></g>
+<text x="640" y="270">Section across cable</text><text x="650" y="304">Sheath Ø10.9, axis z=27.45</text><text x="635" y="525">Bar underside z=32.9 after settling</text><text x="640" y="557">Head underside starts z=36.3</text><text x="35" y="652">Coverage: sheath cut edge y ≥ +12 (bar edge +7 plus 5). See fabrication.md for mounting, BOM and enrollment.</text></g></svg>
