@@ -1,0 +1,238 @@
+{
+  "units": "metres",
+  "frame": "holder origin x290,y0,ztabletop; x forward, y left, z up",
+  "material": "wood/acrylic; dimensions are supplied custom drawings, not OEM",
+  "blocks": [
+    {
+      "name": "block1",
+      "size": [
+        0.07,
+        0.008,
+        0.006
+      ],
+      "centre": [
+        0.0,
+        -0.043,
+        0.003
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block2",
+      "size": [
+        0.008,
+        0.008,
+        0.073
+      ],
+      "centre": [
+        -0.03,
+        -0.043,
+        0.0395
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block3",
+      "size": [
+        0.008,
+        0.008,
+        0.073
+      ],
+      "centre": [
+        0.03,
+        -0.043,
+        0.0395
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block4",
+      "size": [
+        0.05,
+        0.008,
+        0.006
+      ],
+      "centre": [
+        0.0,
+        -0.043,
+        0.073
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block5",
+      "size": [
+        0.07,
+        0.008,
+        0.006
+      ],
+      "centre": [
+        0.0,
+        0.043,
+        0.003
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block6",
+      "size": [
+        0.008,
+        0.008,
+        0.073
+      ],
+      "centre": [
+        -0.03,
+        0.043,
+        0.0395
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block7",
+      "size": [
+        0.008,
+        0.008,
+        0.073
+      ],
+      "centre": [
+        0.03,
+        0.043,
+        0.0395
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block8",
+      "size": [
+        0.05,
+        0.008,
+        0.006
+      ],
+      "centre": [
+        0.0,
+        0.043,
+        0.073
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block9",
+      "size": [
+        0.008,
+        0.006,
+        0.034
+      ],
+      "centre": [
+        -0.022,
+        -0.075,
+        0.085
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block10",
+      "size": [
+        0.008,
+        0.006,
+        0.034
+      ],
+      "centre": [
+        0.022,
+        -0.075,
+        0.085
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block11",
+      "size": [
+        0.046,
+        0.012,
+        0.004
+      ],
+      "centre": [
+        -0.014,
+        -0.025,
+        0.109
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    },
+    {
+      "name": "block12",
+      "size": [
+        0.006,
+        0.012,
+        0.036
+      ],
+      "centre": [
+        -0.034,
+        -0.025,
+        0.093
+      ],
+      "color": [
+        0.56,
+        0.59,
+        0.62
+      ]
+    }
+  ],
+  "open_side": "positive x; translate40mm, then lift while moving to60mm; central barrel purchase y+5mm; bridge and side post y-25mm",
+  "lots": {
+    "A": [
+      0.28,
+      0.17,
+      0.7475
+    ],
+    "B": [
+      0.25,
+      0.18,
+      0.7475
+    ]
+  },
+  "drawing_version": 2,
+  "access_note": "Bridge/post moved an additional5mm rearward after full-face clearance check found contact at the proposed y-20mm."
+}

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1350" viewBox="0 0 1100 1350" data-drawing-version="2"><rect width="1100" height="1350" fill="white"/><g font-family="sans-serif" font-size="18" fill="#162431"><text x="35" y="35" font-size="24">Open-side syringe holder — all dimensions in mm</text><text x="35" y="68">Custom wood/acrylic fixture; complete block centres/sizes in dimensions.json</text><g stroke="#233647" stroke-width="2" fill="#d4dee5"><rect x="110" y="626" width="280" height="24"/><rect x="114" y="346" width="32" height="292"/><rect x="354" y="346" width="32" height="292"/><rect x="150" y="346" width="200" height="24"/><rect x="102" y="206" width="24" height="144"/><rect x="102" y="206" width="184" height="16"/><circle cx="250" cy="290" r="58" fill="#d0eff7"/><path d="M250 290h240 M250 290v-84" stroke-dasharray="5 5"/><path d="M110 674h280m-280-8v16m280-16v16 M65 290v360m-8-360h16m-16 360h16" fill="none"/><path d="M325 290h175l-15-9m15 9-15 9" fill="none"/></g><text x="210" y="707">70 base</text><text x="15" y="485">90</text><text x="345" y="100">Roof:46 ×12 ×4; centre(-14,-25,109)</text><text x="345" y="130">Post:6 ×12 ×36; centre(-34,-25,93)</text><text x="345" y="230">Barrel centre z90, outside diameter29</text><text x="545" y="275">Slide40mm toward+x, then lift</text><text x="545" y="315">No tip cap, piston support or motor in holder</text><text x="545" y="365">Two saddles at y=-43,+43</text><text x="545" y="400">Base70×8×6, centre z3</text><text x="545" y="435">Uprights8×8×73 at x±30,z39.5</text><text x="545" y="470">Bridge50×8×6 at z73</text><text x="545" y="505">Rear flange stops8×6×34</text><text x="545" y="540">centres(x±22,y-75,z85)</text><text x="35" y="735">Front schematic at4px/mm; roof/post at y-25. Open rear flange; see plan view below.</text><text x="35" y="765">Check acquired syringe dimensions with calipers before use. Fixture is made once; fresh leaf punching resets each trial.</text><text x="35" y="795">Both layouts: holder(290,0,0); only cup position changes. Source syringe/product dimensions remain stated estimates.</text>
+<text x="35" y="835" font-size="24">Plan view: x right, y up; 3px/mm; same holder origin</text>
+<rect x="206.5" y="852.5" width="87" height="405" fill="#eaf7fa" stroke="#4992a6" stroke-dasharray="6 4"/>
+<rect data-block="block1" x="145.000" y="1172.000" width="210.000" height="24.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block2" x="148.000" y="1172.000" width="24.000" height="24.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block3" x="328.000" y="1172.000" width="24.000" height="24.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block4" x="175.000" y="1172.000" width="150.000" height="24.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block5" x="145.000" y="914.000" width="210.000" height="24.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block6" x="148.000" y="914.000" width="24.000" height="24.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block7" x="328.000" y="914.000" width="24.000" height="24.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block8" x="175.000" y="914.000" width="150.000" height="24.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block9" x="172.000" y="1271.000" width="24.000" height="18.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block10" x="304.000" y="1271.000" width="24.000" height="18.000" fill="#d4dee5" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block11" x="139.000" y="1112.000" width="138.000" height="36.000" fill="#f3c77a" stroke="#233647" stroke-width="1.5"/>
+<rect data-block="block12" x="139.000" y="1112.000" width="18.000" height="36.000" fill="#f3c77a" stroke="#233647" stroke-width="1.5"/>
+<path d="M110 1055H460 M250 840V1300" fill="none" stroke="#687f8d" stroke-dasharray="4 4"/>
+<path d="M200 1040H300" stroke="#26753e" stroke-width="4"/>
+<path d="M310 1055H455l-14-8m14 8-14 8" fill="none" stroke="#233647" stroke-width="2"/>
+<text x="500" y="925">Orange: roof and side post at y-25mm</text>
+<text x="500" y="965">Green: central barrel purchase at y+5mm</text>
+<text x="500" y="1005">Centre separation along y:30mm</text>
+<text x="500" y="1045">Blue dashed:29×135mm barrel envelope</text>
+<text x="500" y="1085">Slide40mm toward+x, then lift at x+60mm</text>
+<text x="500" y="1125">Saddles remain at y-43,+43mm</text>
+<text x="500" y="1165">All12 plan blocks generated from dimensions.json v2</text>
+<text x="500" y="1205">Native/CPU finger clearance is reported separately.</text>
+<text x="35" y="1330">Dimensions are supplied estimates; verify stock syringe and fixture before physical reproduction.</text>
+</g></svg>
