@@ -1,0 +1,19 @@
+{
+  "title": "Squeeze the lemon half into the bowl with the folding citrus press",
+  "category": "Societal relatability",
+  "keywords": [
+    "bimanual",
+    "sideways pivot",
+    "citrus press",
+    "loaded hinge"
+  ],
+  "instruction": "Squeeze the lemon half into the bowl with the citrus press, then leave the spent half on the saucer and the press inside the white mat outline.",
+  "context": "Home cooks squeeze lemon halves for dressings, fish and drinks, and hand presses need both hands. One hand steadies a handle while the other closes against the fruit, over a bowl; unlike a fixed reamer, the tool itself is held in the air.",
+  "setup": "Dreamfarm Fluicer Lemon DFFU3451: 250 mm folded length, 104 mm nominal width, 270 g PP/stainless. Estimated hinge layout (four-bar C-A-D-B-C): C(0,0,9), A(0,50,9), B(0,-50,9), D(86.60,0,9) mm relative to root; 200x18x18 mm original handles, 100 mm basket links. Root(270,100,table+7) mm in both layouts; handles open180deg, closure limit160.43deg. Silicone sheet400x560x6 mm centred(280,40), white400x440 parking outline centred(280,100). Fresh60x30 mm,70 g half cut-down on mat at(190,250,table+6.5). White PP saucer130x8 mm,120 g at(130,0,table+6); blue PP bowl160x55 mm,130 g at(355,-130,table+6); walls3 mm. Layout B moves only the bowl to x375 and the saucer to y-20. Drawing and complete estimates in README/fixture. Original press$19.99 plus scale, vessels, two20 N spring scales and produce/surface allowances: about$221.23 before tax/shipping, two webcam/mount allowances; existing table/computer/phone. Check each bought item against these dimensions before the first trial.",
+  "scoring": "At20Hz observations, score0 permanently for expressed spill, back-hinge separation>3 mm, intact-range violation, loaded rind escape, cut-face tilt>20deg from vertical during pressing, retention loss, tipped bowl after pressing, falls or missing history. Positive tiers require one continuous loaded two-hand opposed-contact stroke on original handles (1 mm envelope), tool>5 mm above supports, both hands>5 mm clear afterward and all items still1 s. Stroke>=45deg/juice>=2 mL:0.25; >=90deg/8 mL:0.50; >=120deg/15 mL:0.75; >=150deg/20 mL plus rind supported on saucer and press inside400x440mm white outline:1. Either final rind face is allowed; cut-down remains required during pressing. Read stroke with video/protractor, clearance/support with side video/ruler and volume with graduated cup. No retrospective stroke credit. All loaded compression consumes finite inventory and records spills independently of grasp eligibility. Exact tolerances and declared state rule in README. A/B average.",
+  "run_limit": "2400 control steps (120 seconds at20Hz) per layout; two layouts.",
+  "reset_notes": "Restore both arms to READY and clear prior actuator/force history between trials. Clean/dry reusable kit. Fresh60+-5 mm,60-80 g half,20-24C,cut<5min earlier; place cut-down on mat at drawing coordinate. Set tool open180deg at identical pose in both layouts, reset bowl/saucer to A or B, zero material/score history. Prep estimated60–120s per fresh half, unmeasured. Sacrificial sister-half batch qualification and force-reference purchase are specified in README; no measured calibration is claimed.",
+  "fidelity": "250mm/270g tool;18mm handles and50/100mm links estimated. Four native hinges;bounded driven hinge/slider proxies rigid strainer. Rind collider stays60mm;panel contact off, replaced by smoothed3–8N opposing wrenches with counterreaction.25mL pressure-time rule costs0.060J/mL;native0.02Nm s/rad damping plus external work funds a bounded energy tank.20Hz load-domain<=0.15rad/step;invalid histories unscored. Seeds use retention state. Masses stay 70g half/130g bowl; uncalibrated.",
+  "scores": "Native scripted A=1.00, B=1.00, mean=1.000; Dream-1 A=0.00, B=0.00, mean=0.000 (completed, model-valid). No hardware trial.",
+  "media": "M-N8MJH3"
+}

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" fill="#fff"/><style>text{font:17px sans-serif;fill:#20272c}.small{font-size:14px}.label{font-weight:700}line,path,polygon,rect,circle{stroke-linejoin:round}</style><text x="40" y="35" class="label">Fluicer Lemon • estimated native linkage and two visible resets • dimensions mm</text>
+<rect x="120" y="220" width="400" height="560" fill="#d0d4d6" stroke="#555"/>
+<rect x="120" y="220" width="400" height="440" fill="none" stroke="white" stroke-width="2"/>
+<circle cx="395" cy="670" r="80" fill="#a5cae9" stroke="#444"/>
+<circle cx="170" cy="540" r="65" fill="#eee" stroke="#444"/>
+<circle cx="415" cy="670" r="80" fill="none" stroke="#386c91" stroke-dasharray="6 4"/>
+<circle cx="170" cy="560" r="65" fill="none" stroke="#386c91" stroke-dasharray="6 4"/>
+<circle cx="230" cy="290" r="30" fill="#f5db39" stroke="#444"/>
+<line x1="310" y1="240" x2="310" y2="640" stroke="#dfb81d" stroke-width="18"/>
+<line x1="310" y1="390" x2="396.6" y2="440" stroke="#d29f0a" stroke-width="5"/>
+<line x1="310" y1="490" x2="396.6" y2="440" stroke="#d29f0a" stroke-width="5"/>
+<ellipse cx="353.3" cy="440" rx="40" ry="52" fill="#f9df68" fill-opacity=".45" stroke="#bc9f20"/>
+<circle cx="310" cy="440" r="4" fill="#999" stroke="#444"/>
+<text x="318" y="433" class="">C</text>
+<circle cx="310" cy="390" r="4" fill="#999" stroke="#444"/>
+<text x="318" y="383" class="">A</text>
+<circle cx="310" cy="490" r="4" fill="#999" stroke="#444"/>
+<text x="318" y="483" class="">B</text>
+<circle cx="396.6" cy="440" r="4" fill="#999" stroke="#444"/>
+<text x="404.6" y="433" class="">D</text>
+<text x="45" y="100" class="">TOP VIEW: x right, y up. + is table origin.</text>
+<text x="45" y="125" class="">Solid A; blue dashed B: bowl +20 x; saucer -20 y.</text>
+<text x="45" y="150" class="">Press and fruit start identically in both trials.</text>
+<text x="45" y="180" class="">Sheet400×560×6;parking400×440 centre(280,100).</text>
+<text x="45" y="900" class="">Press root(270,100,+7); all z measured from tabletop.</text>
+<text x="45" y="925" class="">Fruit(190,250,+6.5),60mm diameter,70g,cut-down.</text>
+<text x="45" y="950" class="">Saucer A(130,0,+6), Ø130 ×8; B y-20.</text>
+<text x="45" y="975" class="">Bowl A(355,-130,+6), Ø160 ×55; B x375.</text>
+<text x="45" y="1000" class="">No clamp, raised grip block, printed holder or hidden fixture.</text>
+<text x="650" y="95" class="label">OPEN FOUR-BAR • local coordinates</text>
+<line x1="690" y1="285" x2="690" y2="185" stroke="#d4a812" stroke-width="5"/>
+<line x1="690" y1="285" x2="690" y2="385" stroke="#d4a812" stroke-width="5"/>
+<line x1="690" y1="185" x2="863.2" y2="285" stroke="#d4a812" stroke-width="5"/>
+<line x1="690" y1="385" x2="863.2" y2="285" stroke="#d4a812" stroke-width="5"/>
+<circle cx="690" cy="285" r="5" fill="#888" stroke="#444"/>
+<text x="702" y="277" class="">C(0,0)</text>
+<circle cx="690" cy="185" r="5" fill="#888" stroke="#444"/>
+<text x="702" y="177" class="">A(0,50)</text>
+<circle cx="690" cy="385" r="5" fill="#888" stroke="#444"/>
+<text x="702" y="377" class="">B(0,-50)</text>
+<circle cx="863.2" cy="285" r="5" fill="#888" stroke="#444"/>
+<text x="875.2" y="277" class="">D(86.60,0)</text>
+<text x="650" y="425" class="">C–A/C–B50; A–D/B–D100. Four vertical axes.</text>
+<text x="650" y="450" class="">Open handles180°; relative limit160.43°.</text>
+<text x="650" y="475" class="">Handle section18 ×18; native reach200mm.</text>
+<text x="650" y="500" class="">250mm folded length/104mm width/270g: maker.</text>
+<text x="650" y="525" class="">All detailed offsets/sections are photo estimates.</text>
+<text x="650" y="565" class="label">SIDE SECTION • open basket</text>
+<line x1="650" y1="690" x2="1110" y2="690" stroke="#444" stroke-width="3"/>
+<text x="650" y="715" class="">Table z0;mat top6;tool root7.</text>
+<rect x="680" y="666" width="160" height="18" fill="#e7bd22" stroke="#555"/>
+<rect x="840" y="623" width="150" height="40" fill="#f7d24f" stroke="#555"/>
+<rect x="835" y="676" width="160" height="4" fill="#f7d24f" stroke="#555"/>
+<text x="650" y="750" class="">Handle z0–18 relative root;hinge axes z9.</text>
+<text x="650" y="775" class="">Panel z20–60;2.5mm walls;pin posts z0–24.</text>
+<text x="650" y="800" class="">Strainer80 ×104;floor z0–4;rim top9.</text>
+<text x="45" y="1060" class="">Folding floor approximation:bounded physical hinge4Nm/rad,0.30Nm cap;slider26mm,500N/m,3N cap.</text>
+<text x="45" y="1085" class="">Follower targets measured linkage geometry;these joints stand in for the real PP fold,not extra real hardware.</text>
+<text x="45" y="1110" class="">3–8N smoothed opposing force at180mm purchase each step,with counterreaction;fruit/panel contact is declared.</text>
+<text x="45" y="1145" class="small">Real enrollment:verify original tool/handle offsets with calipers;fresh half prep&lt;2min;no custom part fabrication.</text>
+<text x="45" y="1170" class="small">Source:Dreamfarm Fluicer Lemon DFFU3451 product page and maker product sheet. Dimensions not maker CAD.</text>
+</svg>
