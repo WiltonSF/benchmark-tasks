@@ -1,0 +1,86 @@
+make_replica.py checks (generated; do not edit)
+knob head 13.00 mm across, 10.00 long; neck 6.00; rim seat 37.00 mm
+80 passed, 0 failed
+CAD geometry checks only; no physical fit, force, strength or cycle validation.
+First cam slope 2.000000 mm/mm; nominal simulation knob remains 13 x 10 mm, neck 6 mm.
+
+ok   bracket: closed, consistently wound solid: 226.09 cm3, genus 5
+ok   body_rear: closed, consistently wound solid: 146.17 cm3, genus 6
+ok   body_front: closed, consistently wound solid: 35.91 cm3, genus 4
+ok   carrier: closed, consistently wound solid: 27.36 cm3, genus 1
+ok   coupling: closed, consistently wound solid: 4.35 cm3, genus 0
+ok   sleeve: closed, consistently wound solid: 1.50 cm3, genus 3
+ok   spacer: closed, consistently wound solid: 2.31 cm3, genus 1
+ok   knob: closed, consistently wound solid: 1.92 cm3, genus 4
+ok   keeper_top_xpos: closed, consistently wound solid: 0.06 cm3, genus 0
+ok   keeper_top_xneg: closed, consistently wound solid: 0.06 cm3, genus 0
+ok   keeper_bottom_xpos: closed, consistently wound solid: 0.06 cm3, genus 0
+ok   keeper_bottom_xneg: closed, consistently wound solid: 0.06 cm3, genus 0
+ok   mould_half_xpos: closed, consistently wound solid: 96.73 cm3, genus 6
+ok   mould_half_xneg: closed, consistently wound solid: 96.73 cm3, genus 6
+ok   mould_core: closed, consistently wound solid: 98.03 cm3, genus 3
+ok   catch ring radius (57.5 mm across): 28.750 (task.py: 28.750)
+ok   catch ring back face, u: 117.000 (task.py: 117.000)
+ok   bush collar front, u (cap rim seat): 146.500 (task.py: 146.500)
+ok   coupling radius (19 mm across): 9.500 (task.py: 9.500)
+ok   coupling back face, u: 188.000 (task.py: 188.000)
+ok   coupling front face, u: 216.000 (task.py: 216.000)
+ok   releasing ring radius (22 mm across): 11.000 (task.py: 11.000)
+ok   releasing ring back face, u: 187.000 (task.py: 187.000)
+ok   releasing ring front face, u (13.5 mm long): 200.500 (task.py: 200.500)
+ok   nose front, u: 128.000 (task.py: 128.000)
+ok   nose radius: 19.000 (task.py: 19.000)
+ok   locking cover radius: 28.750 (task.py: 28.750)
+ok   mounting face, u: 0.000 (task.py: 0.000)
+ok   three lugs: 3 (task.py: 3)
+ok   lug at 90.1 deg, 17.8 deg wide (task.py: 90.0 deg, 18.0)
+ok   lug at 210.0 deg, 18.0 deg wide (task.py: 210.0 deg, 18.0)
+ok   lug at 330.2 deg, 18.0 deg wide (task.py: 330.0 deg, 18.0)
+ok   three gaps in the lip: 3 (task.py: 3)
+ok   lip gap at 135.1 deg, 49.8 deg wide (task.py: 135.0 deg, 50.0)
+ok   lip gap at 255.2 deg, 50.0 deg wide (task.py: 255.0 deg, 50.0)
+ok   lip gap at 15.0 deg, 50.0 deg wide (task.py: 15.0 deg, 50.0)
+ok   bayonet locked: lugs behind the lip seen along the axis: overlap 63.6 mm2
+ok   bayonet turned open: lugs clear of the lip seen along the axis: overlap 0.0 mm2
+ok   turning past open hits a stop: 14.13 mm3 overlap
+ok   turning back past locked hits a stop: 14.13 mm3 overlap
+ok   catch ring locked does not overlap the body: 0.000 mm3
+ok   catch ring open does not overlap the body: 0.000 mm3
+ok   keeper inner edge off the axis (closed): 3.500 (task.py: 3.500)
+ok   keeper lift at full ring travel (4 mm): 4.000 (task.py: 4.000)
+ok   ring travel at which the keepers clear the knob's head (sim: latch opens): 1.500 (task.py: 1.500)
+ok   below 1.0 mm of ring travel the keepers hold the head (sim: latch closes): clear only from 1.50 mm (task.py: 1.0)
+ok   ring 0.00 mm: the knob drawn 1 mm forward meets the keepers: radial overlap 3.00 mm, 8.9 mm3
+ok   ring 0.25 mm: the knob drawn 1 mm forward meets the keepers: radial overlap 2.50 mm, 5.7 mm3
+ok   ring 0.50 mm: the knob drawn 1 mm forward meets the keepers: radial overlap 2.00 mm, 3.2 mm3
+ok   ring 0.75 mm: the knob drawn 1 mm forward meets the keepers: radial overlap 1.50 mm, 1.6 mm3
+ok   ring 1.00 mm: the knob drawn 1 mm forward meets the keepers: radial overlap 1.00 mm, 1.2 mm3
+ok   ring 1.25 mm: the knob drawn 1 mm forward meets the keepers: radial overlap 0.50 mm, 0.7 mm3
+ok   ring 1.75 mm: the head's path through the keepers is clear: 0.000 mm3
+ok   ring 2.00 mm: the head's path through the keepers is clear: 0.000 mm3
+ok   ring 2.25 mm: the head's path through the keepers is clear: 0.000 mm3
+ok   ring 2.50 mm: the head's path through the keepers is clear: 0.000 mm3
+ok   ring 2.75 mm: the head's path through the keepers is clear: 0.000 mm3
+ok   ring 3.00 mm: the head's path through the keepers is clear: 0.000 mm3
+ok   no part of the latch overlaps another anywhere in the ring's 3 mm travel: 0.000 mm3
+ok   releasing ring's travel to its stop (drawbar key meets the channel end): 3.000 (task.py: 3.000)
+ok   pushed past 3 mm the releasing ring is stopped: 1.21 mm3
+ok   the releasing ring's rest stop (rear wall on the coupling): 38.69 mm3
+ok   return spring rate, N/m (Lee Spring LC 036G 06 M): 1000.000 (task.py: 1000.000)
+ok   rod pushes back 55 mm, then the collar meets the bulkhead: 55 mm
+ok   rod's forward stop (collar on the nose's step)
+ok   rod slides free in the body rear: 0.000 mm3
+ok   rod slides free in the body front: 0.000 mm3
+ok   rod slides free in the bracket: 0.000 mm3
+ok   rod radius: 5.000 (task.py: 5.000)
+ok   spring fits between the spacer and the ring, not solid at full travel (solid height 6.63 mm): installed 31.45 mm, 28.45 at 3 mm; preload 0.30 N
+ok   spacer clear of the nose, carrier and coupling: 0.000 mm3
+ok   spring clear of the nose, carrier and coupling: 0.000 mm3
+ok   body_rear and body_front do not overlap: -0.000 mm3
+ok   body_front and carrier do not overlap: 0.000 mm3
+ok   carrier and coupling do not overlap: 0.000 mm3
+ok   body_rear and bracket do not overlap: 0.000 mm3
+ok   coupling and sleeve do not overlap: 0.000 mm3
+ok   axis height above the table (bracket on its board): 80.000 (task.py: 80.000)
+ok   the bush's 30 mm bore passes the releasing ring (the cap rolls through it)
+ok   knob seated in the pocket without touching the coupling or keepers: 0.000 mm3
