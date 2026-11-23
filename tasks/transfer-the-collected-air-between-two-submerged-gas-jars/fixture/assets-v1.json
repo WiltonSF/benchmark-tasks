@@ -1,0 +1,13 @@
+{
+  "asset_version": 1,
+  "units": "metres in code, millimetres in drawings",
+  "product": "SIMAX2705/50x150",
+  "geometry_sha256": {
+    "task.py": "7d8e7bab423b16d2f645d821f2674fa76ba7b1f46286a56be1e25d9bc46844f1",
+    "parts.py": "32745b15f6752c754c1b96fed19ffa15583686752052c1c6afc775df75094432",
+    "lots.py": "f2a660eddea564c7c9562864872c00cbaaa15874ec60e9345bd58eeb851bea77",
+    "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567",
+    "fixture/BUILD.md": "8bd7369f43904edb9fd15981ac07d687a4b85c0254417a4ea5d5b319aa43cd0d",
+    "fixture/dimensions.svg": "5e878498213022a5e5b9c3fe9b5dc200a8bf259b7e30baffa5bb5bb2d03c3f4e"
+  }
+}

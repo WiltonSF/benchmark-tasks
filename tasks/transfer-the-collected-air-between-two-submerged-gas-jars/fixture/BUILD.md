@@ -1,0 +1,15 @@
+# Fixture v1, millimetres
+
+No disposable specimen or special robot handle is fabricated. Use the listed native jars and one active70mm porcelain beehive shelf for the receiver; the donor starts directly on the trough floor. The trough is a normal open transparent reservoir; it does not add a funnel, narrow a mouth or guide a jar.
+
+Clear cast acrylic4.0mm, five panels: floor400x300 (1), long side400x96 (2), short side292x96 (2). Stand all sides on the floor. Long sides occupy y=+-148 at their midplanes; short sides x=+-198. Finished outside400x300x100; inside392x292x96 from floor top. Solvent-bond watertight once according to adhesive instructions; curing is one-time fixture preparation, never per-trial specimen preparation. Deburr edges. Leak-test with water before use. A shop-cut preassembled aquarium of these dimensions is an alternative only if its measured inside dimensions and access match. Do not resize the jars to fit another trough.
+
+Draw the waterline85mm above inside floor, i.e.89mm above table, all four sides. Total empty freeboard11mm. The model's water-plus-trough inertial surrogate weighs10kg; actual fill/fixture mass must be recorded. The physical reservoir is placed on a nonslip mat, never grasped or lifted by a robot. The simulation applies the reciprocal hydrostatic/drag wrench to the reservoir and its table contacts.
+
+Each native porcelain shelf is70mm outside diameter,20mm high, with gas inlet. Simulation surrogate has an open-sided shell,63mm mean wall diameter with7mm wall,17mm wall height,3mm top,12mm central opening; outer70mm, inner56mm, top ring6..35mm radius. Native detailed profile,20mm height and250g mass are estimates to check before hardware; substitute only same-diameter native shelves and record measured height, shifting only the receiver start by the measured height difference. This does not change aperture/capture geometry. No retained clip or glued jar.
+
+Place the receiver shelf at the published receiver center. Its top is24mm above table; the donor mouth starts on the4mm-high trough floor. A jar is150mm long, modeled mouth at local z=-75mm, closed foot at+75mm; body50mm, bore44mm, closed foot59mm diameter and5mm thick, mouth flange59mm diameter and4mm thick, side wall3mm. Native SIMAX body50x150 is catalogue size; bore, flange, wall, mass and foot dimensions are reconstruction estimates. Model foot, flange and hollow bore explicitly. Check with caliper/ruler and scale before enrolling a physical jar. Reject a damaged or chipped rim.
+
+Print a1:1 placement sheet or use a ruler: A donor350,60,79 and receiver270,-60,99; B donor350,45,79 and receiver320,-60,99. Heights are included as the third coordinate. Coordinates are relative to midpoint between arm bases, x away and y left. Trough center300,0. All axes start vertical, closed ends up. Labels amber D and blue R stay on the respective jars. Thin calibration marks and ink rim witnesses do not add mechanical grips.
+
+Real-trial reset uses existing equipment, water and ambient air: flood, inject80mL into D, park jars, check no air in R. Target1-2min, unmeasured; no casting, printing, drying or curing between trials.
