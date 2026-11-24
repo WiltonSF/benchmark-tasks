@@ -52,9 +52,13 @@
       "gel": 77,
       "push_out_stand": 190
     },
-    "spring_basis": "Return force0.3N at60mm lever and0.1rad opening,unpublished construction estimate.",
-    "press_fit_N": 2.5,
-    "press_fit_basis": "Holds the 140 g ring on the acrylic when the mold rests on the stand (ring weight 1.37 N) and lets go after 2 mm of push-out; the maker gives no number."
+    "press_fit_N": 8.3734,
+    "press_fit_basis": "7 N robot load obtained by phone from a technician who works with this product (Nov 2026), plus 1.3734 N ring gravity; >=2 mm loaded travel and >=14 mJ robot work. Only enrolled 5-7 N standard-ring cohort covered.",
+    "passive_bending_Nm_per_rad": 0.001,
+    "passive_bending_basis": "Uncalibrated zero-rest bending proxy, not a measured gel modulus; hardware qualification required.",
+    "peel_basis": "0.5 N per 24 mm strip WIDTH, phone technician Nov 2026. 1.2x engineering width envelope: end84.180 mm/2.104505 N, middle147.315 mm/3.682884 N. Intact-sheet qualification missing.",
+    "peel_area_work_J_per_m2": 25.0,
+    "peel_area_work_basis": "Model inference from1.2*(phone0.5N/24mm strip WIDTH),90deg inextensible Kendall energy approximation; not measured XP-565 fracture work. Actual contact-point peel load with paired acrylic reactions. Intact force/work and angle enrollment required."
   },
   "fidelity": "Ring section measured from original STL, independently reconstructed as24 convex sectors. Acrylic polygon uses ring seat dimensions; original DXF coordinate units require conversion and rotation, not a17mm miniaturization.",
   "material": "Maker BoM:XP-565 silicone,70g base plus7g activator;16-18h cure.",
@@ -104,5 +108,14 @@
       -220
     ],
     "counter_upstand": "x 711 to 729, 110 tall, full width"
+  },
+  "adhesion_load_model": {
+    "front_opening_ramp_m": 0.0004,
+    "qualified_minimum_N": [
+      2.104505,
+      3.682884
+    ],
+    "actual_cap_factor": 1.01,
+    "basis": "No full load on unopened next front from merely supporting a freed flap; full original force still required for every positive fracture-work credit."
   }
 }

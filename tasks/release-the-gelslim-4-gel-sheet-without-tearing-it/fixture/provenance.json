@@ -7,13 +7,15 @@
       "path": "gel_mold/outer_ring.STL",
       "git_blob_sha1": "7368adccd8610642a67948524aa16075abab7898",
       "sha256": "e5df7074969cc08dad62e02cb3cfac335d17094a5152fd6d34f1edec6e57a126",
-      "bytes": 6084
+      "bytes": 6084,
+      "url": "https://raw.githubusercontent.com/MMintLab/gelslim_hardware/9bd5fccfa1f4c1978786b694358858899d73066d/gel_mold/outer_ring.STL"
     },
     {
       "path": "gel_mold/hex_acrylic_base.DXF",
       "git_blob_sha1": "77dd0ad20565d97445540effb12cf6f06795845c",
       "sha256": "976937118ae4432d8c974284e3c6c526fcbf38fab72ba1bd56b09cc496a5da4a",
-      "bytes": 21538
+      "bytes": 21538,
+      "url": "https://raw.githubusercontent.com/MMintLab/gelslim_hardware/9bd5fccfa1f4c1978786b694358858899d73066d/gel_mold/hex_acrylic_base.DXF"
     }
   ],
   "redistribution": "No raw third-party CAD or mesh is included;analytic dimension reconstruction only."
