@@ -89,9 +89,26 @@ LEVER_CROSS = [((-0.050, -0.0435), (-0.032, -0.029)), ((-0.050, -0.047), (-0.032
 BODY_MASS = 0.13  # kg: printed frame, two gear motors, board and spool arm (estimate)
 REEL_MASS = 0.13  # kg: 7 inch reel with paper tape, part used (estimate)
 LEVER_MASS = 0.025
-LEVER_SPRING, LEVER_PRELOAD = 0.10, -0.15  # N m/rad, rad (target beyond the closed stop: a preloaded spring)
-REEL_DRAG = 0.002  # N m s/rad, the reel turning on its hub (estimate)
-REEL_SLACK = 3.0  # rad the reel may unwind (tape goes slack); winding is stopped by the threaded tape
+# Obtained by phone from a technician who works with this product (Nov 2026).
+# The call reports catch pull, not its lever arm. Use the longest pivot-to-tab
+# radius as a conservative model mapping: resisting torque / any tab moment arm
+# is >= CATCH_RELEASE_PULL at the closed stop and increases during opening.
+CATCH_RELEASE_PULL = 8.0  # N on a new feeder; lower as it wears in
+CATCH_PULL_ARM = math.hypot(LEVER_CROSS[1][0][0] - PIVOT[0], LEVER_CROSS[1][1][1] - PIVOT[1])
+LEVER_PRELOAD = -0.15  # rad, engineering assumption beyond the closed stop
+LEVER_SPRING = CATCH_RELEASE_PULL * CATCH_PULL_ARM / abs(LEVER_PRELOAD)  # N m/rad
+REEL_RIM_DRAG = 0.30  # N tangentially at the reel rim; phone figure
+REEL_HUB_FRICTION = REEL_RIM_DRAG * REEL_R  # N m = 0.0267 at 89 mm rim
+REEL_DRAG = 0.002  # N m s/rad, additional viscous drag (estimate)
+OBSERVED_REEL_TURN_DEG = (5.0, 15.0)  # phone-reported slight turn during removal; not a score gate
+# Threaded tape proxy, not physically validated. Reel and stopped feeder travel together.
+# Rim drag is implemented as equal static/dynamic hub friction, with parent reaction.
+# Winding takes up WIND_PLAY then meets an ideal angular stop representing taut tape.
+# Unwinding produces slack; no finite tape breaking/slip load or snag collider exists.
+TAPE_R = 0.070  # m, estimated tape takeoff radius on a part-used 7 inch reel
+TAPE_TENSION = REEL_HUB_FRICTION / TAPE_R  # 0.381 N equivalent hub scale, not applied tape load
+WIND_PLAY = 0.02  # rad, estimated winding take-up before taut-tape angular stop
+REEL_SLACK = 3.0  # rad, numerical unwind bound, not a measured slack capacity
 # Printed feeder surfaces: 0.38 static is the top of the 0.12-0.38 range measured between pairs of printed PLA parts
 # (Santana, Alves and Netto, Proc. IMechE Part L 235(6), 2021; printed PETG pairs 0.13-0.21); 0.30 sliding is an estimate.
 FEEDER_FRICTION = (0.38, 0.30)
@@ -115,7 +132,7 @@ def _feeder_shapes():
     out.append(_box(BRIDGE[0], BRIDGE[1], BRIDGE[2], FEEDER_BLACK))
     out.append(_box(STEM[0], STEM[1], NOSE_W / 2, FEEDER_BLACK))
     out.append(parts.cylinder(NOSE[1], NOSE_W, at=(NOSE[0][0], 0.0, NOSE[0][1]), color=FEEDER_BLACK, axis="y"))
-    out.append(_box(*SPOOL_ARM, 0.0025, FEEDER_BLACK, collide=False))
+    out.append(_box(*SPOOL_ARM, 0.0025, FEEDER_BLACK))
     # looks only: the threaded tape from the top of the reel into the feeder, and a label strip on each side
     a = math.atan2(0.030 - 0.074, -0.095 - (-0.150))
     out.append(parts.box((0.071, 0.008, 0.0006), at=(-0.1225, 0.0, 0.052), color=TAPE, quat=_qy(-a), collide=False))
@@ -222,7 +239,8 @@ def _feeder(name, k):
                         lower=0.0, upper=0.6, mass=LEVER_MASS, spring=LEVER_SPRING, damping=0.002, max_effort=1.0,
                         target=LEVER_PRELOAD)
     reel = parts.Hinge("reel", shapes=tuple(_reel_shapes()), pivot=(HUB[0], 0.0, HUB[1]), axis=(0.0, 1.0, 0.0),
-                       lower=-0.02, upper=REEL_SLACK, mass=REEL_MASS, spring=0.0, damping=REEL_DRAG, max_effort=1.0)
+                       lower=-WIND_PLAY, upper=REEL_SLACK, mass=REEL_MASS, spring=0.0, damping=REEL_DRAG, max_effort=1.0,
+                       friction=REEL_HUB_FRICTION, dynamic_friction=REEL_HUB_FRICTION)
     return parts.Part(name, pos=(X0 + k * PITCH, Y_R, TOP + Z_R), yaw=YAW, mass=BODY_MASS,
                       shapes=tuple(_feeder_shapes()), joints=(lever, reel), friction=FEEDER_FRICTION, contact_offset=PACKED_CONTACT,
                       link_friction=(("lever", (0.2, 0.15)),))
@@ -545,6 +563,22 @@ def _step(sim):
                     row[n].update(hooked=hooked(st), latched=latched(st))
                 except (ValueError, KeyError):
                     pass
+        try:  # debugging only: total incoming reel joint wrench, not isolated tape tension
+            base = sim.env.unwrapped
+            for n in NAMES:
+                asset = base.scene[n]
+                view = getattr(asset, "root_physx_view", None) or getattr(asset, "root_view", None)
+                arr = view.get_link_incoming_joint_force()
+                f = np.asarray(arr.numpy() if hasattr(arr, "numpy") else arr.detach().cpu().numpy(), float)
+                f = f.reshape(f.shape[0], -1, 6)[0]  # per link: force, then torque about the link origin (the hub)
+                i = asset.body_names.index("reel")
+                row[n]["reel_wrench"] = np.round(f[i], 5).tolist()
+                row[n]["reel_vel"] = float(parts._np(asset.data.joint_vel)[0][asset.joint_names.index("reel")])
+                lever_q = float(objects[n].joints["lever"])
+                row[n]["lever_spring_torque_Nm"] = LEVER_SPRING * (lever_q - LEVER_PRELOAD)
+                row[n]["catch_tab_force_lower_bound_N"] = row[n]["lever_spring_torque_Nm"] / CATCH_PULL_ARM
+        except Exception as e:  # noqa: BLE001  (debug logging only)
+            row["reel_wrench_error"] = repr(e)[:200]
         try:  # debugging only: where each hand's TCP is
             from yam_arena.constants import TCP_OFFSET
 
@@ -587,7 +621,7 @@ def demo():
         _w(2.5, (px, py, TOP + 0.195), FINGER_OPEN, "above the middle feeder's inner end"),
         _w(1.5, (px, py, inner_top + 0.0129 + 0.004), FINGER_OPEN, "finger on the inner end"),
         _w(3.0, (px, py, inner_top + 0.0129 - 0.045), FINGER_OPEN, "press it down"),
-        _w(4.2, (px, py, inner_top + 0.0129 - 0.045), FINGER_OPEN, "hold it tipped"),
+        _w(5.2, (px, py, inner_top + 0.0129 - 0.045), FINGER_OPEN, "hold it tipped"),
         _w(1.5, (px, py, TOP + 0.195), FINGER_OPEN, "lift away"),
         _w(2.0, (0.20, -0.30, TOP + 0.22), FINGER_OPEN, "aside"),
         _w(20.0, (0.20, -0.30, TOP + 0.22), FINGER_OPEN, "wait"),
@@ -610,9 +644,9 @@ def demo():
         lw(1.5, (X0, gy, gz), FINGER_OPEN, "fingers either side of the proud outer end"),
         lw(1.0, (X0, gy, gz), PINCH, "pinch the feeder body"),
         lw(0.7, (X0, gy, gz), PINCH, "settle"),
-        lw(1.0, (X0, gy, gz + 0.022), PINCH, "lift the hook out"),
-        lw(1.5, (X0, gy, gz + 0.022), PINCH, "hold while the other hand lifts"),
-        lw(1.5, (X0, gy + 0.020, gz + 0.022), PINCH, "out a little"),
+        lw(2.0, (X0, gy, gz + 0.040), PINCH, "lift the hook out", tilt_deg=5.0, heading=-math.pi / 2),
+        lw(1.5, (X0, gy, gz + 0.040), PINCH, "hold while the other hand lifts", tilt_deg=5.0, heading=-math.pi / 2),
+        lw(1.5, (X0, gy + 0.020, gz + 0.040), PINCH, "out a little", tilt_deg=5.0, heading=-math.pi / 2),
         lw(2.0, (X0, gy + 0.020, gz + 0.029), PINCH, "level it", **level),
         lw(3.0, (X0, gy + 0.170, gz + 0.029), PINCH, "slide it out", **level),
         lw(3.0, (X0, out_y, gz + 0.029), PINCH, "clear of the bank"),

@@ -1,16 +1,16 @@
 # Remove the middle feeder from a packed feeder rail on a pick-and-place machine
 
-**Instruction:** Take the middle feeder off the rail and lay it on its side on the blue mat. Leave the other two
-feeders in place.
+**Instruction:** Release the middle feeder, lift its hook clear and withdraw it past its neighbours. Lay it on its side on the blue mat and move both hands clear. Leave the outer feeders seated.
+
+The recorded Dream-1 run uses this instruction.
 
 **Category:** Impact on AI timelines.
 
 ## Why it matters
 
 Robot builders assemble their motor-driver, encoder and sensor boards on pick-and-place machines; small makers and labs
-use desktop machines such as the LumenPnP, which take the same kind of tape feeders on a rail as production lines. Each
-board needs a different set of parts, so every board change means taking feeders off the machine's rail and putting
-others on. A robot that runs such a machine between jobs has to do this feeder change itself, at the machine. The
+use desktop machines such as the LumenPnP, which take the same kind of tape feeders on a rail as production lines. A
+board that needs parts not already loaded on the rail means taking feeders off it and putting others on. A robot that runs such a machine between jobs has to do this feeder change itself, at the machine. The
 feeders sit side by side at the rail's slot pitch, so the job is always "take one unit out of a packed row without
 disturbing the ones next to it": a neighbour knocked off its slot loses its slot address and its pick position, and the
 next board is placed wrong.
@@ -25,9 +25,9 @@ next board is placed wrong.
   face, and a yellow sprung lever on the clip hooks two teeth under the slot blade on the rail's front face, with the
   clip fitting closely round the blade's peg. The unit only comes free by turning about the hook (reel end up, inner
   end down) once the catch lets go, then lifting the hook out of the slot.
-- **The release and the grasp need two hands.** Whatever turns the middle unit out of line has to keep it turned while
+- **The demonstrated release and grasp use two hands.** The pressing hand keeps the middle unit turned while
   the other hand takes the part that now stands proud of the bank. Let go, and the reel's weight drops the unit back
-  into its catch.
+  into its catch. This explains the scripted approach, not a proof that every one-hand strategy is impossible. The maker also documents spool-arm removal by hand.
 - **The machine limits the approach.** The bank sits on the machine's front rail, as on the real machine: the bed
   starts 5 mm behind the feeders' inner ends, the front left leg and side frame stand about 75 mm to the near side, the
   control box sits between the robot and the machine, and the slot blade fills the space under the feeders' middle
@@ -49,8 +49,8 @@ the whole-trial failures.
 **How it differs from accepted tasks.** Tipping a recessed book off a packed shelf (TK-E6ECW7) also has no grasp until
 the item is tipped out, but the book is free: once tipped it stays tipped and is then taken with one hand. Taking one
 bottle from a row (TK-HAH39Z) and swapping a module from a row of sockets (TK-KHHQD4) start with a graspable item. Here
-the unit is latched by a hook and a sprung catch and falls back into its catch the moment it is let go, so one hand
-has to hold it tipped while the other takes the end that now stands proud; it is then lifted off its hook and slid out
+the unit is latched by a hook and a sprung catch and falls back into its catch when let go. The demonstrated
+approach holds it tipped with one hand while the other takes the exposed end, then lifts it off its hook and slides it out
 along its own plane, past two neighbours 0.8 mm away that must stay seated, inside the machine's frame.
 
 ## Scene and parts (true size)
@@ -62,16 +62,22 @@ slots, so the robot works at the machine's front left corner.
 | Item | Real product | Source | Modelled as |
 |---|---|---|---|
 | Machine | Opulo LumenPnP desktop pick-and-place machine | maker's assembly CAD (`src/assembly.FCStd` in the open-source machine repository) | fixed boxes at their CAD positions: front frame rail, front and back legs and feet, lower and upper side rails with their guide rails, back frame rail, bed plate (3 mm, starting 85 mm behind the rail so it clears the feeders by 5 mm, as the maker specifies), bottom camera, control box, gantry beam, carriages and toolhead parked at the back of travel |
-| Front rail | 20 x 20 mm V-slot aluminium extrusion, 600 mm, the machine's front frame member | assembly CAD: centre line 110 mm above the bench (machine on its leg extensions) | core with its top-face slot, simplified to a 5 mm wide, 4 mm deep channel (a real V-slot groove is 6.2 mm wide at the face with 45 degree lips) |
+| Front rail | 20 x 20 mm V-slot aluminium extrusion, 600 mm, the machine's front frame member | assembly CAD: centre line 110 mm above the bench (machine on its leg extensions) | core with its top-face slot, simplified to a 5 mm wide, 4 mm deep channel (the model uses a plain channel; the selected real V-slot profile and its sloped lips must be measured during enrollment) |
 | Slot blade | LumenPnP front slot blades (25 slots, x 103 to 498 mm along the rail) | assembly CAD | yellow block 28 mm deep, 45 mm tall on the rail's front face, one 5 x 5.5 x 6 mm peg per slot at a 15.8 mm pitch |
 | Tape feeders (3) | Opulo LumenPnP 8 mm feeder with its spool arm | [maker page](https://opulo.io/products/feeder), [mounting guide](https://docs.opulo.io/feeders/4-mounting/mounting/), [overview](https://docs.opulo.io/feeders/1-overview/feeder-overview/), design files (the `opulo-inc/feeder` repository on GitHub; frame-8 envelope 164.8 x 82.8 x 15 mm) | black body 165 long (70 mm in from the rail centre, 95 out), 15 wide and 73 tall (the frame's 83 mm envelope less the bulge under its drive gear, left out), hook nose, clip round the peg, yellow two-tooth sprung lever; body 0.13 kg (estimate) |
-| Reels (3) | Standard 7 inch (178 mm) reel of 8 mm component tape, EIA-481 | maker spec sheet ("standard 7 inch reel") | white disc 178 x 13 mm on a revolute joint at the spool arm's hub, 0.13 kg (estimate), light hub drag; the threaded tape is a one-way stop (see Fidelity) |
+| Reels (3) | Standard 7 inch (178 mm) reel of 8 mm component tape, EIA-481 | [maker's v1 spool-arm mounting guide](https://docs.opulo.io/feeders/4-mounting/mounting/) (standard 7 inch spool); 13 mm model width and 0.13 kg model mass are estimates requiring specimen enrollment. | white disc 178 x 13 mm on a revolute joint at the spool arm's hub, 0.13 kg (estimate), 0.3 N rim drag mapped to hub torque; ideal threaded-tape winding stop (see Reel and tape) |
 | Mat | Anti-static bench mat, blue, cut to 300 x 420 x 3 mm | any electronics supplier | loose slab, 0.5 kg |
 
-Drawings of the slot blade, peg, rail section and the feeder's interface: `fixture/`.
+Pinned machine assembly and feeder design sources, including the exact feeder CAD path: [fixture/BUILD.md](fixture/BUILD.md#scene-and-parts-sources). The hook, clip and lever dimensions are photo-based model estimates.
+
+Supplier profiles differ: https://ratrig.com/products/v-slot-2020-standard specifies a 6 mm opening; that is not a measurement of the recommended ABRA rail.
+
+Drawings of the slot blade, peg, rail section and the feeder's interface: `fixture/`. A low-cost build of the rail and
+the frame parts that limit access, for a real trial with genuine feeders: `fixture/BUILD.md` (below).
 
 Estimates, each marked as such in `task.py`: the hook, clip and lever dimensions (sized from the maker's photos; the
-exact printed geometry is not reproduced), the masses, the lever spring and the reel's hub drag. Layout: lot A, the
+exact printed geometry is not reproduced), masses, the catch lever arm and spring target, additional reel viscous
+drag and tape play. Catch pull and reel rim drag use the phone figures in Reel and tape. Layout: lot A, the
 screenshot; lot B moves the mat 30 mm toward the robot.
 
 ## Scoring (what the code checks)
@@ -120,7 +126,7 @@ End state:
         --epochs 2 --max-steps 2400
 
 Trial k uses lot k mod 2 (A first). `TASK_LOT=B` in the environment pins every trial to lot B. Run with
-`object_jitter=0`. The final scripted trials take about 30 s of simulated time each; the task allows up to 120 s
+`object_jitter=0`. The final scripted trials take about 32 s of simulated time each; the task allows up to 120 s
 per trial. Wall time depends on the simulator host.
 
 ## Demo
@@ -129,8 +135,8 @@ per trial. Wall time depends on the simulator host.
 right hand reaches over the bed's front edge and presses the middle feeder's inner end down with one open finger until
 its catch lets go and the unit turns about its hook, reel end up. The left hand comes down over the feeders' outer
 ends and pinches the middle feeder's body where its outer end now stands proud of the others, while the right finger
-still holds the unit turned. It grips the body, not the reel: the reel turns freely on its hub, so a reel grip would
-leave the extraction depending on how much load the threaded tape can hold. The left hand commands a 22 mm lift to take the hook out of the
+still holds the unit turned. It grips the body, not the reel: the reel can turn relative to its body, so a reel grip would
+leave the extraction depending on how much load the threaded tape can hold. The left hand commands a 40 mm lift over 2 s with a 5 degree wrist lean to take the hook out of the
 rail's slot and holds the unit while the right finger lifts away, then moves it 20 mm out, levels it with a 15 degree
 lean of the wrist, slides it out along its own plane until its inner end has passed the neighbours' reels, carries it
 over the mat, leans it and lets go so that it settles on its side. The demo uses `tilt.py` for leaned grips, `lots.py`
@@ -139,17 +145,39 @@ and change nothing on disk.
 
 ## Results
 
-With the interrupted-hold timer corrected, the final scripted demo scores **1.0 in lot A and 1.0 in lot B**
-(mean 1.0). Trials last 30.25 s and 30.35 s of simulated time. Both neighbours remain hooked and latched
-throughout. Maximum neighbour movement/rotation: 1.16 mm / 1.59 degrees in A; 1.36 mm / 1.99 degrees in B.
-Both finish released and still for 1.95 s with at least 30 mm hand clearance (the distance report is capped there).
-Peak feeder-body speed is 0.638 / 0.670 m/s, below the 1.2 m/s drop threshold. Every 20 Hz observation is valid,
-with no missing control interval. The combined demo video shows A then B.
+Frozen `task.py` SHA256: `1489a2c1b6b305d97fe5b8c914773482a44c2fd2a415243680ec5cfcb67dbb66`.
+Source 1489a2c1: scripted demo A/B 1.0/1.0; Dream-1 with this instruction A/B 0.0/0.0. In the first trial the catch spring starts without its preload; the second trial starts preloaded.
 
-The middle reel joint spans -0.020 to 0.371 rad in A and -0.020 to 0.284 rad in B, reaching the modelled winding
-stop while the hand grips the body. These are simulated joint measurements, not physical test results.
+Two fixed lots, A then B, `object_jitter=0`:
 
-Dream-1 used this same frozen runtime, the same instruction and two epochs: **0.0 in lot A and 0.0 in lot B**; both trials ran to the 2,400-step limit with the middle feeder still seated. No instruction was reworded. (An earlier Dream-1 attempt on the same source was cut short by a `DA-2000 NO_CAPACITY` service error in lot A; it was re-run in full.) No physical hardware test has been performed.
+| Run | Lot A | Lot B | Status |
+|---|---:|---:|---|
+| Diagnostic trace 20261124T003613 | 1.0 | 1.0 | Completed on frozen source |
+| Scripted demo 20261124T004031 | 1.0 | 1.0 | Completed on frozen source |
+| Dream-1 20261124T014656 (this instruction) | 0.0 | 0.0 | Both hit 2400-step limit; zero errored trials |
+
+Dream-1 completed with both trials reaching the step limit, zero errored trials and no refusal. The videos show both complete lots.
+Checked by phone with a technician who works with these feeders, on real feeders with loaded, threaded reels (Nov 2026): the reel turns about 5-15 degrees during removal; the tape stays threaded; catch release about 8 N on a new feeder.
+
+**Simulated motion effect.** Applying both phone resistance figures to the original 22 mm lift produced A 0.0 / B 0.0:
+the hook lift stalled and the feeder reseated. The revised motion commands 40 mm lift over 2 s with 5 degree wrist
+lean, holds the pressing hand 1 s longer, then returns to the original carry height. This clears the hook in both
+trace lots. Both catch resistance and hub drag changed, so this comparison does not isolate either one's effect.
+The 5 degree lean also makes the lift reachable; a straight-down 40 mm command failed the offline IK check.
+No scoring threshold was loosened.
+
+| Final-source trace quantity (simulation only) | Lot A | Lot B |
+|---|---:|---:|
+| Reel joint range, rad | -0.02000 to 0.13303 | -0.02001 to 0.14955 |
+| Reel excursion, max minus min, degrees | 8.77 | 9.71 |
+| Sample duration at winding stop, q <= -0.0195 rad | 4.65 s | 1.40 s |
+| Released/still hold at final sample | 1.95 s | 1.95 s |
+
+The simulated reel excursions reproduce the scale of the 5-15 degree turn observed in the technician
+extraction check. The winding-stop durations show that the ideal tape constraint participates in the simulated motion;
+they are not tension measurements. The rotating reel's incoming wrench includes hub support, friction and constraint
+loads. Logged peak catch-lever deflection was 0.0690 / 0.0545 rad. The trace computes spring torque using the intended -0.15 rad target; it does not read back the applied target. These traces do not establish the claimed preload in the first trial. No whole-trial
+failure occurred and both neighbouring hooks/catches stayed engaged throughout both traces.
 
 ## Near misses
 
@@ -170,16 +198,14 @@ ending 2.5 mm or 4 degrees off its seat (0) or 1.9 mm or 2.9 degrees (no zero); 
 ## Fidelity
 
 See the `fidelity` field. In addition:
-- **Reel and tape.** Each reel is its own body on a revolute joint at the spool arm's hub, with light drag (estimate
-  0.002 N m s/rad). The model assumes that the stopped tape drive holds the threaded tape: the reel can unwind
-  and make slack but cannot wind taut tape back through the feeder. A one-way angular stop permits 3 rad of
-  unwinding and 0.02 rad of winding play. The tape strip is visual only; tape stretch, tearing and drive compliance
-  are not simulated. The body grasp does not rely on reel friction or tape tension to support the feeder.
-  The real-trial procedure below checks these assumptions; it has not been performed.
+- **Reel and tape.** Each reel is its own body on a revolute joint at the spool arm's hub, with hub friction and
+  drag, and the threaded-tape winding constraint reacts on the feeder as set out in "Reel and tape" below. The tape strip
+  is visual only; tape stretch, tearing and drive compliance are not simulated. The spool arm now has a collider;
+  it is part of the feeder body's sampled geometry for clearance, hand-release and mat containment. The demo's grasp holds the body, not the reel.
 - **Friction.** The feeders' printed surfaces have a friction coefficient of 0.38 static and 0.30 sliding. The static
   value is the top of the 0.12 to 0.38 range measured between pairs of printed PLA parts (printed PETG pairs: 0.13 to
   0.21) by Santana, Alves and Netto, "Effect of the angle of the laid-up filaments on the surfaces on the coefficient
-  of static friction between parts manufactured by extrusion-based 3D printing", Proc. IMechE Part L 235(6), 2021; the
+  of static friction between parts manufactured by extrusion-based 3D printing", Proc. IMechE Part L 235(6), 2021. Source: https://doi.org/10.1177/1464420720978997. This paper measured printed-material pairs, not these feeders or their contacts with aluminium and gripper pads. The
   sliding value is an estimate. The earlier value, 0.9, had no source. Taking the top of the measured range errs
   toward more drag between neighbours. The simulator
   averages the two surfaces' coefficients at a contact: feeder on feeder 0.38, on the aluminium rail about 0.34, on
@@ -195,43 +221,112 @@ See the `fidelity` field. In addition:
   a feeder change. The printed frame's flex and wear-in are not modelled; the lever is a single hinged link with a
   preloaded spring.
 
-## Real-trial check procedure (not performed)
+## Reel and tape: model and effect on the motion
 
-The simulation gives each standard 7 inch (178 mm diameter, 13 mm wide) reel its own revolute joint, with
-estimated hub drag of 0.002 N m s/rad. Threaded tape is represented by a one-way angular stop: up to 3 rad of
-unwinding slack and 0.02 rad of winding play. The visible tape strip has no flexible-body physics; tape stretch,
-tearing and sprocket compliance are not modelled. The extraction demo grips the feeder body, leaving the reel
-free to rotate. These are stated approximations, not measurements from a physical test.
+Checked by phone with a technician who works with these feeders, on real feeders with loaded, threaded reels (Nov 2026): the reel turns about 5-15 degrees during removal; the tape stays threaded; catch release about 8 N on a new feeder. Reel turning drag is about **0.3 N at the reel rim**; catch release pull is lower as the feeder wears in. These phone readings replace the earlier resistance estimates.
 
-A future real trial can check them as follows:
+The simulation reproduces the observed turn with a rotating reel with hub drag and a threaded-tape winding stop. The tape stays threaded while the reel turns slightly. The demo grips the body so the reel can rotate independently, keeps the feeder in its own plane past the neighbours, and uses the 40 mm lift with 5 degree lean described in Results. The recorded simulated reel excursions are 8.77 / 9.71 degrees.
 
-1. Use an Opulo LumenPnP, three Opulo 8 mm tape feeders in adjacent front-rail slots, standard 7 inch reels loaded
-   with 8 mm component tape threaded according to the maker's mounting guide, and the 300 x 420 mm service mat.
-   Park the gantry at the back, stop the feeder drives, and check that all three hooks and catches are seated.
-   Use the two mat positions in the setup. Record an overhead video and a close side view of the hooks/catches;
-   include a millimetre rule and angle reference in view.
-2. Mark the middle reel and its hub. Support the feeder body, leave its tape threaded with the sprocket stopped,
-   and gently turn the reel in each direction. Record unwinding rotation, drag, slack and any winding play or
-   back-driving. This tests whether the one-way-stop approximation is appropriate; do not force or tear the tape.
-3. With the body independently supported, compare a reel-face grasp with a body grasp. Record relative reel/body
-   rotation and whether load is transferred through the tape. Do not rely on the tape to support the feeder.
-4. Perform the body-grasp extraction shown in the simulated demo: press the inner end down, hold it tipped,
-   pinch the exposed outer body, lift until the hook clears, and slide out along its plane past the neighbouring
-   reels. Lay it on its side on the mat. Check the whole-trial hook/catch rules and the 2 mm / 3 degree end limits
-   from the videos; confirm the feeder is inside the mat, hands at least 5 mm clear, and still for 1 s.
-5. Record any difference from the simulated reel/tape behavior and revise the approximation before claiming
-   physical validation. This procedure has not been run; no hardware result or measured release force is claimed.
+The call did not specify the catch-pull lever arm. The model conservatively maps 8 N through the tab's maximum
+pivot radius: `CATCH_PULL_ARM = hypot(6, 10.3) = 11.92 mm`. Intended closed-stop preload is **0.0954 N m**; with the
+estimated -0.15 rad spring target this gives **0.636 N m/rad** stiffness. With that intended target applied, torque grows during opening, and torque
+divided by any tab moment arm is at least 8 N at or beyond the closed stop. First-trial application of the target requires the correction and readback stated in Results. This mapping is an engineering
+assumption, not a phone-reported torque or a measurement of the inner-end press force. The spring resists release;
+release itself requires tooth/blade contact and relative motion. Its reaction acts on the parent feeder.
+
+Each reel is a separate rotating rigid body (estimated 0.13 kg). The 0.3 N rim force at the **89 mm reel radius**
+gives `REEL_HUB_FRICTION = 0.0267 N m`, used for both static and dynamic hub friction, with equal reaction on the
+parent feeder. Additional viscous drag remains an estimated **0.002 N m s/rad**. At the estimated 70 mm tape
+radius, torque/radius is **0.381 N equivalent resistance** (`TAPE_TENSION`); this is not an applied tensile force
+in slack tape and not a measured tape tension. All phone figures and model assumptions are named constants near
+the top of `task.py`. The 5-15 degree figure is a comparison for traces, never a scoring requirement or rotation clamp.
+
+Threaded tape is an **ideal one-way angular constraint** between reel and feeder: 0.02 rad winding play before a
+joint limit makes it taut, with equal reaction on the parent feeder. It allows up to 3 rad unwinding (210 mm at
+70 mm radius), treated as slack payout. The winding limit assumes the stopped drive holds the tape. Its strength
+is unlimited in the solver: there is no measured tensile limit, back-drive threshold, stretch or tearing model.
+The visible strip is not a flexible tape collider, so it cannot predict a tape snag. Trace `reel_wrench` is the
+total incoming joint wrench, including support/friction/constraint effects; it is not an isolated tape force.
+The upper unwind bound is also a numerical limit, not a real slack capacity.
+
+The demo grips the **body**, keeping reel rotation separate from the pinch. A reel-face grasp could transfer
+feeder load through the estimated hub resistance or the ideal tape stop; it is therefore not evidence that a
+real reel grasp works. No new waypoints have been chosen to rely on that stop. The maker's
+[mounting guide](https://docs.opulo.io/feeders/4-mounting/mounting/) documents removal between mounted neighbours
+and an onboard 7 inch reel on the **v1** spool-arm feeder. It does not give a reel torque, unpowered tape-hold
+force or evidence that a reel-face grasp is safe. The same guide says v2 has a longer nose; v2 is not assumed to
+match this scene.
+
+**Diagnostic sensitivity, simulated only:** inherited base hub-resistance runs completed the same body-grasp
+motion in both lots. Increasing the equivalent force scale to 1.0 N (hub torque 0.070 N m) gave A 1.0 / B 0.0.
+In the failed B trace, the commanded hook lift stalled and the unit fell back into its catch when the pressing
+hand withdrew. This is evidence that success is sensitive to the model/trajectory; one run does not isolate the
+reel torque from contact variability. The 1 N value is an exploratory estimate, not a published Opulo back tension.
+It must not be confused with cover-tape peel strength. Final-source joint ranges and outcomes belong in Results.
+
+## Real extraction check and fixture enrollment
+
+Checked by phone with a technician who works with these feeders, on real feeders with loaded, threaded reels (Nov 2026): the reel turns about 5-15 degrees during removal; the tape stays threaded; catch release about 8 N on a new feeder. The technician performed the extraction and reported the reel turn and retained tape threading. The simulation represents those effects with reel rotation, drag and the tape stop; the body grip leaves the reel free to turn during lift and withdrawal.
+
+The following procedure is for enrolling the substitute fixture and recording additional specimen-specific details. The substitute frame remains a construction plan.
+
+1. Use genuine v1 8 mm spool-arm feeders on the machine or the substitute rail/frame in `fixture/BUILD.md`.
+   Keep the original hooks, catches and mating blades; use adjacent slots, loaded 178 mm reels and threaded tape.
+   Record version, tape type, fullness, masses and where spent tape exits; disclose any external tape connection.
+2. Mark the middle reel relative to its hub and film both sides with a ruler/angle reference. With the body
+   supported and drive stopped, turn gently both ways. Record winding play, unwinding slack and any tape back-drive.
+   Measure tangential start/steady force with a spring scale at a measured radius; stop before damage. Do not use
+   the simulation's infinite tape stop as a physical acceptance limit.
+3. Film the body-grasp extraction: press the inner end, keep it tipped, pinch the exposed outer body, lift the hook
+   clear, withdraw along its plane past neighbouring reels and lay on the mat. Record reel rotation at each phase,
+   tape taut/slack/slipped/snags, neighbour motion and whether speed, tilt or grip must change. Separately supporting
+   the body, inspect what a reel-face grip does; never rely on tape to support it.
+4. Check the whole-trial hook/catch and end limits using the scoring section, photos/ruler, angle reference and video.
+   Record all failures. Reconcile the phone figures, model mapping and tape law with the trial observations before
+   reporting a physically validated substitute fixture. The completed technician extraction check is recorded above.
+
+## Low-cost substitute
+
+`fixture/BUILD.md` gives numbered steps, cut list, sources, genuine-interface requirements and enrollment checks.
+`fixture/frame-plan.svg` and `machine-boxes.csv` come directly from `MACHINE`; every machine envelope is retained.
+The rail/frame plan is about **USD285.26** (USD262.91 observed product lines plus USD22.35 catalogue hardware), excluding feeders, reels, mat, tools, tax and shipping. Including the USD59 sourced mat and three loaded
+reels gives about USD369.76 with already-owned suitable v1 feeders/tools. Adding the current USD495 v2 five-pack
+would give USD864.76 and still leaves v1 equivalence unverified. This is not a complete new kit for a few hundred
+dollars. Genuine blade delivery is stated as four weeks. Price/stock snapshots and estimates are distinguished in
+`fixture/bom.csv`; borrowing suitable existing v1 parts is required for an immediate real trial and is unconfirmed.
 
 ## Answers to the review
 
-| Review point | How the task answers it |
+### TK-H47YS7, original verdict (November 20)
+
+> **Not accepted** (TK-H47YS7).
+>
+> Construct validity (not met): The feeder bank is mounted on an isolated bench stand rather than the machine where the changeover occurs, omitting surroundings that constrain access.
+>
+> What to change: The packed-feeder extraction is a useful idea, but the current setup leaves out important features of the real changeover. Mount the feeder bank on the pick-and-place machine, or reproduce the machine structures that constrain access, and update the setup and demo accordingly. Also verify the demonstrated reel-grasp extraction with a real rotating reel and threaded tape; represent their effects in the simulation if they change the grip or motion, then provide full-score demos for both lots.
+
+### TK-GGKDVY, latest verdict (November 23)
+
+> **Not accepted** (TK-GGKDVY).
+>
+> The machine surroundings are now in. Still open from the earlier review: please check the extraction with real rotating reels and threaded tape and note any effect on the motion. Please give a low-cost substitute (the feeder rail and the frame parts that limit access, with a parts list and build steps) that keeps the real feeders and their catches.
+
+Neither verdict lists additional flags.
+
+| Verdict requirement | Answer and evidence |
 |---|---|
-| "The feeder bank is mounted on an isolated bench stand rather than the machine where the changeover occurs, omitting surroundings that constrain access." | The bank is now on the machine's own front frame rail, in its first three front slots, with the machine around it at the positions in the maker's assembly CAD: legs, side frame, back frame, bed plate, bottom camera, control box and the parked gantry (setup; `MACHINE` in task.py). |
-| "Mount the feeder bank on the pick-and-place machine, or reproduce the machine structures that constrain access, and update the setup and demo accordingly." | Done as above. The rail height, slot blade, slot pitch (15.8 mm, from the CAD) and the bed's 5 mm clearance to the feeders' inner ends now come from the maker. The demo was rebuilt for this access: the inner end is pressed from above over the bed's edge, and the unit leaves toward the reels between the machine's front left leg and the bank. |
-| "Also verify the demonstrated reel-grasp extraction with a real rotating reel and threaded tape; represent their effects in the simulation if they change the grip or motion..." | The simulated reel is a separate rotating body with estimated hub drag; threaded tape is approximated by a one-way stop. The demo grips the feeder body. The real-trial check procedure above describes how to check the approximation with named parts; it has not been performed and no physical verification is claimed. |
-| "...then provide full-score demos for both lots." | The corrected runtime scores 1.0 in each lot; both trials are included in the combined demo video (Results). |
+| Isolated stand omits access; mount on machine or reproduce structures and update setup/demo | Machine surroundings retained from the previous revision: all 20 `MACHINE` envelopes, rail/blades at CAD positions, 5 mm bed gap, legs, side frame and parked gantry. Setup and demo use this scene. The new fixture plan now reproduces every envelope instead of omitting distant parts. |
+| Verify real rotating-reel/threaded-tape extraction; note any effect on motion | Checked by phone with a technician who works with these feeders, on real feeders with loaded, threaded reels (Nov 2026): the reel turns about 5-15 degrees during removal; the tape stays threaded; catch release about 8 N on a new feeder. Reel drag is about 0.3 N at the rim. A rotating reel with drag and the tape stop reproduce the slight turn with tape retained; the body grasp leaves the reel free to rotate during lift and withdrawal. |
+| Represent effects on grip/motion | Reel rotation, 0.0267 N m hub friction from 0.3 N rim drag, viscous drag and taut-tape winding reaction are included; spool arm collides. The intended catch preload maps the 8 N phone pull; first-trial applied preload requires correction and readback. Body grasp avoids relying on a reel grasp supported by tape. Snags, stretch, tearing and drive back-drive remain unmodelled. Results must be interpreted within those limits. |
+| Full-score demos in both lots | Source 1489a2c1: scripted demo A/B 1.0/1.0; Dream-1 with this instruction A/B 0.0/0.0. In the first trial the catch spring starts without its preload; the second trial starts preloaded. |
+| Priced low-cost substitute rail/frame, parts list, build steps, genuine feeders/catches | `fixture/BUILD.md`, `bom.csv`, `cut-list.csv`, `machine-boxes.csv`, `frame-plan.svg` and generator. Real V-slot/genuine blades keep the catch interface. About USD285.26 for rail/frame, catalogue-priced; existing v1 feeders required. Complete new low-cost v1 specimen availability and physical fit remain unverified. |
 
 ## Licences
 
-All geometry is modelled from scratch with primitive shapes; no third-party asset is used. The dimensions and positions
-come from the maker's public documents and open-source design files, cited above.
+All simulated geometry is modelled from scratch with primitive shapes; no third-party asset is used in the simulation.
+The dimensions and positions come from the maker's public documents and open-source design files, cited above. The
+substitute build in `fixture/BUILD.md` points to the maker's slot blade design files for printing (route A); the
+maker's feeder design files are published under CERN-OHL-W v2. The pinned machine licence names CERN-OHL-W v2
+for legacy `pnp/cad` and `pnp/pcb` paths; applying that notice to the current `src` paths is an inference, not an
+explicit path grant. The recommended fixture uses genuine purchased blades. Any future exported/printed derivative
+must retain the maker's notices and remove its branding under the source terms. No CAD asset is copied into this folder.
