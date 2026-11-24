@@ -1,244 +1,99 @@
-# Release all 60 molded tablets from a Torpac tablet-mold plate onto parchment without crumbling any
+# Release 60 Torpac-size tablet replicas within the pusher force limit
 
-**Instruction:** Release all sixty tablets from the mold plate onto the parchment without breaking any, and set down
-anything you pick up.
+**Instruction:** Hold the plate by its tab, push all 60 replicas onto parchment with the pin at no more than 4 N each, then set both down and clear both hands.
 
-**Category:** Other. **Run limit:** 1,600 steps (80 s at 20 Hz) per trial; two trials (lots A and B), averaged.
+Category Other: laboratory tablet formulation. Two deterministic lots; 4,000 control steps (200 s at 20 Hz) per trial. The current reusable prototype has no final full-score evidence yet. No medication, active ingredient or patient use is involved.
 
-## The job and why it matters
+## Procedure and adaptation
 
-Category Other, laboratory formulation and R&D. Molding small batches of tablets by hand is a routine bench step in
-tablet formulation development, in compounding and in supplement labs: a new blend is molded, released, inspected and
-tested many times before anything is scaled up. Torpac's ProMold RDTM2G is sold for exactly that work ("For Use in
-R&D, Pharmacy Compounding, Nutritional Supplements"); the 75 mg model, X-MRDT60x075, makes 60 tablets at a time in a
-black, PTFE-coated aluminium cavity plate with tapered through-holes. A robot that runs such formulation work at the
-bench (as self-driving labs do for other materials) has to get each batch out of its mold intact; a crushed tablet
-spoils the weight, hardness and dissolution checks that follow.
-After baking and cooling, the cavity plate is lifted off its base plate, turned over onto parchment paper, and the
-tablets are pushed out. The maker's brochure (2509) gives that step as:
+[Torpac brochure 2509](https://www.torpac.com/Reference/prordtm-2g.pdf) supplies the X-MRDT60x075 mold footprint (120 x 152 mm), openings (5.5/6.5 mm), cavity depth (3.7 mm) and nominal 75 mg tablets at density 0.75 g/ml. Separate plate thickness and pitch are not specified. The model uses 3.7 mm plate thickness and estimated 12.5 x 14 mm pitch.
 
-> "Invert & rest Mold Plate at an angle and use Spreader to push out tablets."
+[Maker instructions 2001](https://www.torpac.com/Reference/prordtm-2g-instructions.pdf) lift the cavity plate off its base, invert it, support it by hand and sweep with a plastic spreader; remaining tablets are pushed with a finger, without metal tools. About 0.1 mm dried top-face shrinkage,0.4 N release,4 N crush and 0.04 mm radial clearance were obtained by phone from a technician who works with this product (Nov 2026). The maker fills the wide face before inversion, so the reported fill face points down during demolding. This replica instead puts a declared 0.1 mm recess on the pushed narrow face; that placement is a design choice, not a reported real pushed-face reading. A flat card sharing load with the plate lands did not deliver the required individual tablet forces in corrected pilots. The proposed adapted spreader therefore has a central 1.8 mm polymer pin projecting 12 mm below the card, for sixty separate pushes. The instrumented pin stands in for the maker's remaining-tablet finger push, one force-logged push per cavity. It is not an unmodified maker tool.
 
-and its instruction sheet (2001) adds "Hold Spreader at an angle and sweep down to carefully push out tablets",
-"Do not use any metal tools", and "Rapid Dissolve Tablets are more fragile than standard tablets." No dose, active
-ingredient, sterility or patient use is involved: the tablets are blanks of a commercial base.
+The primary low-cost trial route under development is RDT60-R1: a reusable split resin plate, sixty printed pucks and commercial silicone rings, plus an upright grip tab for the supporting hand. The tab and extension adapt the supporting hand's hold on the plate edge; they are not parts of the maker plate. The footprint and cavities remain true size. This substitutes a declared force window for pharmaceutical fragility. It is not evidence that rigid printed parts reproduce an RDT tablet's fracture behavior. Physical force qualification is mandatory and has not been performed.
 
-What makes it hard for a robot:
+## Scene and fixtures
 
-- **A force window, not a position.** Each tablet is held in its hole until a push on its back face frees it. Too
-  light a sweep (or a sweep that hovers just above the plate) frees nothing; pressing too hard, striking the plate
-  or poking a tablet with a gripper finger crushes it, and one crushed tablet spoils the batch. The robot has to bring
-  a thin plastic tool down onto a hard plate and keep a gentle, even press while it moves.
-- **Cover all sixty holes.** The spreader's edge must pass over every hole while pressing; a sweep that misses a
-  column or lifts early leaves tablets in the plate.
-- **Don't knock the plate.** The plate only rests on two bars. Shoving it 10 mm or tipping it ruins the batch.
-- **Leave the tool.** The spreader must be put down and the hands moved clear.
+Millimetres; x forward, y left from the midpoint between arm bases, heights above counter. Proposed RDT60-R1 reusable resin replica of the Torpac X-MRDT60x075 cavity plate: 120 x 152 x 3.7, centre (275,0), long side along y, back face 16.6 high; 60 tapered holes, six x ten at 12.5 x 14 pitch, narrow 5.5 ends up, wide 6.5 ends down. Sixty white tapered resin pucks, 120 mg each estimated, 3.6 high, pushed faces deliberately recessed 0.1 mm with 0.04 mm radial clearance; 5 x 1 silicone retention rings in the physical replica. Plate has a 30 x 177 x 10 rim extension at local (y 164.5,z 3.15) and a 30 x 30 x 55 hollow grip tube with 2 mm walls, central 2 mm compression web and open x ends, axis canted 2 degrees about each local x and y axis (first x, then y), centred at y 250, rising from the back face; assembly mass 160 g estimated. Initially rests on two 12.7 square x 152.4 aluminium bars at x 221.35/328.65 on a 260 x 300 x 0.2 parchment sheet centred (275,0). Adapted polymer spreader: 90 x 70 x 3 card, central 1.8 diameter pin projecting 12 below, 20 x 12 x 25 upper grip boss, and a 58 x 16 x 19 load-cell cover at local (-20,0,-19) relative to card centre; fixed 12 x 14 x 25 sensor frame at local (-40,0,0.5), lower M5 head 8.72 diameter x 5 at (0,0,-31.85); total mass 55 g estimated. Stands upright, pin tip 6 high, in a 100 x 40 x 20 resin base block with 4.5-wide slot/floor 6 and central 12 x 10.5 screw-head clearance and 12-high shoulders supporting the card ends, at (220,-200). Lot B moves only block/spreader to (410,-190). All other starts identical; jitter disabled.
 
-## Scene
+The tool block has two upper end guides,30 x10 x19 each, centred at local(30,+/-7.5,28.5), top38 high and finished slot5.0 wide. They engage the card's plain right end, clear of the sensor housing; block mass106g estimated. With a12mm pin, the20mm base alone leaves only2mm of card engagement and permits large lean. The upper guides provide20mm engagement; verify upright support and free withdrawal after one-time fitting.
 
-Millimetres from the midpoint between the two arm bases (x forward, y to the robot's left); heights above the counter.
+A 30 x 25 x 12.9 resin parking block at (275,220) supports the long connector before pickup and after set-down. The left hand physically pinches the tab and supports the plate during pushing; bars are parking supports. There is no hand attachment or plate pose hold. The demo commands a 10 mm hand lift to compensate observed compliance; the actual plate must stay within the unchanged 10 mm displacement limit. Whether the final prototype actually clears the bars remains to be verified from its trace. A 12 x 44 x 3 stop ledge is centred at local x2/y250, underside57.3 mm above the plate back. A 12 x 12 x 3.5 neck begins54 mm above the back and overlaps tube and ledge. The ledge limits downward slip against the inner finger pads; delivered clearance and stiffness remain unqualified. No attachment joins hand and plate. Both parts are set down before the final hands-clear period.
 
-| Item | Product | Size used | Where |
-|---|---|---|---|
-| Cavity plate | Torpac ProMold RDTM2G X-MRDT60x075 cavity plate (US$470 for the whole mold, brochure 2509), hard-anodized PTFE-coated aluminium, upside down | 120 x 152 x 3.7; 60 tapered holes, 5.5 mm narrow end up, 6.5 mm wide end down, 6 across x 10 along at 12.5 x 14 pitch (pitch estimated from the maker's photos); 166 g (estimate) | centre (300, 0), long side along y, resting on the bars; back face 16.6 up |
-| Tablets | blank (no active ingredient) rapid-dissolve tablets molded in that plate, e.g. MEDISCA Medi-RDT Base 2772, one of the bases the maker lists | one per hole, 75 mg nominal (modelled as 8-sided tapered prisms 3.45 tall) | in their holes, back faces 0.1 below the plate's back face |
-| Bars | two 1/2 in (12.7) square 6061 aluminium bars, 6 in (152.4) long | 66 g each | standing on the parchment along y under the plate's long margins, centres x 246.35 and 353.65, y 0 |
-| Parchment | baking parchment sheet | 260 x 300 | centred (300, 0) |
-| Spreader | the mold's white plastic Powder Spreader (rigid plastic card) | 90 x 70 x 3, rounded lower edge, 18 g (size, mass and friction estimated from the maker's photos) | standing upright in the block's slot, its 90 mm length along x, top 75 up |
-| Spreader block | wooden block with a slot (a simple fixture, fixture/README.md) | 100 x 40 x 20, slot 4.5 wide x 15 deep | lot A centre (220, -200); lot B (410, -190) |
-| Counter | the station's preparation counter | 1100 x 1300 | fixed |
-| Load cell (real trial only) | 5 kg bar load cell with an HX711 board logging to a laptop, under a 300 x 350 platform (or a scale with peak hold) | platform at least 300 x 350 | on the counter at (300, 0) under the parchment; heights are then taken from the platform top; not modelled (the simulation reads the same push from contact forces) |
+See [fixture/README.md](fixture/README.md). Custom geometry is original; no third-party meshes are used. Original watertight CAD, dimensions and a priced proposed package are in [fixture/BOM.md](fixture/BOM.md) and [fixture/ASSEMBLY.md](fixture/ASSEMBLY.md). They are unbuilt and physically unqualified, not an obtained kit.
 
-The plate, bars, tablets and parchment are in the same place in both lots; lot B moves only the spreader block and
-spreader. Trial k uses lot A for even k and lot B for odd k; the screenshot shows lot A.
+## Scoring and inspection
 
-The bars stand in for the hand in the maker's step 10 ("Rest Cavity Plate on the fingers of one hand"): they hold the
-plate up so a freed tablet can drop 12.7 mm onto the parchment.
+Whole-trial zero if spreader normal compression exceeds 4 N on any tablet; aggregate normal compression from spreader/gripper contacts on plate/tablets exceeds 6 N; a gripper touches a tablet (>0.02 N contact tolerance); plate moves >10 mm from start or tilts >5 degrees; any tablet falls off counter; or required state is unknown. Physical chips/cracks >=0.5 mm also zero; rigid simulation proxies damage with force caps. Moving any bar, parking block or tool block over 5 mm permanently zeros the trial. Non-pin spreader contact above 0.02 N on plate/tablets also zeros; all spreader contacts still count toward the damage caps. A loaded force/stroke push with less than 0.5 mm clearance over parking supports also zeros it. A release requires contact on the spreader's pin itself at >=0.40 N on that tablet and actual downward tablet travel >=2.2 mm against retention; plate/neighbor force cannot release it. Height and off-counter checks use the actual transformed frustum vertices; a rotated enclosing box can extend below a resting puck. The 1 mm and 5 mm limits are unchanged. Count free pucks resting on parchment, lowest point within 1 mm of sheet, top <=5 mm up, speed <=10 mm/s, centre inside 260 x 300 sheet. All scores require hands >=30 mm from plate, grip tab, bars, space under plate and tool for 1 s. 0-14 count: 0; 15-29: 0.25; 30-44: 0.5; 45-59 or all 60 before stillness: 0.75; all 60 with plate/tool/pucks moving <1 mm for 1 s: 1.0. Two lots averaged.
 
-## Scoring
+Use overhead and side video, a final parchment photograph with numbered grid, ruler and 10x loupe. A held puck, puck in its hole, off-sheet puck or puck standing on edge does not count. Gripper clearance includes the new grip tab. Force at each tablet is measured independently in simulation; contact with the plate or a neighbor contributes zero to that tablet's release. A whole-plate scale cannot resolve individual tablet forces. Physical enrollment uses an instrumented pin/load cell; the drafted load path and calibration checks are in fixture/ASSEMBLY.md. No assembled force accuracy has been measured.
 
-Read from the overhead, side and end-on videos, a 5 kg load cell (or a scale with peak hold) under the parchment, tared
-with the plate, bars and tablets in place and logging at 80 Hz or more so a short jab is not missed, a photo of the parchment taken after the trial (the
-assessor lifts the plate off), and a 0.5 mm scale with a 10x loupe.
+## Exact simulation rules and why the thresholds
 
-**Score 0 for the whole trial if, at any moment:**
-- the load cell reads more than 612 g above its tare: more than 6 N pushed down on the plate by the spreader and the
-  grippers together (pressing too hard, jabbing, or striking the plate);
-- a gripper touches a tablet;
-- any tablet is cracked, chipped (a missing piece 0.5 mm or more, loupe and scale) or crushed;
-- the plate is knocked: it slides more than 10 mm or tilts more than 5 degrees on its bars (overhead and side video);
-- a tablet falls off the counter.
+- `F_REL=0.40 N`: the pin's own compressive normal force on tablet k must reach this threshold. About 0.4 N release,4 N crush,0.1 mm fill-face shrinkage and 0.04 mm radial gap were obtained by phone from a technician who works with this product (Nov 2026). Pushed-face recess is the replica design choice described above. Proposed physical enrollment is 0.40-0.45 N peak with the same pin; reject assemblies outside the window.
+- `STROKE=2.2 mm`: that tablet must also have moved down by this amount relative to the plate, representing exit from the proposed ring engagement. Contact force and travel must occur together; no elapsed time, edge position, neighbor state or plate press releases it.
+- A temporary native prismatic retention joint resists motion along the bore. Its implicit drive is capped at `RET_MAX=0.45 N`, stiffness `RET_K=RET_MAX/STROKE=204.545 N/m`, damping `RET_C=2*sqrt(RET_K*TAB_M)=0.31334 N s/m`. These are unmeasured model choices. The drive cap is 0.45 N; release requires >=0.40 N own force. Earlier development releases at 0.400-0.405 N did not reach that drive cap. Replica enrollment is 0.40-0.45 N, not a claim that 0.45 N was overcome in those logs. It applies equal/opposite force and moment to plate and puck through the native solver. It does not push the puck out or preload the taper. The joint is disabled immediately when that puck completes its own loaded stroke; thereafter it is a fully free 6-DoF rigid body, with no guide, delayed hold or pose correction. Before release the guide approximates ring/bore alignment and replaces redundant puck/plate wall contacts; pin/puck contacts remain active. Full puck/plate collisions are restored in the same release step that disables the guide. After release contacts and gravity determine motion.
+- `F_TAB=4 N` is the supplied dried-tablet crush figure; `F_HI=6 N` aggregate is a protocol plate-load limit, not a measured crush force. Reusable parts must separately pass proof and inspection checks. `TOUCH_N=0.02 N` is the gripper no-touch detection tolerance. Rigid bodies do not fracture; physical chips/cracks remain a separate inspection. The force caps do not prove pharmaceutical fracture equivalence.
+- The contact adapter sums compressive contributions per actual contact point before adding contacts, so opposite normals cannot cancel. Tablet forces are isolated from plate force. Actual contact points must lie on the colliding pin (0.4 mm numerical allowance from two 0.2 mm contact offsets); upper-frame/card contact cannot release a puck. This point check classifies an existing force contact and never creates force or release by proximity. PhysX PGS uses 128 position and 128 velocity iterations. Contact and travel monitor at native 240 Hz; pose/hand/stillness checks run at 20 Hz. The plate, connector/grip and tool are rigid; real bending, cable motion and sensor flex require physical qualification. Unknown or nonfinite state fails closed. Numeric contact offsets are 0.2 mm, rest offset zero; tablet/hole cross-sections are eight-sided approximations. Pose writes occur at reset only.
 
-The simulation applies the same rules (push and touch from contact forces at every physics step; plate and counter
-from poses at every control step); the 6 N push limit and the no-touch rule stand in for crushing, which the
-simulation cannot model.
+At trial initialization only, the SDK scene-reset API places the spreader and its block 10 mm above their declared counter location, with zero initial velocity, and lets them settle under gravity for 0.5 s. Both layouts passed a two-epoch initialization check within 0.001 mm of their declared positions. This avoids the observed lateral drift after a direct in-contact relocation. No fixture pose is corrected during a trial; the 5 mm fixture-displacement limit remains active.
 
-**Otherwise** count the tablets that are out of their holes and lying still on the parchment with their top at most
-5 mm above it, and score the end state. Every non-zero score needs both hands at least 30 mm from the plate, the
-bars, the parchment under the plate and the spreader for the last 1 s (side video).
+`TABLET_LOG` records source SHA256, native dt, lot, score, per-tablet release force, travel and physics-step index. Synthetic boundary cases in `near_misses.py` exercise the actual rule/scorer; they are not GPU or physical trials. The dedicated plate-only GPU control did not run on the final geometry. An incidental plate-only interval is documented in validation/rim-press21.json, not presented as that dedicated control. The final A/B DEMO completed with0.0/0.0; Dream-1 was operator-interrupted. No earlier run is presented as final-source evidence.
 
-| Score | Tablets on the parchment | Read with |
-|---|---|---|
-| 0 | 0 to 14 | photo of the parchment over a numbered 6 x 10 grid |
-| 0.25 | 15 to 29 | photo |
-| 0.5 | 30 to 44 | photo |
-| 0.75 | 45 to 59, or all 60 with something still moving | end-on video, photo |
-| 1.0 | all 60, and nothing (plate, spreader, tablets) moving more than 1 mm over the last 1 s | end-on video, photo |
+## Unintended strategies
 
-The tablets lie under the plate, so a third camera looks end-on along y through the 12.7 mm gap under the plate (at
-parchment height): it shows tablets dropping, lying flat or on an edge, and still. The count is taken at the end of
-the trial from that view; the photo after the assessor lifts the plate straight up confirms the count and that each
-tablet is whole (a tablet moved by the lift still counts, since it was on the parchment in the end-on view).
-
-A tablet still in its hole, standing on its edge, off the parchment, held, or resting on a fragment does not count.
-Trials on lots A and B are averaged.
-
-### Exact simulation rules (task.py)
-
-- **Release rule (declared, not measured).** Each tablet is held up in its hole by a force of twice its weight
-  until it is freed. It is freed at the first physics step (240 Hz) at which the spreader's rounded lower edge is on
-  the plate (edge bottom within 0.3 mm of the back face along the stretch of edge over the hole), passes over the tablet's hole (the hole centre within 2.75 mm,
-  the narrow end's radius, of the edge line, between the edge's ends), and the spreader presses at least 1.0 N on the
-  plate and tablets together (PhysX contact force between the spreader and the plate and tablets, read at every
-  physics step). Once the edge has moved on (5.25 mm past the hole centre) or lifted 2 mm off, the hold is removed
-  and the freed tablet drops through the hole's widening taper onto the parchment under gravity. Only that working
-  edge (the long edge standing in the block's slot) counts; the opposite long edge is where the spreader is held, and
-  sweeping with it or with a corner frees nothing in the simulation. (Dropping it while
-  the edge was still on it launched some tablets so hard that they tumbled; see Results.)
-- **Why a press on the plate stands in for the push on each tablet.** A real tablet sits flush in its hole; the
-  spreader's edge spans the 5.5 mm hole and rides on the plate around it, so the push it gives the tablet's face is a
-  share of how hard it is pressed onto the plate there. The rule therefore uses the measured press of the spreader on
-  the plate, applied only while the edge is on the plate over that hole.
-- **Seat.** A tablet is 0.02 mm smaller than its hole all round and 3.45 mm tall, so when held up in the taper its
-  back face is 0.1 mm below the plate's back face. The spreader's edge therefore rides on the plate and never pinches
-  a 75 mg tablet against the hole's rim (in an earlier run a tablet seated 0.15 mm proud was pinched and thrown off the
-  counter); the push on each tablet is the declared rule above, and the press it needs is real contact force on the
-  plate.
-- **Damage rule (declared).** More than 6.0 N pushed down on the plate and tablets by the spreader and both
-  grippers together at any physics step (the vertical sum of the PhysX contact forces of the spreader and of both
-  arms' wrist, gripper and finger links on the plate and tablets; the load cell in a real trial reads the same push),
-  or more than 0.02 N between any gripper link (wrist link, gripper body, either fingertip) and any tablet: the score
-  is 0 for the rest of the trial. A tablet below the counter top also scores 0.
-- **Knocked plate:** the plate's centre more than 10 mm from its start, or tilted more than 5 degrees, at any control
-  step.
-- **On the parchment:** a tablet that has let go, whose lowest point is within 1 mm of the parchment's top, whose top
-  is no more than 5 mm above it (lying on a face, not on its edge), inside the sheet, moving under 10 mm/s.
-- **Hands clear:** sampled points on both arms' wrist links, gripper bodies and fingertips (faces sampled, not only
-  hull corners) at least 30 mm from the box enclosing the plate, bars and the space under it, from the plate, and from
-  the spreader.
-- **Still:** the plate, the spreader and every tablet moved less than 1 mm over the last 1 s.
-- **Fail closed:** unknown arm, object or contact state scores 0 for the trial. Scoring is over the whole trial, and
-  the record is reset only at a scene reset.
-
-### Why the thresholds
-
-The maker publishes no release or crush force, so both thresholds are estimates, chosen so that a gentle sweep
-passes and a firm press or a knock fails. The edge spans a row of six tablets, so 6 N is about 1 N per tablet, and
-1 N is about 0.17 N per tablet: a light push, in line with the maker's "Tablet sticking virtually eliminated" and
-"Cavity Plate has through holes so you can directly press out tablets" for its PTFE-coated plate. The same 6 N limit
-is read on the load cell in a real trial (612 g above the tare), so the simulation and a real trial apply one
-number. Before trials, both routes check one tablet: pushed by the spreader's edge alone on the load cell it must
-free between 10 and 100 g (0.1-1 N) and must not crumble below 100 g; a batch that fails is remade. The edge must be within 0.3 mm of the plate over a hole: a card rolled so that only one end touches frees
-only the holes under that end. The no-touch rule follows the maker, who allows only a human finger to push a stuck
-tablet ("Do not use any metal tools"); a robot's hard fingertips are not a finger, so in this task the grippers may
-not touch the tablets at all.
-
-## Unintended strategies and what they score
-
-| Strategy | Result |
+| Attempt | Rule |
 |---|---|
-| Sweep the spreader just above the plate (no press), or with the card rolled so one end touches | nothing (or only the holes under the touching end) lets go: 0 to 0.25 |
-| Press the spreader hard or jab it down on the plate | over 6 N: 0 (checked on the GPU: a 25 mm press reached 6.05 N at touch-down) |
-| Push tablets out one at a time with a fingertip, or dig them out | gripper contact on a tablet: 0 |
-| Strike or tap the plate with a gripper | over 6 N in total on the scale, or the plate shifts: 0 |
-| Tip the plate up or drag it off the bars | knocked: 0 (tablets would also still be held) |
-| Sweep only part of the plate | the freed count only: 0.25 to 0.75 |
-| Keep holding the spreader at the end | hands not clear: 0 |
-| Do nothing | 0 |
+| Press only plate, or only neighbor | Target cannot release |
+| 0.39 N on target | No release |
+| 0.40 N without target's 2.2 mm stroke | No release |
+| Force and stroke on different tablets | No substituted release |
+| >4 N on one puck or >6 N aggregate | Permanent zero |
+| Gripper contacts a puck | Permanent zero |
+| Plate displacement >10 mm, tilt >5 degrees, off-counter puck | Permanent zero |
+| Hold tool or grip tab at the end | Hands not clear; zero |
+| Do nothing | Zero |
 
-These cases, and the rule's thresholds on both sides (0.99 N vs 1.0 N, 6.0 N vs 6.01 N, 2.74 mm vs 2.76 mm from a hole
-centre, 0.29 mm vs 0.31 mm above the plate, a rolled card), are scored in near_misses.py.
+## Real kit, cost and reset
 
-**One hand is enough.** The demo uses only the right arm; the left arm stays parked. The maker's second hand only
-supports the plate, which the bars do here.
+Proposed reusable kit, physical qualification pending: print plate halves, pucks and fixtures once, install 5x 1 silicone rings, finish/gauge fits once, then reseat the same 60 pucks at the counter edge and use the 0.1 mm stop gauge on each face after returning the plate upright (fixture/ASSEMBLY.md). No per-trial baking/curing. Qualify every puck with the actual polymer pin: release peak 0.40-0.45 N through the 2.2 mm engagement, no visible chip/crack, and repeatability over three cycles. Reject or refit assemblies outside that range; this is a required enrollment check, not a measurement already obtained. Calibrate force logging with known masses and record each push. Set plate on bars and parchment at (275,0), verify all 60 seated 0.1 mm recessed, place tool/block at lot position, tare sensors, photograph setup. Reset time estimated 3-5 minutes, unmeasured. Primary pharmaceutical mold/preparation is a separate optional reference route, not the reusable reset claim.
 
-## How this differs from close tasks
+The maker mold is listed at US$470 in brochure 2509 (effective Sep 15, 2025); its 30-minute bake plus 5-10-minute cooling is not a reset in minutes. That route is therefore not the claimed repeatable low-cost kit. Printed accuracy does not establish the 0.04 mm gap or 0.1 mm recess. Matched parts are finished once, rings set retention and the verified stop gauge sets seating; nominal SLA tolerance is too coarse to supply these fits directly. The proposed reusable CAD and rate-card estimate are supplied; a vendor-accepted quotation, ring force qualification and a measured reset remain incomplete. No invented kit quotation or physical measurement is claimed.
 
-Why it is more than a scrape: a scraper task is judged on what is left on the surface; here 60 separate fragile
-parts must each get a push inside a narrow force window, the press is capped for the whole trial by one number on a
-scale, and one crushed tablet zeroes the batch. The bars replace the maker's supporting hand ("Rest Cavity Plate on the
-fingers of one hand") so a freed tablet has room to drop and a person can repeat the trial exactly; the robot's work
-is the maker's other hand, the spreader.
+## Distinctness and limits
 
-- TK-YTH6M4 (twist an ice-cube tray and tip the cubes out): there the tray flexes and gravity does the rest; here the
-  plate is rigid and each of 60 small, fragile parts needs a controlled push through a hole, with crushing as the
-  failure.
-- TK-A8X2KJ (flex a 3D printer's build plate to pop a part free): one robust part released by bending its plate;
-  here no bending is possible and the force window per part is narrow.
-- TK-QQSJZE (count tablets on a pill counting tray): pharmacy setting, but sliding loose tablets with a spatula; no
-  release from a mold and no crushing limit.
-- TK-63RTRA (scrape debris off a griddle with a scraper) and TK-4T97N9 (pack and strike spackle flush with a putty
-  knife): a blade dragged over a surface to move material; here the edge must press within a force window over a
-  pattern of 60 holes, nothing is scraped, and the failure is crushing fragile parts.
-- TK-GJ7LSU (pending: pop one tablet through a blister pack into a cup): one tablet pushed through foil by a
-  fingertip; here sixty fragile molded tablets, a tool, a force window and a whole-batch crush rule.
+Unlike flexing an ice tray (TK-YTH6M4) or a printer build plate (TK-A8X2KJ), the cavity plate stays rigid and each small part needs its own loaded push. Unlike tablet counting (TK-QQSJZE), parts begin retained in a mold. Unlike a single blister release (TK-GJ7LSU), sixty positions and a force window govern a complete batch. These are prior screened comparisons, not a fresh duplicate-board audit. Fixed lots allow memorized scripted replay. No physical robot results are claimed.
 
-## Real-trial route and cost
+## Earlier verdict, quoted in full
 
-- Full route (the maker's process): Torpac X-MRDT60x075 mold, US$470 (brochure 2509 price list); a pack of
-  no-active-ingredient rapid-dissolve base (MEDISCA Medi-RDT Base 2772 or PCCA Rapid Dissolve Tablet Powder
-  #30-3269), roughly US$50-100 (estimate); a countertop convection oven that holds 110 C, about US$80; two 1/2 in x
-  6 in 6061 aluminium bars, about US$10; baking parchment, about US$5; a scrap-wood block with a saw-cut slot; a 5 kg
-  load cell with an HX711 board and a plywood platform, about US$15. About US$650 in all. Each trial uses one batch
-  molded by the maker's steps 1-8 (fill, tamp, bake 30 min at 110 C, cool 5-10 min, loosen the thumb screws, lift
-  the cavity plate off), about 50 minutes per batch with one mold, prepared before the session.
-- Lower-cost reference route, no oven, same counts and limits: a resin print of the cavity plate from the dimensions in
-  fixture/README.md (about US$20 from a print service) coated with PTFE dry-film spray (about US$10), filled with
-  classic molded tablet triturates (lactose with 10-20% sucrose, moistened with 60% ethanol, pressed into the holes
-  and air-dried 12 h at room temperature; about US$20 of ingredients), with the same bars, parchment, block and load
-  cell: about US$80 with one plate, or about US$160 with five printed plates molded the day before, so each reset is
-  only setting a filled plate on the bars (about 2 minutes). The one-tablet release check under "Why the thresholds"
-  applies; adjust the moistening or the PTFE coat until a batch passes it. Triturates are a different material from
-  the maker's base, but a batch inside the same 0.1-1 N release window that does not crumble below 1 N tests the same
-  thing, so runs on either route that pass the check are comparable.
+> **Not accepted** (TK-UB4LFU).
+> 
+> Construct validity (not met): The rigid spreader releases tablets from plate contact alone even though their faces are recessed 0.1 mm and receive no simulated push.
+> 
+> Feasibility (not met): The demo's simulated release rule substitutes for pushing the tablets, so its full score does not demonstrate the specified physical action.
+> 
+> What to change: The simulated release currently fires when the spreader presses the plate over a hole, without pushing the tablet itself; the modeled tablet face is recessed below the plate. Adjust the tablet seating, spreader or release method so the real task can physically push each tablet out, and implement the simulation so release requires that same physical work. Update the fidelity note and provide a full-score demo using the corrected mechanism.
+> 
+> To submit a revision, push your changes to this pull request (no need to open a new one). Your idea stays reserved for 48 hours from this review; if no revision arrives by then, the hold lapses and another team can claim the idea.
+> 
 
-## Fidelity
+## Point-by-point response
 
-True size from the maker's brochure (plate 120 x 152, holes 5.5/6.5 mm, 3.7 mm deep, 75 mg tablets). The hole pitch,
-the plate, spreader and bar masses, all frictions, and the spreader's size are estimates. Holes and tablets are
-8-sided tapered prisms (a tablet 0.02 mm smaller than its hole, seated 0.1 mm below the back face). The spreader is modelled rigid; the arm's own
-compliance sets how hard it presses. The release and damage thresholds are the declared rules above, not measured
-values. Heat, dose, dissolution and sterility are outside the task. The layout is fixed in each lot, so a memorised
-replay of both lots cannot be ruled out; the lots stop a single fixed grasp habit.
+1. **Plate-only release:** removed. `contact_loads` isolates every tablet's actual spreader force; plate and neighbor tests release nothing.
+2. **Recess/physical access:** the technician reports fill-face shrinkage; the replica deliberately recesses the pushed narrow face 0.1 mm. A colliding central 1.8 mm pin reaches it. Every hole is physically reachable by the pin, rather than relying on a card bridging the lands.
+3. **Same physical work:** the new reusable model requires own force >=0.40 N and actual 2.2 mm resisted travel, with native reaction on the plate. No hand weld, live pose writes or post-release guide.
+4. **Fidelity:** task.json, this note and fixture dimensions disclose replica, estimates, temporary retention and fracture limitations.
+5. **Full-score feasibility:** not met. A retained tablet21 outside its retry column and later latched a zero after plate displacement reached10.011 mm against the unchanged10 mm limit. B also latched a zero after10.041 mm plate displacement. The completed official DEMO grades are A0.0/B0.0, mean0.0 ([receipt](validation/final-demo.json), [44 actual release events](validation/final-demo-releases.csv)). Dream-1 was operator-interrupted, with no completed model grade ([record](validation/model-attempt.json)). Small development pilots do not establish full-batch success.
+6. **Flags:** none in the sole verdict. Whole-task kit cost/reset and supporting hand are being addressed, not assumed settled.
 
-## Run it
+## Running and results
 
-Yam-isaac-lab-arena (the program's YAM embodiment for Isaac Lab-Arena), stock stack. `parts.py` and `lots.py` in this
-folder patch the stock `yam_arena` scene and embodiment classes in the task's own process at import (parts built
-from primitives and convex pieces; the two layout lots); nothing on disk changes. No third-party assets are used.
+```sh
+inspect-robots run --embodiment yam_arena --policy yam_scripted \
+  -E task=task.py -E object_jitter=0 -E control_hz=20 --max-steps 4000 --epochs 2 \
+  --instruction "Hold the plate by its tab, push all 60 replicas onto parchment with the pin at no more than 4 N each, then set both down and clear both hands." --scorer task_score
+```
 
-    inspect-robots run --policy yam_scripted -E task=task.py -E object_jitter=0 --max-steps 1600 \
-        --epochs 2 "Release all sixty tablets from the mold plate onto the parchment without breaking any, and set down anything you pick up."
+The scripted waypoints last195.3 s; the configured policy then holds its final pose for3 s, staying below the200 s simulated trial limit. After its first pass it physically retries the first column on eight rows; those pushes use the same force, travel and damage gates. Aim offsets were calibrated from native development traces; they are fixed motion commands, with no state feedback or scoring exception. This demonstrates a task-specific script, not general policy competence.
 
-Trial k uses lot k mod 2 (A first); `TASK_LOT=A` or `TASK_LOT=B` pins every trial to one lot. Submissions run with
-`object_jitter=0`. Runtime is about 3 minutes per demo trial on an L40S with video (the demo reaches full score at 27.2 s of simulated time). Setting `TABLET_LOG=<file>` writes a JSON line
-every 5 control steps (tablets held, on the parchment, press force, peak, events).
-
-## Results
-
-- **Demo (scripted, open-loop from the published layout, right arm only):** 1.0 in each of lots A and B. The right
-  hand takes the spreader from its block, lowers its edge onto the plate's far end margin, presses 8 mm below first
-  contact (the arm's compliance gives 1.9-2.5 N in lot A and mostly 1.3-2.2 N in lot B while sweeping; peak 3.2 N),
-  sweeps once along the plate over all ten rows at about 20 mm/s, lifts off and lays the spreader flat on the counter.
-  All 60 tablets were freed and lay flat on the parchment by 20 s; full score at 27.2 s in both lots. No damage rule
-  fired (no gripper contact on any tablet, the plate moved under 1 mm and did not tilt).
-- **Dream-1:** 0.0 in both lots (mean 0.0). Both trials ran to the 1,600-step limit without refusing; the arms moved
-  slowly back toward their bases, the fingertips never came lower than 98 mm above the counter, the spreader was
-  never touched and no tablet was freed.
-- **Naive hard press (GPU check of the same scene, lot A):** the same demo with the spreader commanded 25 mm instead
-  of 8 mm below first contact pushed 6.05 N on the plate at touch-down (peak 7.0 N) and scored 0 for the trial before
-  any tablet was freed.
-- **Earlier runs on this design (development):** a 4 mm press gave only 0.4-1.3 N (a 1.5 mm spreader slipped in the
-  fingers), freeing 42 of 60; tablets dropped while the edge was still on them were launched and some tumbled (58/60
-  and 55/60 on the parchment); a tablet seated 0.15 mm proud was pinched under the edge and thrown off the counter
-  (59/60). Each was fixed in the model as described above, not by loosening a threshold.
+`TASK_LOT=A/B` selects a deterministic lot. The frozen-source two-epoch DEMO completed: official A0.0/B0.0, mean0.0,7932 control steps and policy_stop in both trials. A released43/60 and B1/60; both reported hands clear at the final logged198.25s sample. A latched a zero after10.011 mm plate displacement, and B after10.041 mm(limit10 mm). [Final native/official summary](validation/final-demo.json) and [44 release events](validation/final-demo-releases.csv) record this failed demonstration. The native release force ranges were A0.400123–0.415843N and B0.403882N, with actual resisted travel A2.208905–2.483616mm/B2.423607mm; these are simulation values, not physical measurements. An additional pinned-B attempt was operator-interrupted with7/60 released at its last36 s sample, not a completed grade. Dream-1 was interrupted by the operator in A after1,493 control steps; its last logged sample was74.5 s with0/60 released. B was not run and there is no completed model grade. The partial recording documents the interrupted attempt; no completed performance grade is available. An earlier full attempt on an older source scored0 in A after a support-clearance violation at27 releases; B was not run. Development pilots are diagnostics, not full-score evidence. Dried-tablet force/gap and fill-face shrinkage figures come from the technician phone report; pushed-face placement is a replica choice. No replica force, reset time or hardware score has been measured.

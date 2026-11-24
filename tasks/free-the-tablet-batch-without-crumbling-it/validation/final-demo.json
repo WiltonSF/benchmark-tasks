@@ -1,0 +1,83 @@
+{
+  "source_sha256": "645db9c06135586dc221762fc2c6277390f156bd6a4334e1ba46a35c4c4cc8ac",
+  "run": "demo-20261124T065540",
+  "evaluation_status": "success",
+  "evaluation_status_note": "success means evaluation completed; both task grades are zero",
+  "official_task_scores": {
+    "A": 0.0,
+    "B": 0.0
+  },
+  "official_mean_task_score": 0.0,
+  "total_control_steps": 7932,
+  "termination_reasons": [
+    "policy_stop",
+    "policy_stop"
+  ],
+  "completed_at": "2026-11-24T08:56:20.537592+00:00",
+  "native_observations": [
+    {
+      "lot": "A",
+      "source_hashes": [
+        "645db9c06135586dc221762fc2c6277390f156bd6a4334e1ba46a35c4c4cc8ac"
+      ],
+      "last_t": 198.25,
+      "last_trace_score": 0.0,
+      "freed": 43,
+      "flat": 43,
+      "clear": true,
+      "first_zero": {
+        "t": 123.75,
+        "why": "plate pose limit: moved 10.011 mm (cap10), tilt 0.684 deg (cap5)"
+      },
+      "release_count": 43,
+      "own_force_N": [
+        0.4001234412435022,
+        0.4158425941720155
+      ],
+      "travel_m": [
+        0.0022089048332258124,
+        0.0024836160969558337
+      ],
+      "support_gap_m": [
+        0.002584570631188776,
+        0.006142345670066884
+      ],
+      "recorded_peak_N": 2.357,
+      "max_logged_nonpin_N": 0.0,
+      "max_logged_plate_tilt_deg": 1.41
+    },
+    {
+      "lot": "B",
+      "source_hashes": [
+        "645db9c06135586dc221762fc2c6277390f156bd6a4334e1ba46a35c4c4cc8ac"
+      ],
+      "last_t": 198.25,
+      "last_trace_score": 0.0,
+      "freed": 1,
+      "flat": 1,
+      "clear": true,
+      "first_zero": {
+        "t": 12.0,
+        "why": "plate pose limit: moved 10.041 mm (cap10), tilt 2.251 deg (cap5)"
+      },
+      "release_count": 1,
+      "own_force_N": [
+        0.40388189880517106,
+        0.40388189880517106
+      ],
+      "travel_m": [
+        0.0024236073295791833,
+        0.0024236073295791833
+      ],
+      "support_gap_m": [
+        0.0028355673413350546,
+        0.0028355673413350546
+      ],
+      "recorded_peak_N": 3.005,
+      "max_logged_nonpin_N": 0.0,
+      "max_logged_plate_tilt_deg": 2.96
+    }
+  ],
+  "release_csv": "final-demo-releases.csv",
+  "method": "Release-event values are native simulation logs, not physical measurements. First-zero times are the first quarter-second samples after the 20 Hz trigger; trigger displacement is preserved from the native reason. No thresholds were relaxed. No full-score demonstration exists."
+}

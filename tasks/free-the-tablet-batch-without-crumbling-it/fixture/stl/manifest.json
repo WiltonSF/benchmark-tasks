@@ -1,0 +1,74 @@
+{
+  "version": "RDT60-R1-proposed",
+  "units": "mm",
+  "ring": "5mm ID x1mm CS silicone; qualify actual force",
+  "pucks_sprue_quantity": 4,
+  "files": [
+    {
+      "file": "plate-bottom.stl",
+      "volume_mm3": 35464.04,
+      "watertight": true,
+      "triangles": 16970
+    },
+    {
+      "file": "plate-top.stl",
+      "volume_mm3": 34079.56,
+      "watertight": true,
+      "triangles": 16974
+    },
+    {
+      "file": "handle-extension.stl",
+      "volume_mm3": 55619.99,
+      "watertight": true,
+      "triangles": 666
+    },
+    {
+      "file": "parking-block.stl",
+      "volume_mm3": 9675.0,
+      "watertight": true,
+      "triangles": 12
+    },
+    {
+      "file": "pucks-30-sprue.stl",
+      "volume_mm3": 5030.76,
+      "watertight": true,
+      "triangles": 8020
+    },
+    {
+      "file": "pusher-carrier.stl",
+      "volume_mm3": 7463.27,
+      "watertight": true,
+      "triangles": 386
+    },
+    {
+      "file": "pusher-body.stl",
+      "volume_mm3": 16106.35,
+      "watertight": true,
+      "triangles": 470
+    },
+    {
+      "file": "spreader-block.stl",
+      "volume_mm3": 88100.0,
+      "watertight": true,
+      "triangles": 118
+    },
+    {
+      "file": "coupon-bottom.stl",
+      "volume_mm3": 659.72,
+      "watertight": true,
+      "triangles": 802
+    },
+    {
+      "file": "coupon-top.stl",
+      "volume_mm3": 544.04,
+      "watertight": true,
+      "triangles": 802
+    },
+    {
+      "file": "seating-gauge.stl",
+      "volume_mm3": 937.68,
+      "watertight": true,
+      "triangles": 256
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "source_sha256": "645db9c06135586dc221762fc2c6277390f156bd6a4334e1ba46a35c4c4cc8ac",
+  "run_id": "dream-20261124T065752",
+  "policy": "Dream-1",
+  "status": "operator-interrupted",
+  "completed_model_grade": null,
+  "total_control_steps": 1493,
+  "last_logged_sim_seconds": 74.5,
+  "lot": "A",
+  "tablets_released": 0,
+  "tablets_on_parchment": 0,
+  "invalidating_violation": false,
+  "lot_B": "not run",
+  "recording": "partial",
+  "reason": "Stopped to prioritize demonstration timing; no completed performance grade is available."
+}

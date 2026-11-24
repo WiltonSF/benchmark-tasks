@@ -1,37 +1,22 @@
-# Dimensions used in the simulation
+# RDT60-R1 proposed reusable fixture
 
-Millimetres. x is forward (away from the arm bases), y to the robot's left, z up; heights above the counter.
+Unbuilt and physically unqualified. Dimensions are millimetres;  masses are estimates. Dried-tablet fill-face shrinkage, radial gap and force figures were obtained by phone from a technician who works with this product (Nov 2026); reusable-part qualification remains pending. This kit replaces pharmaceutical specimens with reusable resin pucks and a force protocol; it does not reproduce measured tablet fracture.
 
-## Cavity plate (Torpac ProMold RDTM2G, X-MRDT60x075)
+- Plate:120 x 152 x 3.7, six by ten holes at 12.5 x 14 pitch. Circular physical bores taper from 6.5 below to 5.5 above; simulation uses eight sides. Split at 2.05 above the bottom. SixM2 bolt centres atx=±44, y=-56,0,56 remain clear of the bars.
+- Pucks:3.6 high,5.447 top/6.42 bottom diameter,120 mg estimated from CAD volume and assumed 1.2 g/cm³ resin density. The replica deliberately places the pushed face 0.1 mm below the plate face; this is not a reported real pushed-face measurement. Four 30-puck sprues supply 60 specimens and 60 spares; finish/qualify once, then reuse.
+- Seating gauge:20 mm collar x 3 thick with 4 mm boss projecting 0.1 mm. After flush loading, press each face with the gauge to set the required recess; qualify boss projection 0.10 +/-0.03 mm.
+- Rings:commercial silicone 5 ID x 1 section, groove 8.2 diameter x 1.1 high, centred 1.65 below the upper face (lower groove edge 2.2 below it). Nominal dimensions do not guarantee the required 0.40-0.45 N enrollment force. Qualify each assigned puck/cavity over three cycles.
+- Stop ledge:12 x 44 x 3, centred at localx 2/y 250, underside 57.3 above the plate back face, joined to the upper55 mm tube by a12 x12 x3.5 neck starting54 above the back. The narrow centre clears carriage rails and bears on the inner pad surface; qualify the delivered grip.
+- Connector:30 x 177 x 10, y=76 to 253; a 20 mm half-lap at y=100 to 120 joins the extension with four M3 screws. Grip tube:30 x 30 x 55 at y=250,2 mm walls, central 2 mm compression web, open x ends, axis canted 2 degrees about eachlocalx/yaxis. Plate/connector/grip assembly 160 g estimated.
+- Trial origin:(275,0). Bars:12.7 square x 152.4, centresx=221.35/328.65,y=0, on 260 x 300 x 0.2 parchment. Plate back face initially 16.6 above counter. Parking block:30 x 25 x 12.9 at(275,220),12 g estimated.
+- Spreader:nominal 90 x 70 x 3 card and central 1.8 diameter pin extending 12 below it. Upper grip boss 20 x 12 x 25 at local(0,0,22.5). Fixed sensor-frame envelope 12 x 14 x 25 at(-40,0,0.5); cover 58 x 16 x 19 at(-20,0,-19); lower M5 head 8.72 diameter x 5 at(0,0,-31.85). Total 55 g estimated, including purchased beam and screws. The simulation fills cutouts with conservative rigid collision proxies and omits sensor/cable flex.
+- Load path:pin and moving lower card → TAL220B-5 kg free end → beam fixed end → upper grip. TwoM5 holes 40 apart,7 mm screw engagement through 3 mm spacers,9.4 mm fixed-head access. No physical carrier-to-frame contact is permitted. See the dimensioned section and assembly checks.
+- Spreader block:100 x 40 x 20,92 x 4.5 slot with 6 mm floor, central 12 x 10.5 screw-head clearance,12 mm-high supporting shoulders 38 long atx=±25. Pin starts 6 above counter and card top 88. LotA block/spreader at(220,-200); lotB at(410,-190). Two30 x10 x19 upper guides centred at local(30,+/-7.5,28.5) reach38 high with5.0 slot, on the plain card end away from the sensor housing. Block mass106 g estimated.
 
-| Quantity | Value | Source |
-|---|---|---|
-| Mold footprint | 120 x 152 (4.7 x 6.0 in) | maker brochure 2509, "Mold Dimensions" |
-| Hole diameter upper / lower | 6.5 / 5.5 (0.255 / 0.216 in) | brochure |
-| Hole height (plate thickness used) | 3.7 (0.145 in) | brochure |
-| Hole volume, tablet weight | 0.10 ml, 75 mg (at 0.75 g/ml) | brochure |
-| Holes | 60, 6 across x 10 along | brochure photos |
-| Hole pitch | 12.5 across, 14 along (centres at x = +-6.25, +-18.75, +-31.25; y = +-7, +-21, +-35, +-49, +-63) | estimate from the maker's photos |
-| Plate mass | 166 g (aluminium volume less the holes) | estimate |
+Every loaded release needs at least 0.5 mm actual clearance above the bars and parking block. Fixtures moving over 5 mm zero. The demo's 8.5 mm hand command is distinct from measured plate motion, limited to 10 mm displacement and 5 degrees tilt. No hand weld or pose hold supports the plate.
 
-The plate lies upside down (as the maker's step 9), so each hole's 5.5 mm narrow end is at the top (back face) and
-its 6.5 mm wide end at the bottom. In the simulation each hole and each tablet is an 8-sided tapered prism (across
-flats 5.5 at the top, 6.5 at the bottom); a tablet is 0.02 mm smaller than its hole all round.
+Temporary native prismatic retention resists downward travel: maximum 0.45 N, stiffness 0.45/0.0022=204.545 N/m, critical damping 2 sqrt(K x 0.000120)=0.31334 N s/m. These are unmeasured model choices. Own pin contact >=0.40 N and actual 2.2 mm travel disable the joint completely. While retained, the guide replaces redundant puck/plate wall contacts. Full pair collisions restore as the guide disables; released pucks have six free degrees of motion. Non-pin workpiece contact above 0.02 N zeros; all spreader contacts remain in damage-force totals.
 
-## Stand and collecting sheet
+[Proposed BOM and price arithmetic](BOM.md) · [Assembly/enrollment/reset](ASSEMBLY.md) · [Plate layout](plate-layout.svg) · [Sensor section](assembly-section.svg)
 
-- Two 1/2 in (12.7) square 6061 aluminium bars, 6 in (152.4) long, 66 g each, standing on the parchment along y
-  under the plate's two long margins, centres at x 246.35 and 353.65, y 0. The plate's back face is then 16.6 above
-  the counter and the tablets have 12.7 mm to drop.
-- Baking parchment, 260 x 300, centred at (300, 0).
-
-## Spreader block (a simple fixture)
-
-A wooden block 100 (x) x 40 (y) x 20 (z) with a slot along x: 4.5 wide, 92 long, floor 5 above the block's bottom
-(slot 15 deep), closed at both ends by 4 mm walls. Lot A centre (220, -200); lot B (410, -190). The spreader stands
-in the slot on its rounded edge, its 90 mm length along x; its top is 75 above the counter.
-
-## Spreader
-
-White rigid plastic card, 90 x 70 x 3, rounded lower edge, 18 g (estimate from the maker's photos; the maker does
-not publish its size).
+Generate watertight original meshes with `build_replica.py` (NumPy,trimesh,manifold 3 d). `stl/manifest.json` records volumes and connectivity; `price_from_rate_card.py` computes an explicit no-discount estimate, not an accepted quotation. A qualified square counter edge with at least 80 mm clearance below the grip/cap is required; no loading pedestal is supplied. No per-trial baking or casting is required by this proposed route. Initial print fitting, force calibration and the estimated 3-5 minute reset are not measured results.

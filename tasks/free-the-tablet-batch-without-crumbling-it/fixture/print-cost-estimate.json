@@ -1,0 +1,120 @@
+{
+  "source": "https://layership3d.com/pages/pricing",
+  "material": "Tough 1500 SLA",
+  "basis": "setup4.65/file + quantity*(0.44/cm3 part + 0.029/cm3 bounding box +0.028/cm2 surface), before discounts/tax/shipping. Derived arithmetic, not vendor quote.",
+  "rows": [
+    {
+      "file": "plate-bottom.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 35.4640393429602,
+      "bounding_cm3": 48.215998878479006,
+      "surface_cm2": 393.9822072173114,
+      "derived_usd": 32.68,
+      "fits_form4": true
+    },
+    {
+      "file": "plate-top.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 34.079556943858954,
+      "bounding_cm3": 186.984001121521,
+      "surface_cm2": 400.102379214786,
+      "derived_usd": 36.27,
+      "fits_form4": true
+    },
+    {
+      "file": "handle-extension.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 55.61998588398324,
+      "bounding_cm3": 351.55773291015623,
+      "surface_cm2": 251.39448469655864,
+      "derived_usd": 46.36,
+      "fits_form4": true
+    },
+    {
+      "file": "parking-block.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 9.674999713897705,
+      "bounding_cm3": 9.674999713897705,
+      "surface_cm2": 29.1899995803833,
+      "derived_usd": 10.0,
+      "fits_form4": true
+    },
+    {
+      "file": "pucks-30-sprue.stl",
+      "optional_loading_jig": false,
+      "quantity": 4,
+      "volume_cm3": 5.030755699048395,
+      "bounding_cm3": 30.34011214901728,
+      "surface_cm2": 75.9286093201443,
+      "derived_usd": 25.53,
+      "fits_form4": true
+    },
+    {
+      "file": "pusher-carrier.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 7.463272100088316,
+      "bounding_cm3": 55.12080054473877,
+      "surface_cm2": 62.03374965748819,
+      "derived_usd": 11.27,
+      "fits_form4": true
+    },
+    {
+      "file": "pusher-body.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 16.106345919342786,
+      "bounding_cm3": 95.504,
+      "surface_cm2": 141.47622595603065,
+      "derived_usd": 18.47,
+      "fits_form4": true
+    },
+    {
+      "file": "spreader-block.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 88.1,
+      "bounding_cm3": 152.0,
+      "surface_cm2": 177.42,
+      "derived_usd": 52.79,
+      "fits_form4": true
+    },
+    {
+      "file": "coupon-bottom.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 0.6597170578124983,
+      "bounding_cm3": 0.8855999794006347,
+      "surface_cm2": 10.070524532684459,
+      "derived_usd": 5.25,
+      "fits_form4": true
+    },
+    {
+      "file": "coupon-top.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 0.5440358542357302,
+      "bounding_cm3": 0.7128000411987304,
+      "surface_cm2": 9.743323536271157,
+      "derived_usd": 5.18,
+      "fits_form4": true
+    },
+    {
+      "file": "seating-gauge.stl",
+      "optional_loading_jig": false,
+      "quantity": 1,
+      "volume_cm3": 0.9376820946893573,
+      "bounding_cm3": 1.2399999618530273,
+      "surface_cm2": 8.137365541299337,
+      "derived_usd": 5.33,
+      "fits_form4": true
+    }
+  ],
+  "total_derived_usd": 249.13,
+  "primary_without_optional_jig_usd": 249.13,
+  "optional_loading_jig_usd": 0
+}

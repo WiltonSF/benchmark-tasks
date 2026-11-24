@@ -1,0 +1,21 @@
+{
+  "source_sha256": "645db9c06135586dc221762fc2c6277390f156bd6a4334e1ba46a35c4c4cc8ac",
+  "run_id": "demo-20261124T065540",
+  "lot": "A",
+  "tablet": 21,
+  "window_sim_s": [
+    110.75,
+    113.0
+  ],
+  "observation": "incidental retained rim press, not the dedicated plate-only control",
+  "tablet_own_force_max_N": 0.0,
+  "tablet_travel_max_mm": -0.012,
+  "downward_plate_force_max_N": 1.033,
+  "released_in_window": false,
+  "invalidating_violation": false,
+  "all_tablet_own_force_max_N": 0.0,
+  "freed_count_range": [
+    39,
+    39
+  ]
+}
