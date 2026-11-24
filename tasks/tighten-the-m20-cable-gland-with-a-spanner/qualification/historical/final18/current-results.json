@@ -1,0 +1,12 @@
+{
+  "task_sha256": "06a16daa3ed6220bd139ccf025c78ce4c27c962d7b93da5875914e2e4d6eb8f4",
+  "native_run": "gland-rev4087-final18/demo-20261124T024159",
+  "scripted": {
+    "A": 0.5,
+    "B": 0.5,
+    "actions_each": 1316
+  },
+  "dream": "pending",
+  "native_audit": "gland-rev4087-final18/audit-demo/gland.jsonl",
+  "full_score_proven": false
+}

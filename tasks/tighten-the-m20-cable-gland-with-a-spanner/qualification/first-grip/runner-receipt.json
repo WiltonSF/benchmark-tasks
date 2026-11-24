@@ -1,0 +1,35 @@
+{
+  "status": "success",
+  "error": null,
+  "policy": "yam_scripted",
+  "environment_revision": "7f54de08cc02",
+  "max_steps": 300,
+  "instruction": "Keep both hands clear for the independent first-grip calibration pulls.",
+  "started": "2026-11-24T10:28:18.934231+00:00",
+  "completed": "2026-11-24T10:32:47.224199+00:00",
+  "mean_score": 0.0,
+  "trials": [
+    {
+      "epoch": 0,
+      "lot": "q45_f10",
+      "score": 0.0,
+      "steps": 300,
+      "seeds": [
+        1415158438
+      ],
+      "termination": "policy_stop",
+      "transcript": null
+    },
+    {
+      "epoch": 1,
+      "lot": "q60_f10",
+      "score": 0.0,
+      "steps": 300,
+      "seeds": [
+        593406512
+      ],
+      "termination": "policy_stop",
+      "transcript": null
+    }
+  ]
+}

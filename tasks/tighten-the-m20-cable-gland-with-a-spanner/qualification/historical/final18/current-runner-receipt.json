@@ -1,0 +1,35 @@
+{
+  "status": "success",
+  "error": null,
+  "policy": "yam_scripted",
+  "environment_revision": "06a16daa3ed6",
+  "max_steps": 3200,
+  "instruction": "Feed the cable until its green mark meets the gland cap and hold it there, tighten the cap with the spanner into the green sector, return the spanner to its rest, and release both hands.",
+  "started": "2026-11-24T02:41:59.597173+00:00",
+  "completed": "2026-11-24T02:51:40.146628+00:00",
+  "mean_score": 0.5,
+  "trials": [
+    {
+      "epoch": 0,
+      "lot": "A",
+      "score": 0.5,
+      "steps": 1316,
+      "seeds": [
+        1415158438
+      ],
+      "termination": "policy_stop",
+      "transcript": null
+    },
+    {
+      "epoch": 1,
+      "lot": "B",
+      "score": 0.5,
+      "steps": 1316,
+      "seeds": [
+        593406512
+      ],
+      "termination": "policy_stop",
+      "transcript": null
+    }
+  ]
+}

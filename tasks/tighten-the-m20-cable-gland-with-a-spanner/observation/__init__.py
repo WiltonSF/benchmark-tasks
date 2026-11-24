@@ -72,5 +72,86 @@ def hand_state(sim):
     return clouds,finger
 
 def reset():
-    global _tip_contact_view
+    global _tip_contact_view,_spanner_cap_view,_finger_spanner_view
     _tip_contact_view=None
+    _spanner_cap_view=None
+    _finger_spanner_view=None
+
+_spanner_cap_view=None
+last_spanner_cap_force=np.zeros(3)
+last_spanner_cap_min_distance=None
+
+def spanner_cap_load(sim,axis):
+    """Native normal + friction contact torque on the cap nut, filtered to the spanner.
+
+    Each contact has an equal opposite reaction on the spanner in PhysX. Forces
+    are impulses divided by the physics step, not a configured brake force.
+    """
+    global _spanner_cap_view,last_spanner_cap_force,last_spanner_cap_min_distance
+    base=sim.env.unwrapped
+    if _spanner_cap_view is None:
+        from isaaclab_physx.physics import PhysxManager
+        env_path=base.scene.env_prim_paths[0]
+        _spanner_cap_view=PhysxManager.get_physics_sim_view().create_rigid_contact_view(
+            env_path+'/gland/nut',filter_patterns=[env_path+'/spanner'],max_contact_data_count=256)
+    if _spanner_cap_view.sensor_count!=1 or _spanner_cap_view.filter_count!=1:
+        raise ValueError('missing spanner-cap contact view')
+    dt=base.sim.get_physics_dt()
+    def arr(x):
+        if hasattr(x,'torch'):x=x.torch
+        return np.asarray(x.detach().cpu().numpy() if hasattr(x,'detach') else x.numpy())
+    raw=_spanner_cap_view.get_contact_data(dt=dt)
+    forces,points,normals,distances,counts,starts=map(arr,raw)
+    n=int(counts.reshape(-1)[0]);i=int(starts.reshape(-1)[0])
+    if n<0 or n>=256 or i<0 or i+n>256:raise ValueError('contact buffer missing or full')
+    last_spanner_cap_min_distance=float(distances.reshape(-1)[i:i+n].min()) if n else None
+    f=forces.reshape(-1,1)[i:i+n]*normals.reshape(-1,3)[i:i+n]
+    p=points.reshape(-1,3)[i:i+n]
+    center=np.asarray(axis)+parts._np(base.scene.env_origins[0])
+    net_force=f.sum(axis=0)
+    torque=float(np.cross(p-center,f)[:,0].sum())
+    load=float(np.linalg.norm(f,axis=1).sum())
+    friction,points,counts,starts=map(arr,_spanner_cap_view.get_friction_data(dt=dt))
+    n=int(counts.reshape(-1)[0]);i=int(starts.reshape(-1)[0])
+    if n<0 or n>=256 or i<0 or i+n>256:raise ValueError('friction buffer missing or full')
+    f=friction.reshape(-1,3)[i:i+n];p=points.reshape(-1,3)[i:i+n]
+    net_force+=f.sum(axis=0)
+    torque+=float(np.cross(p-center,f)[:,0].sum())
+    load+=float(np.linalg.norm(f,axis=1).sum())
+    if not np.isfinite([torque,load]).all():raise ValueError('unknown wrench-cap contact load')
+    last_spanner_cap_force=net_force
+    return torque,load
+
+
+_finger_spanner_view=None
+def finger_spanner_wrench(sim,tcp,axis):
+    """Read-only native normal/friction patch audit for the two tool fingers."""
+    global _finger_spanner_view
+    base=sim.env.unwrapped
+    if _finger_spanner_view is None:
+        from isaaclab_physx.physics import PhysxManager
+        from yam_arena.robot import asset_link_paths
+        links=asset_link_paths();env=base.scene.env_prim_paths[0]
+        paths=[env+'/LeftArm'+links[n] for n in ('tip_left','tip_right')]
+        _finger_spanner_view=PhysxManager.get_physics_sim_view().create_rigid_contact_view(paths,filter_patterns=[[env+'/spanner'] for _ in paths],max_contact_data_count=1024)
+    view=_finger_spanner_view
+    if view is None or view.sensor_count!=2 or view.filter_count!=1:raise ValueError('missing finger-spanner diagnostic view')
+    def arr(x):
+        if hasattr(x,'torch'):x=x.torch
+        return np.asarray(x.detach().cpu().numpy() if hasattr(x,'detach') else x.numpy())
+    dt=base.sim.get_physics_dt();forces,points,normals,distances,counts,starts=map(arr,view.get_contact_data(dt=dt))
+    friction,fpoints,fcounts,fstarts=map(arr,view.get_friction_data(dt=dt))
+    origin=parts._np(base.scene.env_origins[0]);tcp=np.asarray(tcp)+origin;axis=np.asarray(axis)+origin
+    out=[]
+    for finger in range(2):
+        n=int(counts.reshape(-1)[finger]);i=int(starts.reshape(-1)[finger]);nf=int(fcounts.reshape(-1)[finger]);j=int(fstarts.reshape(-1)[finger])
+        if min(n,i,nf,j)<0 or n>=1024 or nf>=1024 or i+n>1024 or j+nf>1024:raise ValueError('finger diagnostic buffer missing/full')
+        normal=forces.reshape(-1,1)[i:i+n]*normals.reshape(-1,3)[i:i+n];p=points.reshape(-1,3)[i:i+n]
+        tangential=friction.reshape(-1,3)[j:j+nf];fp=fpoints.reshape(-1,3)[j:j+nf]
+        force=normal.sum(0)+tangential.sum(0)
+        moment_tcp=np.cross(p-tcp,normal).sum(0)+np.cross(fp-tcp,tangential).sum(0)
+        moment_axis=np.cross(p-axis,normal).sum(0)+np.cross(fp-axis,tangential).sum(0)
+        scalars=[float(np.abs(forces.reshape(-1)[i:i+n]).sum()),float(np.linalg.norm(tangential,axis=1).sum())]
+        if not np.isfinite(np.r_[force,moment_tcp,moment_axis,scalars]).all():raise ValueError('unknown finger diagnostic data')
+        out.append(dict(finger=('tip_left','tip_right')[finger],normal_contacts=n,friction_patches=nf,force_on_finger_n=force.tolist(),normal_abs_sum_n=scalars[0],friction_abs_sum_n=scalars[1],moment_about_tcp_nm=moment_tcp.tolist(),moment_about_gland_nm=moment_axis.tolist()))
+    return dict(fingers=out,note='Native filtered forces on fingers from spanner; equal opposite forces act on spanner. Optional audit, not a scorer input or hardware measurement.')

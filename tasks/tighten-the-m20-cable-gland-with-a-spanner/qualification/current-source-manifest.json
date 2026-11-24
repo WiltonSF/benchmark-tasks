@@ -1,0 +1,23 @@
+{
+  "frozen_utc": "2026-11-24T16:18:34.965566+00:00",
+  "files": {
+    "task.py": {
+      "sha256": "22c3033ecae8737e6ad1caa8f778bb195da9241ebcc072ba057eaa738a981880"
+    },
+    "parts.py": {
+      "sha256": "f1ab0d3cf5bccbcd84cdb9ab9416f1d877e3f03e817799e039cec04f7a0ea8b2"
+    },
+    "lots.py": {
+      "sha256": "f2a660eddea564c7c9562864872c00cbaaa15874ec60e9345bd58eeb851bea77"
+    },
+    "near_misses.py": {
+      "sha256": "e2d3a41784fa6c42a55a36dc911d5863969542ef06010d12fd5ced533a8c76c9"
+    },
+    "tilt.py": {
+      "sha256": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567"
+    },
+    "observation/__init__.py": {
+      "sha256": "ff29ed85b9106ec8af30b8a6f6fd8bbec96c154a238e8359d3c7f1aa8ed61464"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+"""Isolated seal-retention calibration. Not a robot demonstration or real trial."""
+import dataclasses,json,math,os,pathlib,sys
+import numpy as np
+sys.path.insert(0,str(pathlib.Path(__file__).resolve().parent))
+import source as m
+from source import *
+parts._ON_RESET.clear();parts._ON_STEP.clear()
+CABLE=dataclasses.replace(m.CABLE,pos=(AXIS[0]+CAP_X-HEX_HALF_LEN-MARK_LOCAL_X,.015,AXIS[2]))
+m.CABLE=CABLE
+OBJECTS=[CABLE if x.name=='cable' else x for x in m.OBJECTS]
+CASES=[(45.,10.),(60.,10.)]
+LOTS=lots.declare(OBJECTS,*[lots.Lot('q%d_f%d'%(q,f)) for q,f in CASES])
+start=None;anchor=0.;peak=0.;residual=0.;cycle_index=0;aborted=False;previous_force=0.
+@parts.on_reset
+def reset(sim):
+ global start,anchor,peak,residual,cycle_index,aborted,previous_force
+ import torch
+ angle,force=CASES[lots.index(lots.current().name)]
+ asset=sim.env.unwrapped.scene[GLAND.name]
+ raw=asset.data.joint_pos
+ raw=raw.torch if hasattr(raw,'torch') else raw
+ q=torch.zeros_like(raw)
+ for name,value in [('cap',math.radians(angle)),('nut',CAP_LEAD*angle/360.),*[(f'seal{i}',SEAL_LEAD*angle/360.) for i in range(4)]]:
+  q[:,asset.joint_names.index(name)]=value
+ # Reset-only calibration initialization, never used in the submitted task.
+ asset.write_joint_state_to_sim(q,torch.zeros_like(q))
+ anchor=angle;sim.set_target(GLAND.name,'cap',math.radians(anchor));m.set_slip_torque(sim,m.cap_torque(angle));m.cable_force(sim,0.)
+ start=None;peak=0.;residual=0.;cycle_index=0;aborted=False;previous_force=0.
+@parts.on_step
+def update(sim):
+ global start,anchor,peak,residual,cycle_index,aborted,previous_force
+ states=sim.states();s=states['cable'];g=states['gland'];q=math.degrees(g.joints['cap'])
+ torque=m.cap_torque(q);k=math.radians(1.)*BRAKE_K
+ anchor=min(max(anchor,q-torque/k),q+torque/k)
+ sim.set_target(GLAND.name,'cap',math.radians(anchor));m.set_slip_torque(sim,torque)
+ _,load=CASES[lots.index(lots.current().name)]
+ t=float(sim.t);force=0.;phase=-1.
+ if t>=2.:
+  if start is None:start=np.asarray(s.pos).copy()
+  elapsed=t-2.;cycle=min(3,int(elapsed/2.));phase=elapsed-cycle*2.
+  if cycle<3:
+   force=load*phase/.5 if phase<.5 else (load if phase<1.5 else 0.)
+  disp=1000.*float(np.linalg.norm(np.asarray(s.pos)-start))
+  if previous_force>=load:peak=max(peak,disp)
+  if disp>5.:aborted=True
+  if cycle>cycle_index:residual=max(residual,disp);cycle_index=cycle
+ else:disp=0.
+ if aborted:force=0.
+ observed_force=previous_force;m.cable_force(sim,-force);previous_force=force
+ path=pathlib.Path(os.environ['TRACE_OUT']).with_name('calibration.jsonl')
+ with path.open('a') as f:f.write(json.dumps(dict(t=t,lot=lots.current().name,q=q,next_force=force,observed_force=observed_force,aborted=aborted,disp_mm=disp,peak_mm=peak,residual_mm=residual,cycle=cycle_index,pos=np.asarray(s.pos).tolist(),quat=np.asarray(s.quat_xyzw).tolist()))+'\n')
+def score(objects):return 0.
+def success(objects):return False
+def demo():
+ return {arm:[Waypoint(1.,(.14,y,TOP+.25),FINGER_OPEN,'clear calibration fixture',0.),Waypoint(11.,(.14,y,TOP+.25),FINGER_OPEN,'wait for operator pulls',0.)] for arm,y in [('left',.28),('right',-.28)]}

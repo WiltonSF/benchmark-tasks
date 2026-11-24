@@ -42,7 +42,7 @@ from yam_arena.task_file import GREY, ObjectState
 
 FRICTION = (1.2, 1.0)  # static, dynamic: yam_arena's grippy material
 CONTACT_OFFSET, REST_OFFSET = 0.005, 0.0  # as yam_arena's free objects
-SOLVER_ITERATIONS = (32, 4)  # articulation position, velocity iterations
+SOLVER_ITERATIONS = (64, 8)  # articulation position, velocity iterations
 MAX_DEPENETRATION = 1.0  # m/s: caps how hard PhysX pushes overlapping bodies apart
 MIMIC_AXIS = "rotX"  # PhysxMimicJointAPI instance token (the schema allows rotX/Y/Z only)
 
@@ -416,8 +416,17 @@ def _author(part: Part, root_path: str, translation, orientation):
         if mass is None:
             return
         UsdPhysics.RigidBodyAPI.Apply(prim)
-        PhysxSchema.PhysxRigidBodyAPI.Apply(prim).CreateMaxDepenetrationVelocityAttr(MAX_DEPENETRATION)
+        body_api=PhysxSchema.PhysxRigidBodyAPI.Apply(prim)
+        body_api.CreateMaxDepenetrationVelocityAttr(MAX_DEPENETRATION)
+        # Numerical accuracy for task parts, including the free spanner/cable.
+        # The robot/harness solver and all physical loads remain unchanged.
+        body_api.CreateSolverPositionIterationCountAttr(SOLVER_ITERATIONS[0])
+        body_api.CreateSolverVelocityIterationCountAttr(SOLVER_ITERATIONS[1])
         UsdPhysics.MassAPI.Apply(prim).CreateMassAttr(float(mass))
+        # This task measures wrench-to-cap normal/friction contact torque.
+        # Contact reporting must be authored before physics creates its views.
+        if part.name=='gland' and path.endswith('/nut'):
+            PhysxSchema.PhysxContactReportAPI.Apply(prim).CreateThresholdAttr(0.)
 
     def colliders(path: str, origin, shapes):
         for i, s in enumerate(shapes):

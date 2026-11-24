@@ -1,0 +1,7 @@
+{
+  "result": "PASS",
+  "source_task_sha256": "06a16daa3ed6220bd139ccf025c78ce4c27c962d7b93da5875914e2e4d6eb8f4",
+  "source_folder": "final18 frozen candidate",
+  "check": "factory/check.py full A/B geometry and28 controls",
+  "notes": "Text-only current-result update after geometry check; runtime unchanged."
+}

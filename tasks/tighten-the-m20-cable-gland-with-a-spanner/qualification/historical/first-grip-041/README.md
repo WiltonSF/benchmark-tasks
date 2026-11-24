@@ -1,0 +1,3 @@
+# Native first-grip calibration
+
+Isolated native simulation probe with reset-only initialized angle/cable pose. No pose or velocity writes during loading. At45deg the cable fails during the ramp (so a zero full-load peak field does not mean pass). At60deg it completes three10N/1s pulls: peak0.2576mm, residual0.2382mm, both below1mm. This establishes the operational reference on the15deg model grid, not three physical specimen measurements or a robot demonstration. Raw observations, the exact probe/model text and their summary are preserved here. The model uses0.41mm estimated radial preload; its geometry matches the scored seal approximation. The later white witness is visual only.

@@ -1,0 +1,83 @@
+[
+  {
+    "lot": "q120_f50",
+    "nominal_reset_angle_deg": 120.0,
+    "prescribed_pull_n": 50.0,
+    "complete_three_full_force_pulls": true,
+    "full_force_samples_per_pull": [
+      21,
+      21,
+      21
+    ],
+    "full_force_duration_s_per_pull": [
+      1.05,
+      1.05,
+      1.05
+    ],
+    "aborted": false,
+    "peak_displacement_mm": 0.6484811975433064,
+    "maximum_post_unload_residual_mm": 0.3712633202688825,
+    "passes_50n_three_holds_2mm_residual": true,
+    "observed_cap_angle_range_deg": [
+      119.93235714576441,
+      119.93956982552795
+    ],
+    "abort_time_s": null,
+    "abort_observed_force_n": null,
+    "note": "Independent reset-only simulation sweep. Native contact carries operator pulls. Not physical enrollment, not robot task A/B, and not proof of every intermediate angle."
+  },
+  {
+    "lot": "q135_f50",
+    "nominal_reset_angle_deg": 135.0,
+    "prescribed_pull_n": 50.0,
+    "complete_three_full_force_pulls": true,
+    "full_force_samples_per_pull": [
+      21,
+      21,
+      21
+    ],
+    "full_force_duration_s_per_pull": [
+      1.05,
+      1.05,
+      1.05
+    ],
+    "aborted": false,
+    "peak_displacement_mm": 1.4083973594355619,
+    "maximum_post_unload_residual_mm": 0.4370264148837487,
+    "passes_50n_three_holds_2mm_residual": true,
+    "observed_cap_angle_range_deg": [
+      134.91440441094406,
+      134.92097505292563
+    ],
+    "abort_time_s": null,
+    "abort_observed_force_n": null,
+    "note": "Independent reset-only simulation sweep. Native contact carries operator pulls. Not physical enrollment, not robot task A/B, and not proof of every intermediate angle."
+  },
+  {
+    "lot": "q150_f50",
+    "nominal_reset_angle_deg": 150.0,
+    "prescribed_pull_n": 50.0,
+    "complete_three_full_force_pulls": true,
+    "full_force_samples_per_pull": [
+      21,
+      21,
+      21
+    ],
+    "full_force_duration_s_per_pull": [
+      1.05,
+      1.05,
+      1.05
+    ],
+    "aborted": false,
+    "peak_displacement_mm": 1.2405356072202742,
+    "maximum_post_unload_residual_mm": 0.5850301276397912,
+    "passes_50n_three_holds_2mm_residual": true,
+    "observed_cap_angle_range_deg": [
+      149.89897884611662,
+      149.9103032997605
+    ],
+    "abort_time_s": null,
+    "abort_observed_force_n": null,
+    "note": "Independent reset-only simulation sweep. Native contact carries operator pulls. Not physical enrollment, not robot task A/B, and not proof of every intermediate angle."
+  }
+]

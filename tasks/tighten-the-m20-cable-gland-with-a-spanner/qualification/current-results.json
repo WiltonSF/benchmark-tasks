@@ -1,0 +1,21 @@
+{
+  "task_sha256": "22c3033ecae8737e6ad1caa8f778bb195da9241ebcc072ba057eaa738a981880",
+  "native_run": "demo-20261124T135257 (scripted), dream-20261124T141743 (Dream-1)",
+  "scripted": {
+    "A": 1.0,
+    "B": 0.5
+  },
+  "scripted_steps": {
+    "A": 2231,
+    "B": 2381
+  },
+  "dream": {
+    "A": 0.0,
+    "B": 0.0
+  },
+  "dream_steps": {
+    "A": 2400,
+    "B": 2400
+  },
+  "full_score_proven": false
+}

@@ -1,0 +1,25 @@
+ok    loaded task.py: scene station
+ok    layout: 13 objects, 2 free
+ok    lot A:
+ok    right arm: 116.0 s plan, IK within 0.10 mm / 0.012 deg
+ok    right arm: no link enters a fixed object (worst 0.0 mm)
+ok    left arm: 116.0 s plan, IK within 0.10 mm / 0.013 deg
+ok    left arm: no link enters a fixed object (worst 0.0 mm)
+ok    lot B:
+ok    right arm: 116.0 s plan, IK within 0.10 mm / 0.012 deg
+ok    right arm: no link enters a fixed object (worst 0.0 mm)
+ok    left arm: 116.0 s plan, IK within 0.31 mm / 0.076 deg
+ok    left arm: no link enters a fixed object (worst 0.0 mm)
+ok    start: no success, score 0
+30 synthetic history/release controls PASS (not physics evidence)
+ok    near miss 'do nothing': 0.0
+ok    near miss 'cable fed to the mark but no observed hand/contact state': 0.0
+ok    near miss 'cable above hole': 0.0
+ok    near miss 'cable beside hole': 0.0
+ok    near miss 'cap turned into the green sector without any observed tool history': 0.0
+ok    near miss 'feed outside wall without bore alignment': 0.0
+ok    near miss 'held moving cable cannot score': 0.0
+ok    task.json fields and blind-review text
+
+PASS  tighten-the-m20-cable-gland-with-a-spanner
+exit=0

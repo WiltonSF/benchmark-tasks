@@ -1,0 +1,3 @@
+# First grip
+
+Reset-only native simulation probe of the numeric first-grip criterion (three 10 N, 1 s pulls, <1 mm) at 45 and 60 deg on the current physical model (0.16 mm estimated preload, sharp hex, 64/8 solver). 45 deg fails during the ramp before 10 N is reached (32.66 mm movement at 1 N); 60 deg completes all three full-force holds (21 samples each) with 0.0611 mm peak and 0.0530 mm maximum residual movement. Raw observations, summary, runner receipt and the exact probe source are here. This is a simulation calibration, not physical enrollment or a robot run; its runner score is 0 by design.

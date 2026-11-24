@@ -1,0 +1,27 @@
+{
+  "kind": "native simulation calibration; not robot demo or physical measurement",
+  "native_run": "gland-rev4087-calibration041/trace-20261124T012236",
+  "raw_sha256": "4af73a6d8da541fe122a15a94a323955a41f9a627c901a4f9e7b9e49f93d5c81",
+  "radial_preload_m": 0.00041,
+  "criterion": "first15deg grid point passing10N/1s pulls with<1mm movement",
+  "cases": [
+    {
+      "case": "q45_f10",
+      "three_pulls_completed": false,
+      "aborted": true,
+      "peak_mm": 0.0,
+      "residual_mm": 9.983895425585127,
+      "max_displacement_mm": 9.984399618712452,
+      "observed_full10n_samples": 0
+    },
+    {
+      "case": "q60_f10",
+      "three_pulls_completed": true,
+      "aborted": false,
+      "peak_mm": 0.2575987007916373,
+      "residual_mm": 0.23816672923764914,
+      "max_displacement_mm": 0.2575987007916373,
+      "observed_full10n_samples": 63
+    }
+  ]
+}

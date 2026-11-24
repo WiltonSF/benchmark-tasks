@@ -1,0 +1,56 @@
+[
+  {
+    "lot": "q45_f10",
+    "nominal_angle_deg": 45.0,
+    "prescribed_pull_n": 10.0,
+    "test_window_completed": true,
+    "complete_three_pulls": false,
+    "full_force_samples_per_pull": [
+      0,
+      0,
+      0
+    ],
+    "full_force_duration_s_per_pull": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "passes_10n_less_than_1mm_criterion": false,
+    "aborted": true,
+    "maximum_observed_displacement_mm": 68.98992320381004,
+    "maximum_full_force_displacement_mm": null,
+    "maximum_post_unload_residual_mm": null,
+    "end_s": 15.000000000000078,
+    "abort_time_s": 2.1000000000000005,
+    "abort_observed_force_n": 1.0000000000000142,
+    "abort_displacement_mm": 32.65627828760959,
+    "note": "Reset-only modeled-pair calibration with external operator pulls. Not a physical measurement or robot task demonstration."
+  },
+  {
+    "lot": "q60_f10",
+    "nominal_angle_deg": 60.0,
+    "prescribed_pull_n": 10.0,
+    "test_window_completed": true,
+    "complete_three_pulls": true,
+    "full_force_samples_per_pull": [
+      21,
+      21,
+      21
+    ],
+    "full_force_duration_s_per_pull": [
+      1.05,
+      1.05,
+      1.05
+    ],
+    "passes_10n_less_than_1mm_criterion": true,
+    "aborted": false,
+    "maximum_observed_displacement_mm": 0.061104298966161534,
+    "maximum_full_force_displacement_mm": 0.061104298966161534,
+    "maximum_post_unload_residual_mm": 0.0529625398551796,
+    "end_s": 15.000000000000078,
+    "abort_time_s": null,
+    "abort_observed_force_n": null,
+    "abort_displacement_mm": null,
+    "note": "Reset-only modeled-pair calibration with external operator pulls. Not a physical measurement or robot task demonstration."
+  }
+]
