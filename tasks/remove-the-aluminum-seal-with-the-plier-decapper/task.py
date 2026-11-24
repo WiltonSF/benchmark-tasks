@@ -53,12 +53,15 @@ BOTTLE_SHAPES = [
 # --- WHEATON 224178-01 20 mm open-top aluminum seal: skirt over the bead, annular top (origin: skirt bottom) -------
 SEAL_Z = LIP_Z0  # crimped: the skirt's lower edge at the bottom of the bead
 SKIRT_IN, SKIRT_OUT, SKIRT_H, TOP_T, HOLE_R = 0.0103, 0.0108, 0.0071, 0.0005, 0.0066
+SEAL_SIDES = 32  # explicit convex collider; 0.052 mm maximum inward radial approximation
 
 
 def _seal_shapes():
-    """Collided as one solid 21.5 mm x 7.6 mm cylinder (the skirt with the bead and stopper flange inside it, as one
+    """Collided as a 32-sided solid 21.5 mm x 7.6 mm convex prism (the skirt with the bead and stopper flange inside it, as one
     rigid piece), shown as the aluminum skirt and annular top. The stopper stays in the bottle's neck."""
-    out = [parts.cylinder(SKIRT_OUT - 0.00005, SKIRT_H + TOP_T, (0, 0, (SKIRT_H + TOP_T) / 2), ALU)]
+    out = [parts.prism(SKIRT_OUT - 0.00005, SKIRT_H + TOP_T, SEAL_SIDES,
+                       (0, 0, (SKIRT_H + TOP_T) / 2), ALU,
+                       quat=(0.0, -math.sqrt(.5), 0.0, math.sqrt(.5)))]
     rm = (SKIRT_IN + SKIRT_OUT) / 2
     for k in range(16):
         a = 2 * math.pi * k / 16
@@ -80,7 +83,9 @@ JAW_Y, JAW_R, JAW_T, JAW_H = 0.024, 0.01085, 0.003, 0.007  # cradle centre, crad
 HANDLE_H, HANDLE_W = 0.010, 0.013
 OPEN_ANGLE = 0.55  # rad between the start (open) pose and jaws closed on the seal
 CLOSED_STOP = OPEN_ANGLE + 0.17  # empty jaws close until their tips meet
-RIVET_K, RIVET_PLAY = 6.0, 0.08  # N m/rad, rad: the rivet holds up to 0.48 N m, then slips
+RIVET_TAU = 0.48  # N m estimated static/sliding pin friction; unmeasured, replaces the prior damping cap
+RIVET_D = 0.0  # no viscous drive; the native pin friction supplies passive resistance
+CONTACT_SOLVER = (255, 64)  # numerical convergence probe, not a material parameter
 PIVOT_Z = 0.005  # the rivet's height above the counter when the plier lies flat on its handles
 
 
@@ -144,14 +149,15 @@ PLIER_XY = (0.250, -0.120)  # rivet
 BEAKER_XY = (0.370, -0.045)
 
 BOTTLE = parts.Part("serum_bottle", pos=(*BOTTLE_XY, TOP), mass=0.11, shapes=BOTTLE_SHAPES, friction=(0.7, 0.6),
-                    contact_offset=0.002, report=("base",), solver=(64, 4))
+                    contact_offset=0.002, report=("base",), solver=CONTACT_SOLVER)
 SEAL = parts.Part("aluminum_seal", pos=(*BOTTLE_XY, TOP + SEAL_Z), mass=0.001, shapes=_seal_shapes(),
-                  friction=(0.6, 0.5), contact_offset=0.001, report=("base",), solver=(64, 4))
+                  friction=(0.6, 0.5), contact_offset=0.001, report=("base",), solver=CONTACT_SOLVER)
 PLIER = parts.Part(
     "plier_decapper", pos=(*PLIER_XY, TOP + PIVOT_Z), mass=0.08, shapes=HALF_A, friction=(0.9, 0.8),
-    contact_offset=0.002,
+    contact_offset=0.002, report=("base", "jaw"),
     joints=[parts.Hinge("jaw", shapes=tuple(_turned(HALF_B_CLOSED, -OPEN_ANGLE)), pivot=(0, 0, 0), axis=(0, 0, 1),
-                        lower=-0.05, upper=CLOSED_STOP, mass=0.08, spring=RIVET_K, damping=0.04, max_effort=20.0)],
+                        lower=-0.05, upper=CLOSED_STOP, mass=0.08, spring=0.0, damping=RIVET_D, max_effort=RIVET_TAU,
+                        friction=RIVET_TAU, dynamic_friction=RIVET_TAU)],
 )
 BEAKER = parts.Part("waste_beaker", pos=(*BEAKER_XY, TOP), mass=0.11, shapes=_beaker_shapes(), friction=(0.7, 0.6),
                     contact_offset=0.002)
@@ -174,12 +180,21 @@ LOTS = lots.declare(
                          BEAKER.name: (*B_BEAKER, TOP)}),
 )
 
-# --- the scorer's record (kept on the shared parts module so near_misses.py can drive the same record) --------------
-TEAR_TURN = math.pi / 2  # rad the gripped seal must turn on the finish before its crimp counts as torn
-GRIP_N = 10.0  # N each jaw must press the seal for a turn to count (an estimate: below it the jaws slip)
-TURN_MIN = math.radians(0.5)  # a smaller turn in one control step is solver jitter, not twisting
-GLASS_N = 20.0  # N of jaw-on-glass contact that counts as a chipped bottle
-FINGER_N = 0.5  # N of robot-finger contact on the seal that voids the trial
+# --- the crimp: a native joint between the bottle and the seal, and the scorer's record ----------------------------
+# Single replaceable tear-torque ESTIMATE, not a measured decapper value. Mathaes2016 PDA70(1):12-29
+# reports residual seal forces7-115 N. Assumed50 N, friction0.6, mean radius8.3 mm =>0.6*50*.0083~0.25 N m.
+# The separate phone description of light handle/pivot effort is not a seal-tear measurement.
+CRIMP_TAU = 0.25  # N m estimated equal/opposite seal-bottle resistance
+CRIMP_K = 2.5  # reference N m/rad=0.25/0.1; assumed0.1 rad compliance (~1/16 quarter-turn)
+DRIVE_GAIN_SCALE = 2.0  # native5 N m/rad caps at0.05 rad; credited-slip deadband is0.1 rad
+CRIMP_D = 0.001  # N m s/rad numerical damping estimate
+# Assumed slip path two skirt heights:2*.0071/.01075=1.32 rad, rounded UP to quarter-turn.
+TEAR_TURN = math.pi / 2  # conservative unmeasured path assumption, not a maker-reported tear angle
+# Coulomb bound per jaw:0.25/(2*0.5*0.01075)=23.26 N, rounded UP (mu0.5 is the model estimate).
+GRIP_N = 25.0  # N per jaw, tighter than the prior10 N engagement gate
+# Stress-scale proxy: SCHOTT BOROFLOAT33 reference25 MPa * assumed0.8 mm^2 patch=20 N.
+GLASS_N = 20.0  # estimated proxy, not a WHEATON chip measurement; see README source/limits
+FINGER_N = 0.5
 HOLD_S = 1.0
 REMOVED_GAP, HAND_GAP = 0.010, 0.030
 REC: dict = parts.__dict__.setdefault("_seal_record", {})
@@ -187,9 +202,9 @@ REC: dict = parts.__dict__.setdefault("_seal_record", {})
 
 def reset_record() -> None:
     REC.clear()
-    REC.update(known=False, zero=False, why="", released=False, turn=0.0, phi=0.0, rivet=0.0, still_s=0.0,
+    REC.update(known=False, zero=False, why="", released=False, turn=0.0, phi=None, plastic=0.0, q_crimp=0.0, rivet=0.0, still_s=0.0,
                clear_s=0.0, t=None, checked=False, t_release=None,
-               peak={"jawA": 0.0, "jawB": 0.0, "glass": 0.0, "finger": 0.0})
+               peak={"jawA": 0.0, "jawB": 0.0, "glass": 0.0, "finger": 0.0}, work_readback=[])
 
 
 reset_record()
@@ -291,8 +306,13 @@ def _zero(why: str) -> None:
 
 def update(o, t: float, jaw_a: float, jaw_b: float, finger: float, glass: float, clear: bool) -> bool:
     """One control step of history, from the states and the contact forces (N) the simulator reports: the
-    whole-trial rules, the crimp, and the still and hands-clear timers. True while the seal is still crimped (the
-    simulator then holds it on its finish, turned REC['phi'] about the bottle's axis)."""
+    whole-trial rules, the crimp, and the still and hands-clear timers. True while the crimp holds (the simulator's
+    bottle-seal joint stays on until then).
+
+    Credited slip ignores deflection up to CRIMP_TAU / CRIMP_K (twice the native force-cap deflection). Beyond it, the reference target follows
+    the relative angle and adds absolute plastic turn only while both jaws press with GRIP_N or more. The angular
+    force drive resists that path with the unchanged CRIMP_TAU cap. Turning bottle and seal together adds nothing.
+    This callback never writes either body's pose or velocity."""
     dt = 0.05 if REC["t"] is None else max(0.0, t - REC["t"])
     pk = REC["peak"]
     for k, v in (("jawA", jaw_a), ("jawB", jaw_b), ("finger", finger), ("glass", glass)):
@@ -305,15 +325,20 @@ def update(o, t: float, jaw_a: float, jaw_b: float, finger: float, glass: float,
     if tilt_deg(b) > 45.0 + EPS or tilt_deg(w) > 45.0 + EPS:
         _zero("glassware fell over")
     if not REC["released"]:
-        if jaw_a >= GRIP_N - EPS and jaw_b >= GRIP_N - EPS:  # both jaws pressing: the seal turns with them
-            now = seal_yaw(b, s)
-            step = abs(_wrap(now - REC["phi"]))
-            if step >= TURN_MIN - EPS:
-                REC["turn"] += step
-            REC["phi"] = now
+        now = seal_yaw(b, s)
+        if REC["phi"] is not None:
+            REC["q_crimp"] += _wrap(now - REC["phi"])
+        REC["phi"] = now
+        delta = REC["q_crimp"] - REC["plastic"]
+        yield_angle = CRIMP_TAU / CRIMP_K
+        if abs(delta) > yield_angle:
+            dp = math.copysign(abs(delta) - yield_angle, delta)
+            REC["plastic"] += dp
+            if jaw_a >= GRIP_N - EPS and jaw_b >= GRIP_N - EPS:
+                REC["turn"] += abs(dp)
         if REC["turn"] >= TEAR_TURN - EPS:
             REC.update(released=True, t_release=t)
-            print(f"[decapper] crimp torn at t={t:.2f}s after {math.degrees(REC['turn']):.0f} deg",
+            print(f"[decapper] crimp torn at t={t:.2f}s after {math.degrees(REC['turn']):.0f} deg of slip",
                   file=sys.stderr, flush=True)
     still = all(x.resting(0.005, 0.1) for x in (b, s, p, w))
     REC["still_s"] = REC["still_s"] + dt if still else 0.0
@@ -362,6 +387,13 @@ def _views(base):
     seal = sv.create_rigid_contact_view(parts._PATHS[SEAL.name], filter_patterns=jaws + hands,
                                         max_contact_data_count=128)
     glass = sv.create_rigid_contact_view(parts._PATHS[BOTTLE.name], filter_patterns=jaws, max_contact_data_count=128)
+    if os.environ.get("TRACE_OUT"):
+        try:
+            _SIM["tool_hands"] = sv.create_rigid_contact_view(
+                f"{parts._PATHS[PLIER.name]}/*", filter_patterns=hands, max_contact_data_count=128)
+            _SIM["hand_paths"] = hands
+        except Exception as exc:
+            print(f"[decapper] handle diagnostic unavailable: {exc}", file=sys.stderr, flush=True)
     return seal, glass
 
 
@@ -412,23 +444,138 @@ def hands_clear(points, o, gap) -> bool:
     return True
 
 
-def _write_seal(base, phi: float) -> None:
-    """Hold the crimped seal on its finish: its pose follows the bottle, turned ``phi`` about the bottle's axis."""
-    import torch
+_CRIMP: dict = {}  # the bottle-seal joint's prim path, and whether it is switched on
 
-    bottle, seal = base.scene[BOTTLE.name], base.scene[SEAL.name]
-    bp = _arr(bottle.data.root_link_pose_w)[0].astype(np.float64)
-    rb = parts._quat_to_matrix(bp[3:])
-    pos = bp[:3] + rb @ np.array((0.0, 0.0, SEAL_Z))
-    quat = parts._matrix_to_quat(rb @ _rz(phi))
-    pose = seal.data.root_link_pose_w
-    pose = (pose.torch if hasattr(pose, "torch") else pose).clone()
-    pose[0, :3] = torch.tensor(pos, dtype=pose.dtype, device=pose.device)
-    pose[0, 3:] = torch.tensor(quat, dtype=pose.dtype, device=pose.device)
-    seal.write_root_pose_to_sim_index(root_pose=pose)
-    vel = seal.data.default_root_vel
-    vel = vel.torch if hasattr(vel, "torch") else vel
-    seal.write_root_velocity_to_sim_index(root_velocity=torch.zeros_like(vel))
+
+def _stage():
+    from isaaclab.sim.utils import get_current_stage
+
+    return get_current_stage()
+
+
+def _author_crimp(seal_path: str) -> None:
+    """The crimp as a native PhysX joint between the bottle and the seal, written with the scene (before the
+    simulation starts): a revolute joint about the bottle's axis at the bottom of the skirt (every other relative
+    motion locked, no collision between the two) whose elastic angular force drive has stiffness CRIMP_K and damping CRIMP_D, capped at
+    CRIMP_TAU. The solver applies the resisting torque to the seal and the equal and opposite torque to the bottle."""
+    from pxr import Gf, Sdf, UsdPhysics
+
+    stage = _stage()
+    path = f"{seal_path.rsplit('/', 1)[0]}/crimp_joint"
+    j = UsdPhysics.RevoluteJoint.Define(stage, path)
+    j.CreateAxisAttr("Z")
+    j.CreateBody0Rel().SetTargets([Sdf.Path(parts._PATHS[BOTTLE.name])])
+    j.CreateBody1Rel().SetTargets([Sdf.Path(seal_path)])
+    j.CreateLocalPos0Attr().Set(Gf.Vec3f(0.0, 0.0, float(SEAL_Z)))
+    j.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0, 0.0, 0.0))
+    j.CreateLocalRot0Attr().Set(Gf.Quatf(1.0))
+    j.CreateLocalRot1Attr().Set(Gf.Quatf(1.0))
+    j.CreateCollisionEnabledAttr().Set(False)
+    j.CreateExcludeFromArticulationAttr().Set(True)
+    drive = UsdPhysics.DriveAPI.Apply(j.GetPrim(), "angular")
+    drive.CreateTypeAttr("force")
+    drive.CreateStiffnessAttr(DRIVE_GAIN_SCALE * CRIMP_K * math.pi / 180)
+    drive.CreateDampingAttr(CRIMP_D * math.pi / 180)  # USD angular drive gains are per degree
+    drive.CreateTargetPositionAttr(0.0)
+    drive.CreateTargetVelocityAttr(0.0)
+    drive.CreateMaxForceAttr(CRIMP_TAU)  # N m, unchanged estimate
+    j.CreateJointEnabledAttr().Set(True)
+    _CRIMP.update(path=path, on=True)
+    print(f"[decapper] crimp joint {path}: {parts._PATHS[BOTTLE.name]} - {seal_path}, resists {CRIMP_TAU} N m",
+          file=sys.stderr, flush=True)
+
+
+_author_parts = parts._author
+
+
+def _author_with_crimp(part, root_path, translation, orientation):
+    root = _author_parts(part, root_path, translation, orientation)
+    if part.name == PLIER.name:
+        from pxr import PhysxSchema
+        art = PhysxSchema.PhysxArticulationAPI.Get(_stage(), root_path + "/base")
+        art.GetSolverPositionIterationCountAttr().Set(CONTACT_SOLVER[0])
+        art.GetSolverVelocityIterationCountAttr().Set(CONTACT_SOLVER[1])
+    if part.name == SEAL.name:  # the bottle is written first (OBJECTS order), so both bodies exist now
+        _author_crimp(root_path)
+    return root
+
+
+parts._author = _author_with_crimp
+
+
+def _set_crimp(on: bool) -> None:
+    """Switch the crimp joint on (a new trial: the reset puts the seal back on the finish) or off (the crimp tore:
+    the seal is a loose part held only by what touches it)."""
+    from pxr import UsdPhysics
+
+    if _CRIMP.get("path") and _CRIMP.get("on") != on:
+        UsdPhysics.Joint.Get(_stage(), _CRIMP["path"]).GetJointEnabledAttr().Set(bool(on))
+        _CRIMP["on"] = on
+
+
+def _prepare_crimp_reset():
+    """Reset only the constraint before the stock reset places both bodies. No in-trial pose writes."""
+    if _CRIMP.get("path"):
+        from pxr import UsdPhysics
+        drive = UsdPhysics.DriveAPI(_stage().GetPrimAtPath(_CRIMP["path"]), "angular")
+        drive.GetTargetPositionAttr().Set(0.0)
+        _set_crimp(True)
+
+
+lots.before_reset = _prepare_crimp_reset
+
+
+def jaw_torque(base, seal_view, o, components=False):
+    """Torque (N m) the two plier jaws put on the seal about the bottle's axis, from the contact normal and friction
+    forces PhysX reports at each jaw contact point. The seal's 1 g has next to no inertia, so while the crimp holds
+    this is the torque the crimp joint resists with (and passes to the bottle). Logged, not scored."""
+    pdt = base.physics_dt
+    origin = parts._np(base.scene.env_origins[0])
+    b = o[BOTTLE.name]
+    rb = _R(b)
+    c, ax = b.pos + rb @ np.array((0.0, 0.0, SEAL_Z)) + origin, rb[:, 2]
+    fn, pn, nn, _, cn, sn = (_arr(x) for x in seal_view.get_contact_data(dt=pdt))
+    ff, pf, cf, sf = (_arr(x) for x in seal_view.get_friction_data(dt=pdt))
+    cn, sn, cf, sf = cn.reshape(-1), sn.reshape(-1), cf.reshape(-1), sf.reshape(-1)
+    fn, pn, nn = fn.reshape(-1), pn.reshape(-1, 3), nn.reshape(-1, 3)
+    ff, pf = ff.reshape(-1, 3), pf.reshape(-1, 3)
+    tau_n, tau_f = 0.0, 0.0
+    for k in (0, 1):  # the two plier halves
+        i, n = int(sn[k]), int(cn[k])
+        for f, pt in zip(fn[i:i + n, None] * nn[i:i + n], pn[i:i + n]):
+            tau_n += float(np.cross(pt - c, f) @ ax)
+        i, n = int(sf[k]), int(cf[k])
+        for f, pt in zip(ff[i:i + n], pf[i:i + n]):
+            tau_f += float(np.cross(pt - c, f) @ ax)
+    return (tau_n, tau_f) if components else tau_n + tau_f
+
+
+def _trace_physics(sim, seal_view):
+    """Read every physics substep during traces; diagnostic only, no forces or state writes."""
+    if not os.environ.get("TRACE_OUT") or "physics_sub" in _SIM:
+        return
+    import json
+    import omni.physx
+
+    elapsed = [float(sim.t)]
+
+    def read(dt):
+        elapsed[0] += float(dt)
+        try:
+            base = sim.env.unwrapped
+            o = sim.states()
+            row = dict(t=elapsed[0], tau=jaw_torque(base, seal_view, o),
+                       tau_parts=jaw_torque(base, seal_view, o, components=True),
+                       jaw=(_arr(seal_view.get_contact_force_matrix(dt=base.physics_dt))).reshape(-1, 3)[:2].tolist(),
+                       released=bool(REC["released"]), lot=lots.current().name)
+            with pathlib.Path(os.environ["TRACE_OUT"]).with_name("crimp-physics.jsonl").open("a") as f:
+                f.write(json.dumps(row, default=float) + "\n")
+        except Exception as exc:
+            if not _SIM.get("physics_log_error"):
+                _SIM["physics_log_error"] = True
+                print(f"[decapper] physics trace unavailable: {exc}", file=sys.stderr, flush=True)
+
+    _SIM["physics_sub"] = omni.physx.get_physx_interface().subscribe_physics_on_step_events(read, False, 100)
 
 
 def _start_ok(o) -> str:
@@ -445,6 +592,7 @@ def _start_ok(o) -> str:
 
 @parts.on_reset
 def _on_reset(sim) -> None:
+    _prepare_crimp_reset()
     reset_record()
     _SIM.clear()
 
@@ -458,6 +606,11 @@ def _on_step(sim) -> None:
         t = float(sim.t)
         if not REC["checked"]:
             REC["checked"] = True
+            if os.environ.get("TRACE_OUT"):
+                prim = _stage().GetPrimAtPath(_CRIMP.get("path", "/none"))
+                print(f"[decapper] crimp state {_CRIMP}, prim valid {prim.IsValid()}, "
+                      f"{[str(a.GetName()) + '=' + str(a.Get()) for a in prim.GetAttributes()] if prim.IsValid() else ''}",
+                      file=sys.stderr, flush=True)
             why = _start_ok(o)
             print(f"[decapper] trial start lot {lots.current().name}: "
                   + ", ".join(f"{n} {np.round(o[n].pos, 4).tolist()}" for n in (BOTTLE.name, PLIER.name, BEAKER.name)),
@@ -467,6 +620,7 @@ def _on_step(sim) -> None:
         if "views" not in _SIM:
             _SIM["views"] = _views(base)
         seal_view, glass_view = _SIM["views"]
+        _trace_physics(sim, seal_view)
         pdt = base.physics_dt
         fs = np.linalg.norm(_arr(seal_view.get_contact_force_matrix(dt=pdt)).reshape(-1, 3), axis=1)
         fg = np.linalg.norm(_arr(glass_view.get_contact_force_matrix(dt=pdt)).reshape(-1, 3), axis=1)
@@ -474,18 +628,43 @@ def _on_step(sim) -> None:
             raise RuntimeError(f"contact data shapes {fs.shape} {fg.shape}")
         jaw_a, jaw_b, finger, glass = float(fs[0]), float(fs[1]), float(fs[2:].max()), float(fg.max())
         clear = hands_clear(hand_points(base), o, HAND_GAP)
-        if update(o, t, jaw_a, jaw_b, finger, glass, clear):
-            _write_seal(base, REC["phi"])
-        # the rivet: the halves stay where they are until the squeeze passes RIVET_K * RIVET_PLAY, then slip
+        try:
+            tau_parts = jaw_torque(base, seal_view, o, components=True)
+            tau = sum(tau_parts)
+        except Exception as exc:  # noqa: BLE001  logging only
+            tau, tau_parts = None, None
+            if not _SIM.get("tauerr"):
+                _SIM["tauerr"] = True
+                print(f"[decapper] jaw torque not read: {exc}", file=sys.stderr, flush=True)
+        before_turn, before_release = REC["turn"], REC["released"]
+        if not update(o, t, jaw_a, jaw_b, finger, glass, clear):
+            _set_crimp(False)
+        # Read-only force evidence in every mode, including each final demo lot.
+        if REC["turn"] > before_turn and tau is not None:
+            rb = o[BOTTLE.name]
+            by = math.degrees(math.atan2(_R(rb)[1, 0], _R(rb)[0, 0]))
+            REC["work_readback"].append((abs(tau), jaw_a, jaw_b, by, tilt_deg(rb)))
+        if not before_release and REC["released"]:
+            a = np.asarray(REC["work_readback"], dtype=float)
+            if len(a):
+                print(f"[decapper] native work readback lot {lots.current().name}: n={len(a)}, "
+                      f"mean_abs_tau={a[:,0].mean():.6f} N m, range={a[:,0].min():.6f}..{a[:,0].max():.6f}, "
+                      f"min_jaws={a[:,1].min():.3f}/{a[:,2].min():.3f} N, "
+                      f"bottle_yaw={a[:,3].min():.3f}..{a[:,3].max():.3f} deg, max_tilt={a[:,4].max():.3f} deg",
+                      file=sys.stderr, flush=True)
+        if _CRIMP.get("on"):
+            from pxr import UsdPhysics
+            drive = UsdPhysics.DriveAPI(_stage().GetPrimAtPath(_CRIMP["path"]), "angular")
+            drive.GetTargetPositionAttr().Set(math.degrees(REC["plastic"]))
+        # Passive friction pin: no stored spring energy or angle target. Physical contact must open it.
         b, s, p = o[BOTTLE.name], o[SEAL.name], o[PLIER.name]
         q = float(p.joints["jaw"])
-        tgt = min(max(REC["rivet"], q - RIVET_PLAY), q + RIVET_PLAY)
-        if abs(tgt - REC["rivet"]) > 1e-6:
-            REC["rivet"] = tgt
-            sim.set_target(PLIER.name, "jaw", tgt)
         lv = level(o)
-        row = dict(t=t, jawA=jaw_a, jawB=jaw_b, finger=finger, glass=glass,
+        row = dict(t=t, tau=tau, tau_parts=tau_parts, plastic_deg=math.degrees(REC["plastic"]), q_crimp=REC["q_crimp"], jawA=jaw_a, jawB=jaw_b, finger=finger, glass=glass,
                    turn_deg=math.degrees(REC["turn"]), released=bool(REC["released"]), q=q, rivet=REC["rivet"],
+                   seal_yaw=math.degrees(seal_yaw(b, s)), bottle_yaw=math.degrees(math.atan2(_R(b)[1, 0], _R(b)[0, 0])),
+                   seal_w=float(np.asarray(s.ang_vel)[2]) if getattr(s, "ang_vel", None) is not None else None,
+                   bottle_w=float(np.asarray(b.ang_vel)[2]) if getattr(b, "ang_vel", None) is not None else None,
                    level=lv, still_s=REC["still_s"], clear_s=REC["clear_s"], zero=bool(REC["zero"]),
                    bottle=b.pos.tolist(), bottle_tilt=tilt_deg(b), seal=s.pos.tolist(), plier=p.pos.tolist(),
                    plier_yaw=math.degrees(math.atan2(_R(p)[1, 0], _R(p)[0, 0])), plier_tilt=tilt_deg(p),
@@ -508,11 +687,27 @@ def _on_step(sim) -> None:
             from yam_arena.constants import TCP_OFFSET
 
             origin = parts._np(base.scene.env_origins[0])
+            if "views" in _SIM:
+                sv = _SIM["views"][0]
+                fn, pts, normals, sep, counts, starts = (_arr(x) for x in sv.get_contact_data(dt=base.physics_dt))
+                sep, counts, starts = sep.reshape(-1), counts.reshape(-1), starts.reshape(-1)
+                row["jaw_sep_min_mm"] = [float(sep[int(starts[k]):int(starts[k])+int(counts[k])].min()) * 1000
+                                         if int(counts[k]) else None for k in (0, 1)]
+                row["seal_quat"] = list(o[SEAL.name].quat_xyzw)
+                row["plier_quat"] = list(o[PLIER.name].quat_xyzw)
+                row["jaw_link_pose"] = [list(x) for x in o[PLIER.name].links["jaw"]]
+            if "tool_hands" in _SIM:
+                forces = _arr(_SIM["tool_hands"].get_contact_force_matrix(dt=base.physics_dt))
+                row["tool_hand_N"] = np.linalg.norm(forces.reshape(-1, 6, 3), axis=2).tolist()
+                row["tool_hand_paths"] = _SIM["hand_paths"]
+                row["rivet_velocity"] = _arr(base.scene[PLIER.name].data.joint_vel).tolist()
             for arm in ("left_robot", "right_robot"):
                 rob = base.scene[arm]
                 pose = parts._np(rob.data.body_link_pose_w)[0, rob.body_names.index("gripper")]
                 row[arm] = (pose[:3] - origin + parts._quat_to_matrix(pose[3:]) @ np.array(TCP_OFFSET)).tolist()
+                row[arm + "_quat"] = pose[3:].tolist()
                 row[arm + "_fingers"] = parts._np(rob.data.joint_pos)[0, -2:].tolist()
+                row[arm + "_hand_poses"] = {n: parts._np(rob.data.body_link_pose_w)[0, rob.body_names.index(n)].tolist() for n in HAND_LINKS}
             row["lot"] = lots.current().name
             with pathlib.Path(os.environ["TRACE_OUT"]).with_name("decapper.jsonl").open("a") as f:
                 f.write(json.dumps(row, default=float) + "\n")
@@ -523,20 +718,20 @@ def _on_step(sim) -> None:
 
 
 # --- scripted demo: open loop from the visible layout ---------------------------------------------------------------
-GRIP_L = 0.036  # m behind the rivet, along the plier's midline, where the hand holds the handles
+GRIP_L = 0.045  # m behind the rivet, along the plier's midline, where the hand holds the handles
 TCP_ABOVE = 0.011  # the hand's centre point above the plier's mid-plane when gripping the handles
-DOCK_FIX = (0.003, 0.002, 0.002)  # measured correction for the held plier's sag (m), from a trace
+DOCK_FIX = (0.003, 0.002, 0.002)  # m: measured original 45 mm grasp approach, revalidation pending
 LEFT_FIX = (0.0, 0.0, 0.0)
 
 
-def _span(q: float, L: float = GRIP_L) -> float:
+def _span(q: float, L: float = GRIP_L, grip_only: bool = True) -> float:
     """Outer width across both handles, L behind the rivet, square to the midline, at joint position q."""
     bis = -(OPEN_ANGLE - q) / 2
     d = np.array((-math.sin(bis), math.cos(bis)))
     perp = np.array((d[1], -d[0]))
     pts = []
     for sh in HALF_A + _turned(HALF_B_CLOSED, -OPEN_ANGLE + q):
-        if sh.color != GRIP:
+        if (grip_only and sh.color != GRIP) or sh.kind != "box":
             continue
         g = np.stack(np.meshgrid(np.linspace(-.5, .5, 14), np.linspace(-.5, .5, 240), [0.0]), -1).reshape(-1, 3)
         pts.append((np.asarray(sh.at) + (g * np.asarray(sh.size)) @ sh.R.T)[:, :2])
@@ -556,69 +751,167 @@ def _finger(span: float, press: float) -> float:
 
 def demo():
     lot = lots.current()
-    b = np.asarray(lot.pos(BOTTLE.name))
-    pv = np.asarray(lot.pos(PLIER.name))
-    w = np.asarray(lot.pos(BEAKER.name))
+    b, pv, w = (np.asarray(lot.pos(n)) for n in (BOTTLE.name, PLIER.name, BEAKER.name))
     pyaw = lot.yaw.get(PLIER.name, 0.0)
-    fix = np.asarray(DOCK_FIX)
-    hold, squeeze = _finger(SPAN_OPEN, 0.0016), _finger(SPAN_SEAL, 0.006)  # about 8 N and 30 N per pad
-    relax, carry = _finger(SPAN_SEAL, 0.0008), _finger(SPAN_SEAL, 0.0012)  # about 4 N and 6 N
+    fix, up = np.asarray(DOCK_FIX), np.array((0.0, 0.0, 1.0))
+    mid = pyaw + math.pi / 2 - OPEN_ANGLE / 2
+    direction = np.array((math.cos(mid), math.sin(mid), 0.0))
+    prelift, support_l = 0.0, 0.040
+    support_comp = .009  # m: left loaded-hand shortfall measured in trace 224240
+    grip = pv - direction * GRIP_L
+    grip[2] = TOP + PIVOT_Z + TCP_ABOVE + prelift
+    support = pv - direction * support_l
+    support[2] = TOP + PIVOT_Z + TCP_ABOVE
+    hold, squeeze = _finger(SPAN_OPEN, .0016), _finger(SPAN_SEAL, .007)
+    relax = _finger(SPAN_SEAL, .0008)
+    support_f = _finger(_span(.15, L=support_l, grip_only=False), .002)
+    support_squeeze = _finger(_span(OPEN_ANGLE, L=support_l, grip_only=False), .002)
+    axis = np.array((b[0], b[1], TOP + SEAL_Z + SKIRT_H / 2 + TCP_ABOVE))
+    reach = JAW_Y + GRIP_L
 
     def wp(t, pos, f, label, yaw):
         return Waypoint(float(t), tuple(float(v) for v in pos), float(f), label, float(yaw))
 
-    # pick the open plier by its handles, square to its midline
-    mid = pyaw + math.pi / 2 - OPEN_ANGLE / 2  # direction the open jaws point
-    grip = pv + np.array((-math.cos(mid), -math.sin(mid), 0.0)) * GRIP_L
-    grip[2] = TOP + PIVOT_Z + TCP_ABOVE
-    up = np.array((0, 0, 1.0))
-    # dock: jaws pointing +y onto the seal, then turn about the bottle's axis
-    axis = np.array((b[0], b[1], TOP + SEAL_Z + SKIRT_H / 2 + TCP_ABOVE))
-    reach = JAW_Y + GRIP_L
+    def sw(t, pos, f, label, yaw=-math.pi / 2):
+        return tilt.Waypoint(float(t), tuple(float(v) for v in pos), float(f), label,
+                             yaw=float(yaw), tilt=30, heading=float(yaw))
+
+    def bw(t, pos, f, label):
+        return tilt.Waypoint(float(t), tuple(float(v) for v in pos), float(f), label,
+                             yaw=-math.pi / 2, tilt=40, heading=-math.pi / 2)
 
     def around(gamma, dz=0.0):
-        return axis + _rz(-gamma) @ np.array((0.0, -reach, 0.0)) + fix + up * dz
+        centre = axis  # the bottle is held before clamping
+        offset = np.array((fix[0], -reach + fix[1], 0.0))
+        return centre + _rz(-gamma) @ offset + up * (fix[2] + dz)
 
-    over = np.array((w[0], w[1] - reach, TOP + 0.130 + TCP_ABOVE)) + fix
-    R = [wp(2.5, grip + up * 0.08, FINGER_OPEN, "over the plier", mid),
-         wp(1.5, grip, FINGER_OPEN, "down to the handles", mid),
-         wp(1.0, grip, hold, "hold the handles lightly", mid),
-         wp(2.5, grip + up * 0.125, hold, "lift the open plier", mid),
-         wp(3.0, around(0.0, 0.035), hold, "open jaws over the seal", math.pi / 2),
+    support_over = around(0.0, .035) + np.array((0.0, GRIP_L - support_l, 0.0)) + up * support_comp
+    support_dock = around(0.0) + np.array((0.0, GRIP_L - support_l, 0.0)) + up * support_comp
+    over = np.array((w[0], w[1] - reach, TOP + .130 + TCP_ABOVE)) + fix
+    # The right hand picks near the tool COM; the left holds the bottle before clamping.
+    R = [wp(2.5, grip + up * .08, FINGER_OPEN, "over the raised handles", mid),
+         wp(1.5, grip, FINGER_OPEN, "down to the raised handles", mid),
+         wp(1.0, grip, hold, "hold the open handles", mid),
+         wp(2.5, grip + up * .125, hold, "lift the open plier", mid),
+         wp(3.0, around(0.0, .035), hold, "open jaws over the seal", math.pi / 2),
          wp(1.5, around(0.0), hold, "lower the jaws round the seal", math.pi / 2),
-         wp(1.0, around(0.0), squeeze, "squeeze the handles", math.pi / 2),
-         wp(0.5, around(0.0), squeeze, "settle", math.pi / 2)]
-    gam = math.radians(45)
-    for sweep in (1, -1, 1, -1):
-        for k in range(1, 6):
-            g = gam * (k / 5 if sweep > 0 else 1 - k / 5)
-            R.append(wp(0.4, around(g), squeeze, "twist the seal", math.pi / 2 - g))
-    R += [wp(0.5, around(0.0), squeeze, "hold", math.pi / 2),
+         wp(4.0, around(0.0), squeeze, "squeeze the handles", math.pi / 2),
+         wp(.5, around(0.0), squeeze, "settle", math.pi / 2),
+         wp(5.0, around(0.0), squeeze, "wait for the bottle grip", math.pi / 2)]
+    gam = math.radians(65)
+    for sweep in (() if os.environ.get("DECAP_DEMO") == "lift" else (1, -1)):
+        for k in range(1, 14):
+            g = gam * (k / 13 if sweep > 0 else 1 - k / 13)
+            R.append(wp(.3, around(g), squeeze, "twist the seal", math.pi / 2 - g))
+        if sweep > 0:
+            R.append(wp(1.5, around(gam), squeeze, "hold the outward twist", math.pi / 2 - gam))
+    # Fixed recovery geometry from native trace 20261124T000053, relative to the beaker.
+    c45 = math.sqrt(.5)
+    tool_r = np.array(((1., 0., 0.), (0., c45, -c45), (0., c45, c45)))
+    rest_rivet = w + np.array((0.0, -.0401, .0889))
+    release_l = .020
+    support_release = rest_rivet + tool_r @ np.array((0., -release_l, 0.)) + up * TCP_ABOVE
+    release_f = _finger(_span(.57, L=release_l, grip_only=False), .002)
+    cargo_shift = np.array((0., .010, .020))
+    loaded_release = support_release + cargo_shift + up * support_comp
+    grasp_b = w + np.array((-.0185, -.0875, .0498)) + tool_r @ (up * TCP_ABOVE)  # pad offset follows tool normal
+    single_approach = _finger(.020, 0.)  # entry clearance for native tracking error; close after enclosing B
+    single_f = 0.0  # full close on the isolated handle, stock actuator effort limit unchanged
+    pivot = rest_rivet + cargo_shift
+    opening = .25
+    open_r = tool_r @ _rz(-opening) @ tool_r.T
+    spread_b = pivot + open_r @ (grasp_b - pivot)
+    repose_yaw = math.radians(-40)
+    repose_r = _rz(repose_yaw) @ tool_r
+    repose_root = w + np.array((-.030, -.012, .090))
+    repose_b = repose_root + repose_r @ np.array((-.013, -.080, TCP_ABOVE)) + np.array((.0003, .0007, .0022))
+    repose_a = repose_root + repose_r @ np.array((.013, -.040, TCP_ABOVE))
+    repose_open = repose_r @ _rz(-opening) @ repose_r.T
+    repose_spread = repose_root + repose_open @ (repose_b - repose_root)
+    right_park = np.array((.25, -.28, TOP + .180))
+
+    def rw(t, pos, f, label):
+        return tilt.Waypoint(float(t), tuple(pos), f, label, yaw=math.pi / 2, tilt=45, heading=math.pi / 2)
+
+    def ow(t, pos, f, label):
+        point = rw(t, pos, f, label)
+        point.yaw = tilt._TiltedYaw(math.pi / 2 - opening,
+                                   open_r @ tilt.rotation(math.pi / 2, 45, math.pi / 2))
+        return point
+
+    def cw(t, pos, f, label):
+        yaw = math.pi / 2 + repose_yaw
+        return tilt.Waypoint(float(t), tuple(pos), float(f), label, yaw=yaw, tilt=45, heading=yaw)
+
+    def co(t, pos, f, label):
+        point = cw(t, pos, f, label)
+        point.yaw = tilt._TiltedYaw(math.pi / 2 + repose_yaw - opening,
+                                   repose_open @ tilt.rotation(math.pi / 2 + repose_yaw, 45, math.pi / 2 + repose_yaw))
+        return point
+
+    a_grip_fix = np.array((.006, .004, -.003))  # native v43 hand-pose correction, not a physical parameter
+
+    def aw(t, pos, f, label, lean=6):
+        return tilt.Waypoint(float(t), tuple(np.asarray(pos) + a_grip_fix), float(f), label,
+                             yaw=-math.pi / 2 + repose_yaw, tilt=lean, heading=-math.pi / 2)
+
+    R += [wp(.5, around(0.0), squeeze, "hold", math.pi / 2),
           wp(2.5, around(0.0), squeeze, "wait for the other hand to clear", math.pi / 2),
-          wp(1.5, around(0.0, 0.045), squeeze, "lift the seal off", math.pi / 2),
-          wp(3.0, over, squeeze, "jaws over the waste beaker", math.pi / 2),
-          wp(1.0, over, relax, "ease the squeeze", math.pi / 2),
-          wp(1.5, over, relax, "let the seal drop", math.pi / 2),
-          wp(0.5, over, carry, "hold the plier", math.pi / 2),
-          wp(3.0, grip + up * 0.08, carry, "back over the counter", mid),
-          wp(1.5, grip + up * 0.004, carry, "lower the plier", mid),
-          wp(1.0, grip + up * 0.004, FINGER_OPEN, "let go", mid),
-          wp(1.5, grip + up * 0.10, FINGER_OPEN, "hand up", mid),
-          wp(3.0, grip + up * 0.10, FINGER_OPEN, "hands clear", mid)]
-    lb = b + np.asarray(LEFT_FIX)
+          wp(1.5, around(0.0, .045), squeeze, "lift the seal off", math.pi / 2),
+          wp(3., over, squeeze, "jaws over the waste beaker", math.pi / 2),
+          wp(1., over, relax, "ease the squeeze", math.pi / 2),
+          wp(1.5, over, relax, "let the tool settle on the rim", math.pi / 2),
+          wp(1.5, right_park, FINGER_OPEN, "clear for the support grasp", math.pi / 2),
+          wp(5., right_park, FINGER_OPEN, "wait for the support and lift", math.pi / 2),
+          rw(1.5, grasp_b + up * .06, single_approach, "over the other handle"),
+          rw(1.5, grasp_b, single_approach, "straddle one handle"),
+          rw(1., grasp_b, single_f, "grip one handle"),
+          rw(1., grasp_b, single_f, "settle the handle grip"),
+          rw(1., grasp_b, single_f, "wait for bridged support to clear"),
+          cw(4., repose_b, single_f, "reposition the held tool over the beaker"),
+          cw(6.5, repose_b, single_f, "wait for isolated A capture"),
+          co(2., repose_spread, single_f, "spread the isolated handles physically"),
+          co(1.5, repose_spread, single_f, "let the freed seal fall"),
+          co(1., repose_spread, FINGER_OPEN, "let go of the spread handle"),
+          wp(1.5, right_park, FINGER_OPEN, "right hand clear", math.pi / 2),
+          wp(13., right_park, FINGER_OPEN, "right hand stays clear", math.pi / 2)]
 
-    def lw(t, pos, f, label):
-        return tilt.Waypoint(float(t), tuple(float(v) for v in pos), float(f), label, yaw=-math.pi / 2, tilt=40,
-                             heading=-math.pi / 2)
-
-    body = np.array((lb[0], lb[1], TOP + 0.034))
-    off = next(i for i, x in enumerate(R) if x.label == "hold") + 1  # the crimp is torn: let go before the lift
-    rest = sum(x.duration for x in R[:off]) - (3.5 + 1.5 + 1.0)
-    L = [lw(3.5, body + np.array((0, 0.03, 0.06)), FINGER_OPEN, "over the bottle"),
-         lw(1.5, body, FINGER_OPEN, "down to the bottle"),
-         lw(1.0, body, -0.023, "hold the bottle"),
-         lw(rest, body, -0.023, "steady the bottle"),
-         lw(1.0, body, FINGER_OPEN, "let go"),
-         lw(1.5, body + np.array((0.0, 0.06, 0.06)), FINGER_OPEN, "hand clear"),
-         lw(10.0, body + np.array((-0.05, 0.10, 0.10)), FINGER_OPEN, "hands clear")]
+    body = b + np.asarray(LEFT_FIX) + up * .034
+    if os.environ.get("DECAP_DEMO") in ("onehand", "lift"):
+        park = body + np.array((-.05, .10, .10))
+        return {"left": [bw(2., park, FINGER_OPEN, "clear the bottle"),
+                         bw(40., park, FINGER_OPEN, "no bottle holding hand")], "right": R}
+    L = [bw(3.5, body + np.array((0., .03, .06)), FINGER_OPEN, "over the bottle"),
+         bw(1.5, body, FINGER_OPEN, "down to the bottle"),
+         bw(1., body, -.023, "hold the bottle")]
+    off = next(i for i, x in enumerate(R) if x.label == "hold") + 1
+    rest = sum(x.duration for x in R[:off]) - sum(x.duration for x in L)
+    assert rest >= 0.0
+    L += [bw(rest, body, -.023, "steady the bottle"),
+          bw(1., body, FINGER_OPEN, "let go"),
+          bw(1.5, body + np.array((0.0, .06, .06)), FINGER_OPEN, "hand clear")]
+    rim_time = sum(x.duration for x in R[:next(i for i, x in enumerate(R) if x.label == "let the tool settle on the rim") + 1])
+    L += [bw(rim_time - sum(x.duration for x in L), body + np.array((0., .06, .06)), FINGER_OPEN, "wait for the resting tool"),
+          sw(2., support_release + up * .06, FINGER_OPEN, "over the steel near the rivet"),
+          sw(1.5, support_release, FINGER_OPEN, "straddle the steel near the rivet"),
+          sw(1., support_release, release_f, "hold near the rivet"),
+          sw(2., loaded_release, release_f, "lift and centre the tool over the beaker")]
+    isolate_time = sum(x.duration for x in R[:next(i for i, x in enumerate(R) if x.label == "settle the handle grip") + 1])
+    L += [sw(isolate_time - sum(x.duration for x in L), loaded_release, release_f, "wait for B capture"),
+          sw(1., loaded_release + up * .040, FINGER_OPEN, "release the bridging support"),
+          sw(4., loaded_release + up * .040, FINGER_OPEN, "clear the tool reposition"),
+          aw(2., repose_a + up * .040, single_approach, "over A only", lean=30),
+          aw(2., repose_a, single_approach, "straddle A only"),
+          aw(1.5, repose_a, 0., "capture A only"),
+          aw(1., repose_a, 0., "settle isolated A grip")]
+    release_time = sum(x.duration for x in R[:next(i for i, x in enumerate(R) if x.label == "let go of the spread handle") + 1])
+    counter_root = np.array((pv[0] + .030, pv[1] + .070, TOP + .0889))
+    counter_grip = counter_root + repose_r @ np.array((.013, -.040, TCP_ABOVE))
+    L += [aw(release_time - sum(x.duration for x in L), repose_a, 0., "anchor A during opening"),
+          aw(1.5, repose_a + np.array((-.020, .010, .020)), 0., "lift the empty decapper"),
+          aw(3., counter_grip + up * .040, 0., "back over the counter"),
+          aw(2., counter_grip, 0., "set the rear handles on the counter"),
+          aw(1., counter_grip, FINGER_OPEN, "release the decapper"),
+          aw(1.5, counter_grip + up * .100, FINGER_OPEN, "left hand clear", lean=30),
+          aw(5., counter_grip + up * .100, FINGER_OPEN, "hands clear", lean=30)]
     return {"left": L, "right": R}

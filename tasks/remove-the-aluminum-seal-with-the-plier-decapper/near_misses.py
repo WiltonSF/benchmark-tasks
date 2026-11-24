@@ -49,7 +49,7 @@ def in_beaker_pos(dx=0.0, dy=0.0, dz=0.0):
     return W0 + np.array((dx, dy, 0.003 + dz))
 
 
-def steps(seq, jaw=(20.0, 20.0), finger=0.0, glass=0.0, clear=True, t0=None):
+def steps(seq, jaw=(30.0, 30.0), finger=0.0, glass=0.0, clear=True, t0=None):
     """Feed ``seq`` (a list of state dicts) one 0.05 s control step each; return the last update's result."""
     t = REC_T[0] if t0 is None else t0
     out = None
@@ -66,12 +66,15 @@ REC_T = [0.0]
 
 
 def fresh():
+    """A new trial: a fresh history and its first control step, everything at its start (the crimp's 0 angle)."""
     task.reset_record()
     REC_T[0] = 0.0
+    steps([{}], jaw=(0.0, 0.0))
 
 
-def twist(deg, n=None, jaw=(20.0, 20.0), **kw):
+def twist(deg, n=None, jaw=(30.0, 30.0), **kw):
     """The seal turned on its finish from 0 to ``deg`` in 2-degree steps, with the given jaw forces."""
+    deg += math.copysign(math.degrees(task.CRIMP_TAU / task.CRIMP_K), deg)
     n = n or max(1, int(round(abs(deg) / 2)))
     return steps([{task.SEAL.name: on_finish(math.radians(deg * k / n))} for k in range(1, n + 1)], jaw=jaw, **kw)
 
@@ -102,14 +105,27 @@ fresh(); twist(180, jaw=(task.GRIP_N - 0.01, task.GRIP_N - 0.01))
 check(f"turn at {task.GRIP_N - 0.01:.2f} N per jaw", float(task.REC["released"]), 0.0)
 fresh(); twist(90, jaw=(task.GRIP_N, task.GRIP_N))
 check(f"turn 90 deg at exactly {task.GRIP_N:.0f} N per jaw", float(task.REC["released"]), 1.0)
-fresh(); twist(180, n=400)  # 0.45 degrees a step: jitter-sized steps never add up to a tear
-check("creep 180 deg in 0.45-degree steps", float(task.REC["released"]), 0.0)
-fresh(); twist(90, n=180); check("turn 90 deg in exactly 0.5-degree steps", float(task.REC["released"]), 1.0)
+# Elastic motion up to the yield angle stores no tear progress; the plastic threshold stays 90 degrees.
+fresh(); elastic = task.CRIMP_TAU / task.CRIMP_K
+steps([{task.SEAL.name: on_finish(elastic * k / 20)} for k in range(1, 21)])
+check("elastic deflection at yield stores no tear", task.REC["turn"], 0.0)
+# Turning slowly still requires the same elastic torque; rate alone is not a tear shortcut.
+fresh(); twist(90, n=400)
+check("slow plastic turn through 90 deg", float(task.REC["released"]), 1.0)
+# bottle and seal turned together (the bottle not held): no slip on the finish, no tear
+fresh()
+steps([{task.BOTTLE.name: task.BOTTLE.state(quat_xyzw=qz(math.radians(2 * k))),
+        task.SEAL.name: on_finish(math.radians(2 * k))} for k in range(1, 91)])
+check("bottle and seal turned 180 deg together", float(task.REC["released"]), 0.0)
 fresh(); twist(89); check("turn 89 deg", float(task.REC["released"]), 0.0)
-fresh(); twist(45)  # there and most of the way back: 45 + 44 = 89 degrees of turning
-steps([{task.SEAL.name: on_finish(math.radians(45 - 2 * k))} for k in range(1, 23)])
-check("turn 45 deg and back 44 deg (89 in all)", float(task.REC["released"]), 0.0)
-steps([{task.SEAL.name: on_finish(math.radians(-1.5))}]); check("... and 2.5 deg more", float(task.REC["released"]), 1.0)
+fresh(); twist(45)
+q0 = task.REC["q_crimp"]
+# Unload the elastic strain, then reverse through another 44 degrees of plastic slip.
+q1 = q0 - 2 * elastic - math.radians(44)
+steps([{task.SEAL.name: on_finish(q0 + (q1 - q0) * k / 60)} for k in range(1, 61)])
+check("45 deg plastic out and 44 back", float(task.REC["released"]), 0.0)
+steps([{task.SEAL.name: on_finish(q1 - math.radians(2))}])
+check("... and 2 deg more plastic", float(task.REC["released"]), 1.0)
 # a torn crimp on its own: the seal still sits on the finish
 fresh(); twist(100); check("crimp torn, seal left on the neck", end({task.SEAL.name: on_finish(math.radians(100))}), 0.25)
 # the full job
@@ -129,8 +145,8 @@ check("bottle knocked over then stood back up", end(DONE), 0.0)
 fresh(); twist(100)
 steps([{task.BEAKER.name: task.BEAKER.state(quat_xyzw=tilt_q(46))}])
 check("beaker knocked over then stood back up", end(DONE), 0.0)
-# pulling the crimped seal off without turning it leaves it on the neck in the simulator (the callback holds it
-# there); were it ever recorded off the bottle, no crimp was torn, so it earns nothing
+# pulling the crimped seal off without turning it leaves it on the neck in the simulator (the bottle-seal joint
+# holds it there); were it ever recorded off the bottle, no crimp was torn, so it earns nothing
 fresh(); check("crimped seal lifted off without a turn", end(REMOVED), 0.0)
 
 # end states, on top of a torn crimp, everything still 1.2 s and the hands 30 mm clear 1.2 s

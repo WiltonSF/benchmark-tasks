@@ -186,6 +186,9 @@ def _patch_embodiment(module) -> None:
         return Readiness(ready=True)
 
     def patched_reset(self, scene, *, seed=None):
+        prepare = globals().get("before_reset")
+        if prepare is not None:
+            prepare()
         obs = reset(self, scene, seed=seed)
         if _LOTS and self.task is not None and _apply(self):
             obs = self._observation()
