@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1100" viewBox="0 0 1100 1100">
+<rect width="1100" height="1100" fill="white"/>
+<g font-family="sans-serif" font-size="16" fill="#202832">
+<text x="35" y="35" font-size="24">Pycnometer bath fixture v12 — dimensions in mm</text>
+<text x="35" y="65">Start: maker-level fill, then one metered 0.25 mL shoulder bubble; stopper on rack.</text>
+<text x="35" y="90">Stock PH0122B: Ø50.8, bare height 69.85, assembled height 101.6. Inner shape estimated.</text>
+<g transform="translate(65 140)">
+<rect width="460" height="340" fill="#eaf4fa" stroke="#364b60" stroke-width="3"/>
+<text x="175" y="-12">460 internal</text><text x="470" y="170">340</text>
+<rect x="82.5" y="185" width="75" height="150" fill="#bbb" stroke="#333"/>
+<circle cx="120" cy="260" r="25.4" fill="#c1dada" stroke="#2d7c59" stroke-width="2"/>
+<circle cx="120" cy="215" r="25.4" fill="none" stroke="#bd7852" stroke-width="2"/>
+<circle cx="120" cy="260" r="11.7" fill="#eee" stroke="#333"/>
+<circle cx="120" cy="215" r="11.7" fill="#eee" stroke="#333"/>
+<text x="42" y="178">75 × 150 start shelf</text><text x="70" y="293">A</text><text x="70" y="217">B</text>
+<circle cx="255" cy="260" r="25.4" fill="none" stroke="#2d7c59" stroke-dasharray="6 4"/>
+<circle cx="255" cy="260" r="13" fill="#b7c9c5" stroke="#333"/>
+<g fill="#bbb" stroke="#333"><rect x="227.6" y="254" width="6" height="12"/><rect x="276.4" y="254" width="6" height="12"/><rect x="249" y="232.6" width="12" height="6"/><rect x="249" y="281.4" width="12" height="6"/></g>
+<circle cx="120" cy="130" r="25.4" fill="none" stroke="#2d7c59" stroke-dasharray="6 4"/>
+<text x="30" y="94">Release on rigid floor</text>
+<text x="220" y="210">Open seating rest</text><text x="15" y="25">Plan: +x right, +y up</text>
+</g>
+<g transform="translate(65 660)">
+<path d="M0 -94 V0 H464 V-94" fill="none" stroke="#364b60" stroke-width="3"/>
+<rect x="0" y="-4" width="464" height="4" fill="#b6cedb"/>
+<line x1="2" y1="-80" x2="462" y2="-80" stroke="#2380bb" stroke-dasharray="8 4"/>
+<rect x="82.5" y="-28" width="75" height="24" fill="#aaa" stroke="#333"/>
+<circle cx="120" cy="-53.4" r="25.4" fill="#dbe8ea" stroke="#376467"/>
+<path d="M109 -75 V-97.85 H131 V-75" fill="#dbe8ea" stroke="#376467"/>
+
+<ellipse cx="109" cy="-73.3" rx="4" ry="3" fill="#fff3b5" stroke="#ae9552"/>
+<text x="170" y="-135">Metered shoulder bubble (schematic)</text>
+<text x="170" y="-110">Mouth z97.85; waterline z80</text>
+<text x="170" y="-85">Shelf top z28; floor z4</text>
+<text x="0" y="35">Panels: 4mm base, 2mm walls; silicone seams; smooth R2 edges; ±1mm.</text>
+<text x="0" y="60">No bottle capture, automated venting or seating mechanism.</text>
+</g>
+<g transform="translate(620 160)">
+<text x="0" y="0" font-size="20">Locations (x,y), table datum z0</text>
+<text x="0" y="35">Bath center (290,120); waterline 80±1</text>
+<text x="0" y="65">Bottle A (180,30,28); B (180,75,28)</text>
+<text x="0" y="95">Rest center (315,30); pad Ø26 ×2</text>
+<text x="0" y="125">Rest posts 6×12×10, radius24.4±0.2</text>
+<text x="0" y="155">Radial inner faces21.4; pad top z6</text>
+<text x="0" y="180">Release on floor (180,160,4)</text>
+<text x="0" y="200">Initial stopper rack (270,-150)</text>
+<text x="0" y="230">Base65×100×4; four stem guides</text>
+<text x="0" y="260">Opening23×23; guides h18, topz22</text>
+<text x="0" y="305">Inspection pad (180,-190),110×100×4</text>
+<text x="0" y="335">Locators20×30×20 at bath offsets</text>
+<text x="0" y="365">x±245,y±130; nonslip stock</text>
+<text x="0" y="410">Catch tray encloses650×650 area.</text>
+<text x="0" y="440">Sleeves cover grippers and distal wrists.</text>
+<text x="0" y="490">Air lens is illustrative; not a measured shape.</text>
+<text x="0" y="520">No physical trial or reset time measured.</text>
+</g>
+<g transform="translate(670 790)"><text x="0" y="-15">Stopper rack plan (2× drawing scale)</text><g transform="scale(2)"><rect width="65" height="100" fill="#ddd" stroke="#333"/>
+<g fill="#aaa" stroke="#333" stroke-width=".5"><rect x="9" y="25" width="12" height="50"/><rect x="44" y="25" width="12" height="50"/><rect x="21" y="26.5" width="23" height="12"/><rect x="21" y="61.5" width="23" height="12"/></g>
+<circle cx="32.5" cy="50" r="10.5" fill="#cde5e6" stroke="#376467" stroke-width=".5"/></g><text x="155" y="45">Clear opening23×23</text><text x="155" y="75">Guide topz22</text><text x="155" y="105">Head bottomz24.25</text><text x="155" y="135">Free lift; no clamp</text></g></g></svg>

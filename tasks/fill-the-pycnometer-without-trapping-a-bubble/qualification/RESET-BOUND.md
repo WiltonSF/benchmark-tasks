@@ -1,0 +1,11 @@
+# Preparation and model boundary
+
+The replacement is one nominal 0.25 mL shoulder bubble, matching the first-fill error described by phone. A 1 mL syringe with 0.01 mL graduations sets its volume on demand; visual enrollment checks one shoulder pocket and no neck/capillary pockets. Preparation accepts a broad polar 15–35° shoulder band and azimuth 180° ±30°, on the side facing the robot bases (toward -x). Simulation uses the published nominal polar 30° and azimuth 180° with zero jitter. The syringe is removed before the trial.
+
+This replaces waiting for a naturally occurring bubble and removes the precision imaging-volume requirement at reset. The maker's normal fill and the technician's error/recovery supply the laboratory procedure; metered air is a controlled replication of its error, not a claimed maker assay step. Under two minutes including one retry is an unmeasured planning estimate. Log all attempts and stopwatch time in a real trial. There is no recorded hardware preparation series.
+
+The declared inventory starts with 52.199385 mL water and 0.25 mL shoulder air. The open-capacity estimate is 50 mL plus pi×(7.7 mm)^2×13.15 mm = 52.449385 mL. These internal dimensions are estimates, not the product's published outer dimensions or a measured capacity.
+
+The existing 72-case prescribed-state sweep covers 0.20/0.25/0.30 mL, polar 15/30/35° and eight azimuths. Direction-specific tilts recover those modeled pockets. This is a model sensitivity control, not 72 robot episodes or a physical repeatability measurement. A further 45-case prescribed-state sweep checks the fixed 40° diagonal rocks over 0.23/0.25/0.27 mL, polar 15/30/35° and azimuth 150/165/180/195/210°. The fixed reference demo uses the nominal direction. Scoring uncertainty still requires calibrated close images, a same-pair capacity reference, force readout and dry mass; the reset syringe alone cannot certify the final air threshold.
+
+Every nonzero tier requires recovered shoulder air and sufficient water. Untouched preparation and stoppering over untreated air score zero. Only pressure and counterheld capillary flow from the final insertion qualify full credit; opening the neck clears those histories. No numeric threshold was lowered to accommodate a demo.

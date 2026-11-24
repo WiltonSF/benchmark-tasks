@@ -1,0 +1,198 @@
+{
+  "version": "model-v19",
+  "products": {
+    "bottle": "Eisco PH0122B",
+    "balance": "AWS LB-501",
+    "catch_pan": "CAMCO20753"
+  },
+  "seed": {
+    "water_ml": 52.199385123872105,
+    "bubble_ml": 0.25,
+    "bubble_polar_deg": 30,
+    "bubble_azimuth_deg": 180,
+    "start": "Normal maker-level first fill, gentle neck-wall top-up, then one metered 0.25 mL shoulder bubble replicating the technician-observed first-fill error; open bottle on shelf and native stopper on rack.",
+    "layouts": [
+      "A",
+      "B"
+    ],
+    "object_jitter_m": 0,
+    "physical_enrollment_polar_deg": [
+      15,
+      35
+    ],
+    "preparation": "1 mL syringe with 0.01 mL graduations and blunt bent needle; exactly one visible shoulder pocket, no neck/capillary pockets.",
+    "physical_azimuth_deg": [
+      150,
+      210
+    ]
+  },
+  "forces": {
+    "water_density_kg_m3": 998,
+    "gravity_m_s2": 9.81,
+    "buoyancy_cap_N": 1.2,
+    "drag_cap_N": 0.6,
+    "smoothing_s": 0.12,
+    "foam_stiffness_N_m": 20000,
+    "foam_damping_Ns_m": 40,
+    "pad_torsional_patch_radius_m": 0.002,
+    "pad_min_torsional_patch_radius_m": 0.0015,
+    "pad_modulus_basis_Pa_estimate": 1000000.0,
+    "bubble_mobility_Ns_m_estimate": 0.025,
+    "seating_activation": "native net compression on BOTH glass bodies AND actual stopper-hand fingertip input>=1.962N at depth>=12.65mm with opposite-hand pinches;no artificial stopper wrench",
+    "bubble_retention_N_estimate": 0.001785996433469248,
+    "surface_tension_N_m_IAPWS2014": 0.07273614042160757,
+    "bubble_contact_line_radius_m_estimate": 0.003907963208983861,
+    "native_compressive_axial_seating_press_N": 1.962,
+    "pressure_history": "Opening the neck clears pressure, per-attempt capillary overflow and counterheld overflow; only the final insertion qualifies.",
+    "actual_stopper_fingertip_input_N": 1.962
+  },
+  "validation": "Single-pocket declared inventory;fresh actual fingertip input and equal/opposite glass compression after last open-neck refill;no hardware qualification. Current source provenance and A/B scores in README/task.json.",
+  "rest": {
+    "center_mm": [
+      315,
+      30
+    ],
+    "post_radius_mm": 24.4,
+    "inner_face_radius_mm": 21.4,
+    "post_size_mm": [
+      6,
+      12,
+      10
+    ],
+    "pad_diameter_mm": 26,
+    "pad_top_mm": 6,
+    "collision_clearance_mm": 0.757
+  },
+  "drawing": "fixture-v11.svg",
+  "shoulder_aperture_radius_mm": 8.6,
+  "release_contact_min_N_per_glass": 0.01,
+  "stopper_absolute_vertical_limit_deg": 10,
+  "blocked_overcapacity": "permanent invalidation;omitted compression never earns credit",
+  "capillary_relaxation_ml_s": 0.6,
+  "final_bottle_supports": [
+    "bath floor",
+    "rest",
+    "inspection pad",
+    "starting shelf"
+  ],
+  "start_shelf_center_mm": [
+    180,
+    30
+  ],
+  "bottle_start_A_mm": [
+    180,
+    30,
+    28
+  ],
+  "bottle_start_B_mm": [
+    180,
+    75,
+    28
+  ],
+  "counterholding": {
+    "body_each_pad_min_N": 1.3,
+    "stopper_each_pad_min_N": 0.3,
+    "witnessed_overflow_ml": 0.15,
+    "basis": "Contact witnesses only;actual grip must support the1.962N axial seating resistance plus weight;wet grip requires enrollment."
+  },
+  "capillary_drainage": "Actual dry outlet gravity plane;Poiseuille estimate using0.7mm radius,52mm length and1mPa*s;loss never adds overflow credit;outside catch permanently invalid",
+  "seal_proxy": {
+    "activation_glass_contact_N": 0.2,
+    "activation_basis": "declared wet-contact estimate rounded above15g stopper weight0.147N;separate native axial seating press>=1.962N required for full credit",
+    "break_withdrawal_from_deepest_m": 0.0002,
+    "unsealed_displacement": "outside plug bypass;excluded from capillary overflow",
+    "gap": "nominal collision clearance0.4mm;declared wet-fit seal does not constrain pose;physical qualification required"
+  },
+  "masses_kg": {
+    "bottle": 0.04,
+    "stopper": 0.015,
+    "source": "obtained by phone from a technician who works with this product (Nov 2026)"
+  },
+  "stopper_start_mm": [
+    270,
+    -150,
+    6
+  ],
+  "stopper_settled_tip_mm": 4,
+  "bubble_dry_exposure": "fully exposed above remaining water gravity plane vents at declared rate through clear open neck;drain/refill alternative allowed",
+  "stopper_rack": {
+    "base_mm": [
+      65,
+      100,
+      4
+    ],
+    "x_blocks_mm": [
+      12,
+      50,
+      18
+    ],
+    "x_centers_mm": [
+      [
+        -17.5,
+        0,
+        13
+      ],
+      [
+        17.5,
+        0,
+        13
+      ]
+    ],
+    "y_blocks_mm": [
+      23,
+      12,
+      18
+    ],
+    "y_centers_mm": [
+      [
+        0,
+        -17.5,
+        13
+      ],
+      [
+        0,
+        17.5,
+        13
+      ]
+    ],
+    "clear_opening_mm": [
+      23,
+      23
+    ],
+    "guide_top_mm": 22,
+    "head_bottom_mm": 24.25,
+    "role": "free staging guide only;lift90mm before bottle approach;no clamp/retention/seating assist",
+    "nominal_stem_diameter_at_guide_top_mm": 21.0,
+    "radial_clearance_at_guide_top_mm": 1.0
+  },
+  "progress": "Untouched start and untreated-bubble stoppering score zero. Every tier requires cleared shoulder air and at least 45 mL water; 0.50 requires engagement and 0.75 requires seal.",
+  "ground_joint": {
+    "basis": "continuous matched conical approximation; all internal dimensions estimates, not product measurements",
+    "neck_z_m": [
+      0.049,
+      0.06985
+    ],
+    "neck_r0_m": 0.0083,
+    "radius_slope": 0.116710875331565,
+    "wall_m": 0.0012,
+    "stopper_reference_tip_z_m": 0.04985,
+    "stopper_ground_length_m": 0.0245,
+    "convex_sectors": 64,
+    "nominal_radial_fit_gap_m": 0,
+    "inventory_effective_displacement_radius_m": 0.0077,
+    "inventory_note": "separate conserved effective-area approximation; not mesh displacement or CFD",
+    "shoulder_rib_upper_clip_m": 0.049,
+    "fit_check": "No shoulder-rib collider intersects the stopper at the nominal reference seat; conical neck contact is retained."
+  },
+  "contact_observer": {
+    "records_per_view": 8192,
+    "fingertip_load_view_records": 16384,
+    "guard": "invalid, saturated, nonfinite or aggregate-inconsistent contact data permanently invalidates the trial; no force threshold changes"
+  },
+  "solver_iterations": {
+    "position": 156,
+    "velocity": 4,
+    "basis": "TGS migration guidance moves the28 excess velocity iterations into position iterations; physical parameters and stillness limits unchanged",
+    "source": "https://nvidia-omniverse.github.io/PhysX/physx/latest/docs/MigrationTo53.html"
+  }
+}

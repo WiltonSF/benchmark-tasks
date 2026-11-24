@@ -37,6 +37,8 @@ FRICTION = (1.2, 1.0)  # static, dynamic: yam_arena's grippy material
 CONTACT_OFFSET, REST_OFFSET = 0.005, 0.0  # as yam_arena's free objects
 SOLVER_ITERATIONS = (32, 4)  # articulation position, velocity iterations
 MAX_DEPENETRATION = 1.0  # m/s: caps how hard PhysX pushes overlapping bodies apart
+SOLVER_POSITION_ITERATIONS = 156  # Numerical contact convergence; not a physical coefficient.
+SOLVER_VELOCITY_ITERATIONS = 4  # TGS: a few velocity passes remove position-correction bias from reported velocities.
 
 
 # -- geometry (NumPy) -------------------------------------------------------------------------------------------
@@ -78,19 +80,32 @@ def _x_to(axis) -> np.ndarray:
 
 
 def mass_properties(shapes, mass):
-    """Estimated homogeneous compound-cylinder mass properties, independent of runtime buffers."""
-    if any(s.kind!='cylinder' or s.axis.lower()!='z' for s in shapes):
-        raise ValueError('glass mass model requires z-axis cylinders')
-    volume=np.array([math.pi*s.size[0]**2*s.size[1] for s in shapes])
-    weights=float(mass)*volume/volume.sum()
-    centers=np.array([s.at for s in shapes],float)
-    center=np.average(centers,axis=0,weights=weights)
+    """Homogeneous compound-shape estimate with exact convex polyhedral moments."""
+    records=[]
+    for shape in shapes:
+        if shape.kind=='cylinder' and shape.axis.lower()=='z':
+            r,h,_=shape.size;volume=math.pi*r*r*h;center=np.asarray(shape.at)
+            covariance=np.diag((r*r/4,r*r/4,h*h/12))
+        elif shape.kind=='convex':
+            points=np.asarray(shape.points)+shape.at;anchor=points.mean(axis=0)
+            volume=0.;first=np.zeros(3);second=np.zeros((3,3))
+            for face in shape.faces:
+                for j in range(1,len(face)-1):
+                    vertices=np.array((anchor,points[face[0]],points[face[j]],points[face[j+1]]))
+                    v=abs(np.linalg.det((vertices[1:]-anchor).T))/6
+                    total=vertices.sum(axis=0)
+                    volume+=v;first+=v*total/4
+                    second+=v*(vertices.T@vertices+np.outer(total,total))/20
+            if volume<=0:raise ValueError('zero-volume convex glass')
+            center=first/volume;covariance=second/volume-np.outer(center,center)
+        else:raise ValueError('unsupported glass mass geometry')
+        records.append((volume,center,covariance))
+    volumes=np.array([x[0] for x in records]);weights=mass*volumes/volumes.sum()
+    center=sum(w*x[1] for w,x in zip(weights,records))/mass
     inertia=np.zeros((3,3))
-    for s,weight,c in zip(shapes,weights,centers):
-        radius,height,_=s.size
-        intrinsic=np.diag((weight*(3*radius**2+height**2)/12,weight*(3*radius**2+height**2)/12,weight*radius**2/2))
-        d=c-center
-        inertia+=intrinsic+weight*(np.dot(d,d)*np.eye(3)-np.outer(d,d))
+    for w,(_,c,covariance) in zip(weights,records):
+        d=c-center;covariance=covariance+np.outer(d,d)
+        inertia+=w*(np.trace(covariance)*np.eye(3)-covariance)
     if not np.isfinite(np.r_[center,inertia.ravel()]).all() or np.linalg.eigvalsh(inertia).min()<=0:
         raise ValueError('invalid analytical glass mass properties')
     return center,inertia
@@ -105,11 +120,13 @@ class Shape:
     at: tuple[float, float, float]  # centre in the part frame, at joint position 0 (m)
     color: tuple[float, float, float] = GREY  # sRGB 0..1
     axis: str = "z"  # cylinder axis in the part frame: "x", "y" or "z"
+    points: tuple = ()
+    faces: tuple = ()
 
     @property
     def half(self) -> np.ndarray:
         """Half edge lengths of the shape's own box (a cylinder's bounding box) in the part frame."""
-        if self.kind == "box":
+        if self.kind in ("box", "convex"):
             return np.asarray(self.size, float) / 2
         r, h = self.size[0], self.size[1]
         return np.array([h / 2 if self.axis == a else r for a in "xyz"])
@@ -123,6 +140,27 @@ def cylinder(radius, height, at=(0.0, 0.0, 0.0), color=GREY, axis="z") -> Shape:
     if axis not in ("x", "y", "z"):
         raise ValueError(f"cylinder axis must be 'x', 'y' or 'z', got {axis!r}")
     return Shape("cylinder", (float(radius), float(height), 0.0), tuple(float(a) for a in at), tuple(color), axis)
+
+
+def convex(points,faces,color=GREY):
+    """One convex collision polyhedron, with points in the part frame."""
+    points=np.asarray(points,float);center=(points.min(axis=0)+points.max(axis=0))/2
+    size=points.max(axis=0)-points.min(axis=0)
+    return Shape('convex',tuple(size),tuple(center),tuple(color),'z',tuple(map(tuple,points-center)),tuple(map(tuple,faces)))
+
+def conical_shell(z0,z1,inner0,inner1,outer0,outer1,color=GREY,sectors=64):
+    """Closed convex wedges form an open-bore conical shell; no hidden solid plug."""
+    if not 0<inner0<outer0 or not 0<inner1<outer1 or not z1>z0:raise ValueError('invalid conical shell')
+    faces=((0,3,2,1),(4,5,6,7),(0,1,5,4),(3,7,6,2),(1,2,6,5),(0,4,7,3))
+    shapes=[]
+    for i in range(sectors):
+        a=2*math.pi*i/sectors;b=2*math.pi*(i+1)/sectors
+        points=[]
+        for z,ri,ro in ((z0,inner0,outer0),(z1,inner1,outer1)):
+            for radius,angle in ((ri,a),(ro,a),(ro,b),(ri,b)):
+                points.append((radius*math.cos(angle),radius*math.sin(angle),z))
+        shapes.append(convex(points,faces,color))
+    return shapes
 
 
 @dataclass(frozen=True)
@@ -362,7 +400,12 @@ def _author(part: Part, root_path: str, translation, orientation):
         if mass is None:
             return
         UsdPhysics.RigidBodyAPI.Apply(prim)
-        PhysxSchema.PhysxRigidBodyAPI.Apply(prim).CreateMaxDepenetrationVelocityAttr(MAX_DEPENETRATION)
+        body_api = PhysxSchema.PhysxRigidBodyAPI.Apply(prim)
+        body_api.CreateMaxDepenetrationVelocityAttr(MAX_DEPENETRATION)
+        if part.name in ('density_bottle', 'perforated_stopper', 'water_bath'):
+            # Author before native scene creation, rather than changing USD at reset.
+            body_api.CreateSolverPositionIterationCountAttr(SOLVER_POSITION_ITERATIONS)
+            body_api.CreateSolverVelocityIterationCountAttr(SOLVER_VELOCITY_ITERATIONS)
         mass_api=UsdPhysics.MassAPI.Apply(prim)
         mass_api.CreateMassAttr(float(mass))
         PhysxSchema.PhysxContactReportAPI.Apply(prim).CreateThresholdAttr(0.)
@@ -380,6 +423,14 @@ def _author(part: Part, root_path: str, translation, orientation):
                 geom.CreateSizeAttr(1.0)
                 geom.AddTranslateOp().Set(Gf.Vec3d(*(np.asarray(s.at) - origin)))
                 geom.AddScaleOp().Set(Gf.Vec3f(*s.size))
+            elif s.kind == 'convex':
+                geom=UsdGeom.Mesh.Define(stage,sp)
+                geom.CreatePointsAttr([Gf.Vec3f(*v) for v in s.points])
+                geom.CreateFaceVertexCountsAttr([len(face) for face in s.faces])
+                geom.CreateFaceVertexIndicesAttr([v for face in s.faces for v in face])
+                geom.CreateSubdivisionSchemeAttr('none')
+                geom.AddTranslateOp().Set(Gf.Vec3d(*(np.asarray(s.at)-origin)))
+                UsdPhysics.MeshCollisionAPI.Apply(geom.GetPrim()).CreateApproximationAttr('convexHull')
             else:
                 geom = UsdGeom.Cylinder.Define(stage, sp)
                 geom.CreateRadiusAttr(s.size[0])
