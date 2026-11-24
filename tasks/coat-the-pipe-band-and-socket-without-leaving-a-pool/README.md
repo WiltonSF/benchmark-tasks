@@ -1,33 +1,89 @@
-# Coat the pipe band and socket with cement without leaving a pool or a bare patch
+# Coat a PVC pipe band and fitting socket, leaving no bare window or cement on the stop or in either bore
 
-A plumber's bench with a 1-1/2 in PVC drain joint ready for solvent cement. One bench vise holds the pipe upright with
-its socket-depth line drawn on; a second vise holds a pipe stub with a coupling cemented on top, its upper socket
-open. The robot takes the dauber from the cement can, coats the pipe end down to the line, puts a thin coat inside the
-socket, gives the pipe a second coat, and puts the dauber back in the can. Nothing may go into either bore, the swab
-must not be squeezed so hard that cement runs, and the socket gets one thin coat (re-coating a quarter or more of its
-wall from another dip puddles at the stop).
+Plumbers coat the pipe end and fitting socket before joining PVC drain pipe. Here two bench vises hold a
+1-1/2 in Charlotte Pipe joint ready for the coating step. The robot takes the Oatey Rain-R-Shine lid dauber,
+coats the pipe down to its socket-depth line, coats the socket wall, dips again, gives the pipe a second full
+pass, then puts the dauber back. Joining and bond testing are separate operations.
 
-## Run
+The folder name retains “pool”; pooling is no longer scored. The scene has two arms; the scripted demo uses
+one arm against the two vises.
 
-    inspect-robots run --embodiment yam_arena --policy dream \
-      -E task=tasks/coat-the-pipe-band-and-socket-without-leaving-a-pool/task.py -E object_jitter=0 -E control_hz=20 \
-      --instruction "Cement-coat this joint as the can directs: the pipe end down to the black line, a thin coat inside the coupling's open socket, then a second coat on the pipe. Leave no bare patch and no cement in the bore, then put the dauber back in the can." \
-      --scorer task_score --max-steps 2400 --epochs 2
+## Revision response
 
-`--epochs 2` runs lot A then lot B (trial k uses lot k mod 2); `TASK_LOT=A` or `TASK_LOT=B` in the environment pins
-one lot. Use `--policy yam_scripted` for the scripted demo. One trial is 2,400 control steps (120 s at 20 Hz); the
-demo finishes in about 84 s. On one shared L40S a trial takes about 6 minutes of wall time. `object_jitter=0`: the
-layout is fixed. `python near_misses.py` replays 20 scripted strategies through the coating rule offline.
+The substantive verdict, verbatim:
 
-The task uses three helper files next to `task.py`: `parts.py` (multi-shape parts; one addition: shapes in
-`VISUAL_ONLY` are drawn without a collider, used for the swab's soft outer layer, the dauber wire, the drawn line, the can's label and the cement surface), `lots.py` (two
-fixed layouts). No third-party assets; everything is built from boxes and cylinders.
+> Construct validity (not met): The simulated swab's non-colliding soft layer coats on geometric overlap without producing the stated 0.2–1 N contact force.
+>
+> Scoring (not met): The specified overhead and wrist videos cannot reliably measure hidden swab compression or identify a quarter of the socket being recoated.
+>
+> What to change: Make the simulated swab exert approximately the real contact force during coating rather than allowing its soft layer to pass through surfaces without resistance.
 
-## Results
+1. **Non-colliding layer and force.** The entire 19 x 25 mm wool cylinder now collides through a compliant
+   material. The wire collides too. `read_contacts` reads PhysX contact points and normal forces, and
+   `wool_contact` excludes contacts attributable to the lid or wire. `apply_contacts` credits paint only with
+   at least 0.20 N of reported total wool normal force on that surface, under the posed wool and within 6 mm
+   around the circumference of a reported contact point. No reported contact and 0.19 N both leave no paint.
+   Contact forces act on the held tool and the fixed vise-held parts through the physics engine.
+2. **Hidden swab compression.** No score depends on squeeze depth, a hidden core, or maximum indentation.
+   The old 1–5 mm squeeze rule is removed from code, text and fixture data. Real scoring checks visible blue
+   in the photographs. The simulated 0.20 N minimum is a proxy for film transfer, not a force reconstructed
+   from video; force above 1 N carries no separate penalty.
+3. **A quarter of the socket recoated.** The socket repeat-coat penalty is deleted. No score counts socket
+   recoats or infers a pool from hidden history. The remaining contamination outcomes are visible blue on
+   the stop, in either bore or on the bench, checked after the trial. In simulation those require actual
+   reported wet-wool contact, not merely entering empty bore air.
+4. **Approximately real contact force.** The dry new 19 mm Oatey wool dauber has about 40 g-force/mm
+   radial resistance, obtained by phone from a technician who works with this product (Nov 2026).
+   That is 0.392266 N/mm. The compliant material uses 392.266 N/m at each contact point.
+   An earlier simulation static press, with the material set to 200 N/m, gave 0.3-0.45 N at 0.9 mm
+   indentation (about 330-500 N/m, 0.85-1.3 times the technician figure). It is a historical diagnostic,
+   not a stiffness calibration of the final 392.266 N/m source. The final demo's coating forces of 0.2-1.9 N
+   correspond to about 0.5-4.9 mm of squash using the technician's dry figure. The upper end lies within
+   the tested 1-5 mm range; the lower end extrapolates below its first point. These are calculated dry-curve
+   equivalents, not measured wet deflections. Wet friction and minimum transfer force remain estimates.
+   The demo's simulated coating forces are listed under Run and results.
+5. **Coarse visible order.** Full score needs a whole pipe orbit before first socket entry and another after
+   final exit and a fresh dip, plus final photographs showing complete coverage. Simulator before/after
+   coverage masks and accumulated angular travel implement those passes. Real graders need not identify
+   which individual window was repainted when. Reset uses a new coupling pushed dry onto a reusable stub;
+   no cemented support must cure between trials.
 
-Scripted demo (`--policy yam_scripted --epochs 2`): 1.0 in lot A and 1.0 in lot B. Dream-1 with the instruction above
-(`--epochs 2`, 2,400 steps): 0.0 in both lots; it ran to the step limit without refusing, reached over the can and the
-vises, and coated nothing.
+## Run and results
+
+```sh
+inspect-robots run --embodiment yam_arena --policy dream \
+  -E task=tasks/coat-the-pipe-band-and-socket-without-leaving-a-pool/task.py \
+  -E object_jitter=0 -E control_hz=20 \
+  --instruction "Coat the pipe all round down to the line, then the socket wall, then the pipe all round again after a fresh dip. Keep cement off the stop and out of both bores. Put the dauber back and let go." \
+  --scorer task_score --max-steps 2400 --epochs 2
+```
+
+Use `--policy yam_scripted` for the open-loop demo. Trial k uses lot k mod 2; `TASK_LOT=A` or `TASK_LOT=B`
+pins a lot for debugging. One trial allows 120 s at 20 Hz. The planned demo lasts 87 s in A and 89 s in B.
+`python near_misses.py` runs synthetic contact-record scoring controls; those are not physical trials.
+
+**Revised-source evidence (Nov 24 UTC).** Scripted demo A/B 1.0/1.0; Dream-1 A/B 0.0/0.0.
+Both runs used identical Python source; task.py SHA256 `20c0489924152daca5e38c4e4bf0f8a25cae9389bc4ea1b4d71bfa3784d17c32`.
+Demo `demo-20261124T034740`; Dream-1 `dream-20261124T035644`; a 2,400-step limit per layout, `--epochs 2`.
+Dream termination reasons: ['max_steps', 'max_steps']. No refusal or abstention is recorded in the completed Inspect JSON (abstentions {}, errored trials 0).
+
+Force measurements from the scripted demo:
+
+| Lot | Surface | Min / median / max N while crediting paint | Steps |
+|---|---|---|---|
+| A | pipe | 0.228 / 0.640 / 1.125 | 172 |
+| A | socket | 0.229 / 0.704 / 1.502 | 66 |
+| B | pipe | 0.230 / 0.713 / 1.198 | 178 |
+| B | socket | 0.205 / 0.626 / 1.805 | 78 |
+
+Peak total wool contact forces across all steps, including steps earning no new paint: A pipe/socket 1.125/1.502 N; B pipe/socket 1.198/1.908 N.
+
+These are simulation force measurements. Contact multiplicity can raise force above 1 N; no upper-force
+score is claimed. Dry technician resistance, estimated wet-film transfer and simulated forces remain distinct.
+In the scripted demo, both full pipe passes and the socket were complete in both layouts, with no contamination/state fault.
+The 27 synthetic scorer controls pass.
+
+The videos for this revision are new; the earlier videos showed the rejected overlap model.
 
 ## Scene (millimetres; x away from the arms, y to the robot's left, heights above the bench)
 
@@ -35,155 +91,161 @@ vises, and coated nothing.
 |---|---|---|
 | Pipe | 1-1/2 in Schedule 40 PVC (Charlotte Pipe, ASTM D1785/D2665): OD 48.26 (1.900 in), minimum wall 3.68 (0.145 in) | 100 long, standing on the vise base, top end 115 above the bench, axis at (290, -220). Black line round it 18.3 below the top (the socket depth). |
 | Pipe vise | small cast-iron bench vise, jaws closed on the pipe (sizes estimated) | base 120 x 100 x 15; jaws 70 x 18, tops 68 above the bench. Fixed. |
-| Coupling | Charlotte Pipe PVC DWV coupling, part no. 100, 1-1/2 in, hub x hub: 39.7 long (1-9/16 in) with a 3.2 (1/8 in) centre stop, so each hub is 18.3 deep (maker's catalogue). Socket 48.3 across, outside 56 (estimates, ASTM D2665 class). | Lower hub cemented onto a 1-1/2 in pipe stub held in the second vise. Mouth 105 above the bench, stop face 86.7, axis at (200, -100). |
+| Coupling | Charlotte Pipe PVC DWV coupling, part no. 100, 1-1/2 in, hub x hub: Socket mouth 48.6, depth 18.3, outside 56: figures obtained by phone from a technician who works with this product (Nov 2026). Straight socket model; 3.175 centre stop from the catalogue; model overall length 39.775. | Lower hub pushed dry onto a 1-1/2 in pipe stub held in the second vise. Mouth 105 above the bench, stop face 86.7, axis at (200, -100). |
 | Coupling vise | same vise, jaws 58 high | Fixed. |
-| Cement | Oatey Rain-R-Shine medium blue PVC cement, 8 fl oz (237 mL), item 30891 | Round can 70 across, 87 to the shoulder, neck 36 across up to 95 (sizes estimated); about 140 mL left, surface 40 above the can bottom; 0.25 kg. Centre (180, -270). |
-| Dauber | the can's own lid dauber: blue lid 40 across x 16 tall, 2.5 mm wire 45 long, wool swab 19 across x 25 long (3/4 in; sizes estimated); 12 g | Lid resting loose on the neck (not screwed down), swab hanging in the cement. |
+| Cement | Oatey Rain-R-Shine medium blue PVC cement, 8 fl oz (237 mL), item 30891 | Round can 70 across, 87 to the shoulder, neck 36 across up to 95 (sizes estimated); chosen cement surface 40 above the can bottom; 0.25 kg. Centre (180, -270). |
+| Dauber | the can's own lid dauber: blue lid 40 across x 16 tall, 2.5 mm wire 45 long, wool swab 19 across (obtained by phone from a technician who works with this product, Nov 2026) x 25 long (length estimated); 12 g | Lid resting loose on the neck (not screwed down), swab hanging in the cement. |
 
-Lot B moves the can (with the dauber in it) to (245, -345). Trials run on lots A and B and are averaged; the screenshot
-shows lot A. Oatey's directions ask for "a suitable applicator at least 1/2 the size of the pipe diameter"; the 3/4 in
-swab on 1-1/2 in pipe meets that.
+
+Lot B moves the can, with its dauber, to (245, -345). No other object moves between layouts. Results average A and B.
+`parts.py` builds primitives and compliant contact materials; fixed workholding and the existing bench collider
+are authored as kinematic bodies so contact filters can name them. Their poses are fixed. `lots.py` declares
+these two layouts. The line, label and cement level are drawn without collision; the wool and wire collide.
+All assets are task-authored primitives. No third-party mesh or texture is distributed.
 
 ## Scoring
 
-**How a real trial is read.** The overhead and wrist videos (20 fps, stepped frame by frame) are the record of
-everything that happens during the trial: each trip from the can, where the swab goes, and whether it is pushed flat.
-Right after the trial: the pipe band is photographed from four sides with a transparent sleeve printed with a 6 x 48
-grid (3.0 x 3.2 mm windows) held 2 mm off the wet surface; the socket wall is photographed through the mouth with a
-ring light and compared window by window with the same grid printed on a strip inside a dry reference socket; both
-bores and the stop are checked with a torch and an inspection mirror (a bead or puddle on the stop, or blue below it).
+Use overhead and wrist video for gross order and can movement. Within 30 s of finishing, photograph the pipe
+from four sides through a transparent sleeve with 6 x 48 windows held 2 mm off the wet surface. Photograph the
+socket wall through its mouth under a ring light, comparing its sectors against a dry reference socket bearing
+the same grid. Tilt the inspection mirror as needed to see every sector; an occluded sector is unscored until
+photographed. Inspect both bores and the stop with torch and mirror. A window is coated when blue is visible in
+it; the scoring resolution is about 3.0 x 3.2 mm, not microscopic film continuity.
+Print [the pipe sleeve grid](fixture/pipe-sleeve-grid.svg) and [dry socket reference grid](fixture/socket-reference-grid.svg)
+at 100% scale and verify the 50 mm bar. The sleeve print allows for its 2 mm radial stand-off; its printed
+sector width is consequently larger than the corresponding pipe-surface window.
 
-**Score 0 for the whole trial if, at any moment after the dauber has been in the cement:**
+**Whole-trial zero:** wet wool deposits blue on the stop face, inside either bore, or on the bench outside
+the can; the can tips over 15 degrees or slides over 20 mm. The simulator records actual positive-force wool
+contact with these surfaces. Stop-face contacts also require a vertical contact normal, distinguishing
+the stop from the adjoining low socket wall. Simply being in empty air inside a bore does not deposit paint. Blue markers render the actual
+contamination contact locations, as well as the coated target windows.
 
-1. the swab goes into the pipe end or past the coupling's stop (cement in a bore; video, then torch and mirror);
-2. the swab is pushed flat against the pipe, the socket wall or the coupling's outside, so that its stiff 9 mm core
-   meets the surface: more than 5.0 mm of squeeze on the 19 mm swab (cement squeezed out as a bead or run; video and
-   photos);
-3. a quarter or more of the socket wall is coated again from another trip to the can (a second coat inside the
-   fitting puddles at the stop; video, then the mirror);
-4. the swab touches the bench outside the can (cement on the bench);
-5. the can tips over 15 degrees or slides more than 20 mm, or either vise moves more than 3 mm.
+**Coating proxy:** each surface has 6 rows x 48 columns, sampled at 3 x 3 points per window. A loaded wool
+contact must exert at least 0.20 N total normal force on the scored surface. Only windows under the wool and
+within 6 mm of a contact around the circumference count. No interpolated path paints between reports. One dip
+loads 3,200 mm2, estimated from 0.5 mL divided by a 0.15 mm film; each surface is about 2,770 mm2. The swab tip
+8 mm below the cement level reloads it. A repeated window on the same dip consumes no further budget and adds
+no coat. A fresh dip is needed for the second pipe coat. Neither squeeze depth nor socket recoat share is scored.
 
-**Coating rule.** A window is coated when blue shows in it. In the simulation: the swab, carrying cement, overlaps
-the window while squeezed 1.0 mm or more against that surface (the pipe's outside with the swab outside the pipe, or
-the socket wall with the swab inside the socket). One dip (the swab end at least 8 mm into the cement) loads enough
-for about 3,200 mm2 of new windows; the band and the socket wall are about 2,770 mm2 each. Then the dauber is dry
-until dipped again. Going over windows again on the same dip uses no cement and does not add a coat. A coat on the
-band counts once per trip from the can (in a real trial: the band wiped all round on that trip, from the video).
-
-**Every nonzero score needs, for the last 1 s:** the dauber let go, both hands at least 30 mm from the dauber and the
-can (sampled over every face of both grippers), and the dauber and the can at rest.
+**Every nonzero score:** dauber and can at rest (linear speed <=3 mm/s, angular speed <=0.03 rad/s), with both
+hands at least 30 mm from both objects for the last 1 s. Hand clearance samples all faces of both grippers.
 
 | Score | Condition |
 |---|---|
-| 1.0 | in the can's order: every band window coated on a trip before the socket's and again on a trip after it; every socket window coated; the dauber back in the can (lid resting on the neck within 3 mm, centred within 6 mm, hanging within 10 degrees of upright) |
-| 0.75 | every band window and every socket window coated at least once (including the right coats in the wrong order) |
-| 0.5 | one surface fully coated and at least half of the other |
-| 0.25 | one surface fully coated |
-| 0 | anything else |
+| 1.0 | All windows of both surfaces coated; a complete pipe orbit before first socket entry and a second after final exit and a fresh dip; dauber returned to can, lid within 3 mm vertically and 6 mm horizontally of the neck, hanging within 10 degrees of upright |
+| 0.75 | All windows of both surfaces coated, without meeting all full-score order/stow conditions |
+| 0.5 | One surface complete and at least half of the other |
+| 0.25 | One surface complete |
+| 0 | All other outcomes, including any whole-trial fault or missing hands-clear hold |
 
-In `task.py`: `apply_pose` (coating, load, dips and the socket re-coat rule), `violations` (rules 1, 2, 4), `step`
-(rule 5, release, hands), `in_order` (the can's order), `tier` (the ladder), `stowed` (dauber back in the can).
+The simulator requires complete pipe coverage masks before/after the socket phase and at least 360 degrees
+of actual pipe-orbit travel in each phase. Re-entering the socket clears the after mask and orbit.
+Photographs provide final coverage in a real trial. The overhead video checks, as countable events, that the wool
+stays in contact with the band below the pipe top through a full turn before the first socket entry, dips again
+after the last socket exit, and then makes another full turn. A second coat of blue on blue is not photographed;
+the simulator's per-window after-pass mask is its stricter stand-in for that full turn.
+`classify`, `wool_contact`, `apply_contacts`, `in_order`, `tier` and `score` contain the corresponding rules; non-finite contact data fails closed.
 
-### Shortcuts and near misses (replayed by `near_misses.py`; all 22 pass)
+### Negative controls
 
-| Strategy | Score |
+The 27 synthetic scorer controls cover no-op, no report despite overlap, 0.19/0.20 N, force above 1 N,
+wrong-surface and wire-only force, held dauber, a short release hold, missing second pass, wrong order,
+additional socket coating, return to socket after the last pipe pass, single-surface partial credit, bore/stop/
+bench contamination, empty bore air, non-finite force, half an orbit, and normal-based separation of the low wall and stop face. They test the rule with explicitly
+provided contact records; GPU contact generation and demo feasibility are checked separately.
+
+## Fidelity and estimates
+
+Pipe outside diameter/wall and coupling stop are maker dimensions at true size. Figures obtained by phone
+from a technician who works with this product (Nov 2026) are: a dry new Oatey 3/4 in dauber ball 19 mm across,
+about 40 g-force per mm radial squash against 1-1/2 in PVC (kitchen scale, 1/3/5 mm, three runs), socket mouth
+48.6 mm, socket depth 18.3 mm and coupling outside diameter 56 mm. The simulation uses those figures.
+Pipe and coupling walls are modelled as overlapping vertical cylinders.
+The socket is represented as straight rather than modeling an unmeasured taper; overall model length is
+2 x 18.3 + 3.175 = 39.775 mm. Vises, can, lid, wire and wool length remain estimated. Cement level is a scene choice.
+
+The whole wool is a rigid geometry with a compliant contact material, not a deformable mesh. Its material
+stiffness is 392.266 N/m per contact (40 x 0.00980665 N/mm), damping 0.5 N s/m, wet friction 0.20/0.15 (estimate).
+PhysX contact multiplicity can increase aggregate resistance above the dry technician figure. This is not a
+calibrated wet-wool force curve. The 0.20 N coating minimum is about 0.5 mm of squash at the technician's 40 g/mm, a light wiping touch;
+no wet-film transfer measurement has been supplied, so it remains an estimate. Damping contributes
+0.005 N at 10 mm/s. Dry resistance, wet film transfer and simulated forces are separate quantities.
+
+The 6 mm circumferential footprint and wool-height mask approximate film transfer around each reported contact;
+paint is a declared state, not fluid. There is no solvent softening, cure, bond, hydrodynamics or pooled-volume
+measurement. The workpieces/vises are fixed, can loose, and dauber held only by frictional grip. No grasp weld,
+scoring force or pose correction carries the tool. Two published layouts test repositioning, not generalization
+to unseen layouts. Forces above 1 N are not scored as failures because hidden compression cannot be read from video.
+
+### Measuring the open estimates
+
+- **Wet-wool transfer and force:** hold a spare pipe horizontally in a jig on a tared scale and press the dauber
+  vertically downward, or use a force gauge aligned with the push. Record first continuous blue transfer in N,
+  then force at 1/2/3 mm indentation. Convert scale grams to N with 0.00980665 N/g. A sideways force on a
+  horizontal kitchen scale is not a valid reading. Use the transfer reading to replace `F_COAT`; compare the wet curve with the dry technician figure before revising `SWAB_K`.
+- **Load:** weigh the dauber dry, after one dip, and after coating until dry; photograph/ruler the coated area
+  and replace `LOAD_AREA`. The 3,200 mm2 figure remains an estimate, not a measured consumption rate.
+- **Geometry:** caliper the neck/lid/wire/wool; compare pipe/coupling with the table. The real lid must be
+  graspable by the parallel fingers and the wet wool must fit through the can neck without snagging.
+
+## Real kit, sources and enrollment
+
+Prices reopened Nov 24, 2026, USD before tax/delivery; no purchase was made:
+
+| Item | Opened price and source |
 |---|---|
-| scripted demo, lot A / lot B | 1.0 / 1.0 |
-| lot A's demo replayed in lot B | 0 (dips where the can is not) |
-| demo 0.4 to 1.6 mm low (the GPU runs ran about 1 mm low; replays assume 1 mm), or 1.4 mm off sideways | 1.0 |
-| demo 3.5 mm too low in the socket (swab end past the stop) | 0 |
-| loaded dauber pushed straight down to the bottom of the socket | 0 (into the bore) |
-| swab pushed into the pipe end | 0 |
-| pressed 3 mm harder round the pipe | 0 (squeezed out) |
-| socket coated all round again from a second dip | 0 (puddle) |
-| dauber kept in the hand at the end | 0 |
-| pipe, pipe, then socket; or socket, then pipe twice (wrong order) | 0.75 |
-| no second pipe coat | 0.75 |
-| no re-dip before the socket (runs dry part-way) | 0.25 |
-| pipe only / socket only, dauber put back | 0.25 |
-| swab held 2 mm off the pipe or off the socket wall | 0.25 (only the other surface coated) |
-| band coated 8 mm short of the line | 0.5 |
+| Two Central Machinery 59113 2-1/2 in table vises, smooth jaws | 2 x $22.99 = $45.98; [Harbor Freight](https://www.harborfreight.com/2-12-in-table-swivel-vise-59113.html) |
+| Charlotte PVC071120200HA 1-1/2 in x 2 ft Schedule 40 pipe, cut into 100 mm offcuts beforehand | $5.93; [Home Depot](https://www.homedepot.com/p/Charlotte-Pipe-1-1-2-in-x-2-ft-PVC-DWV-Schedule-40-Pipe-PVC071120200HA/100581718) |
+| Charlotte PVC 00100 0800HA coupling, UPC 611942031894 | $0.79 each; [Family Hardware](https://www.familyhardware.com/product/charlotte-pipe-1-1-2-in-hub-schedule-40-dwv-pvc-coupling/442505) |
+| Oatey Rain-R-Shine 30891 8 oz can with lid dauber | $9.29 each, seller minimum two ($18.58); [WebstaurantStore](https://www.webstaurantstore.com/oatey-rain-r-shine-30891-8-oz-pvc-medium-blue-cement/83530891.html) |
 
-## Fidelity
+These core items total $71.28. A bench, PPE, solvent-proof catch tray, torch, inspection mirror, printed grid,
+ruler and cameras are also needed; their prices are not included in that subtotal. The simulation vises are
+simplified dimensions, not a scan of model 59113. Set the real jaw height/bench shims to the specified pipe and
+socket heights; use the smooth plastic/wood jaws. No custom machined or curing specimen is required.
 
-True size: the pipe's outside and wall and the coupling's length and stop come from the maker's catalogue; the socket
-and outside diameters, the vises, the can and the dauber are estimates. Cement is a stated rule, not a fluid: the
-loaded 19 x 25 mm swab coats what it overlaps while squeezed 1 to 5 mm (about 0.2 to 1 N at an estimated 0.2 N/mm);
-one dip coats about 3,200 mm2 (an estimate: about 0.5 mL at a 0.15 mm film). The swab's soft outer 5 mm and the
-2.5 mm wire have no collider; its 9 mm core does, as do the lid, can, vises, pipe and coupling, so the swab cannot pass
-through a wall and the core meeting a wall is the squeezed-out limit. Entering a bore or re-coating a quarter of the
-socket counts as a run or pool. Solvent softening, cure, bond strength and joining are not simulated. Both layouts are
-fixed: lot B stops one fixed replay, not a memorised pair of layouts.
+Before enrolling a specimen: pipe cut square and deburred, white surfaces clean and bare, line 18.3 mm below
+the top; coupling dry and bare; bores and stop clean under torch/mirror; can cement fluid after stirring, not
+gel-like; wool intact and neck unobstructed. Check the coupling and pipe do not shift visibly (>1 mm against a
+ruler) under about 3 N lateral force (300 g hanging mass via a horizontally guided string); clamp/reset again if they do. Check every
+photographic sector is visible in the reference views before starting. Wet-film transfer/load estimates still need the
+measurements above; a model matching them numerically is not real validation.
 
-## Checking the estimates before real trials (about 15 minutes, no robot)
+Sources for dimensions and procedure:
 
-The coating numbers are estimates, stated so they can be checked and changed in one place (`task.py`, top):
+- [Charlotte DWV dimensional catalogue](https://www.charlottepipe.com/uploads/documents/technical/Plastic_Pipe_Fittings_DC-DWV609.pdf),
+  printed p7: 1.900 in OD and 0.145 in minimum wall; printed p11: no.100 PVC coupling 1-9/16 in overall,
+  1/8 in stop, giving (39.6875 - 3.175)/2 = 18.256 mm per side. The supplied technician socket depth replaces that derived depth in the model; its mouth/outside
+  diameters are technician figures, not dimensions inferred from catalogue length.
+- [Rain-R-Shine technical sheet (30893, same cement)](https://blobanarus.blob.core.windows.net/oatey-oateyproducts/30893.pdf), p2,
+  direction 6: “leave no uncoated surface”; pipe/socket/second-pipe sequence. It gives 1–2 minutes set time at
+  70–90 F and warns “HIGHLY FLAMMABLE LIQUID AND VAPOR”. It provides no wool force figure.
+- [O*NET 47-2152.00](https://www.onetonline.org/link/summary/47-2152.00) includes assembling pipe/fittings using
+  cement and plastic solvent; [BLS](https://www.bls.gov/ooh/construction-and-extraction/plumbers-pipefitters-and-steamfitters.htm)
+  reports 510,600 plumbers, pipefitters and steamfitters in 2025. The coating step is part of that work, not a
+  claim that a robot performs the occupation or that this task predicts joint strength.
 
-- **Load per dip (`LOAD_AREA`, 3,200 mm2).** Weigh the dauber on a 0.01 g scale dry, after one dip, and after
-  coating one band of a spare pipe end with a single dip until it stops leaving cement. The coated area per dip
-  replaces `LOAD_AREA`; the cement used per band (grams) is recorded with it.
-- **Squeeze limits (`PRESS_MIN` 1.0 mm, `PRESS_MAX` 5.0 mm).** Press the loaded swab sideways against a pipe standing
-  on a kitchen scale while a ruler shows the squeeze. Note the squeeze at which a stroke first leaves a continuous film
-  and the squeeze at which cement beads and runs; these replace the two limits (0.2 N/mm is the current estimate of the
-  swab's stiffness).
-- **Sizes.** Measure the can, neck, lid, wire and swab with a caliper and correct the drawing in `task.py`.
+## Reset and real operation
 
-If a change moves the demo outside the limits, the fixed corrections at the top of `demo()` are re-measured from one
-traced run.
+1. Clamp a fresh prepared 100 mm offcut, top 115 mm above bench, axis (290, -220), line 18.3 mm below top.
+2. Push a fresh dry no.100 coupling onto the reusable lower stub, mouth 105 mm above bench, axis (200, -100).
+   Check the holding test above. Nothing is cemented or cured for the support.
+3. Stir cement and set its surface 40 mm above the can bottom (a scene choice). Can at (180, -270), or
+   (245, -345) for B. Lid rests loose on neck, wool in cement. Arms ready, fingers open; start within 15 s.
+4. Use a new bare offcut/coupling for each scored trial; reuse the dauber and stub. Prepared replacements make
+   reset about a minute. Photograph within 30 s after the trial.
 
-## Why it matters
+Follow the product label: use ventilation suitable for solvent vapor, keep ignition sources away, use suitable
+protective gloves and eye/face protection, and a solvent-proof catch tray. Follow the label's respiratory protection
+requirements. Protect gripper pads with disposable finger coverings and replace any wetted coverings. Rehearsal
+with blue water-based gel is a different medium and does not establish the solvent-cement force. Only the named
+cement defines this task's real trial; neither the coating specimen nor the dry support joint is put into service.
 
-Joining PVC drain, waste and vent pipe with solvent cement is routine work for plumbers and pipefitters: O*NET
-47-2152.00 lists "Assemble pipe sections, tubing, or fittings, using couplings, clamps, screws, bolts, cement, plastic
-solvent, caulking, or soldering, brazing, or welding equipment" as a task (about 500,000 US jobs, BLS). The can's own
-directions (Oatey 30891 technical specification) say: "Apply liberal coat of cement to pipe to the depth of the socket,
-leave no uncoated surface"; "Apply a thin coat of cement to inside of fitting, avoid puddling of cement. Puddling can
-cause weakening and premature failure of pipe or fitting. Apply a second coat of cement to the pipe." A bare patch is
-a leak path; cement wiped or squeezed into the bore runs down inside the pipe.
+## Distinct skill and remaining scope
 
-The robot skill: carry a dauber with a limited load, keep a light, steady squeeze while going all the way round the
-outside of a pipe and all the way round the inside of a socket 18 mm deep, stop above the 3 mm stop without touching
-the bore below it, and plan dips so that the pipe gets two coats and the socket one thin coat.
-
-## How this differs from close tasks
-
-- TK-7P97ME (finish a painted panel with a roller): flat panel, no paint load, no bore to protect.
-- TK-F6JFF7 (pending; load a paint roller on a tray): loading only, no application.
-- TK-4T97N9 (filling with a putty knife): a rigid blade packing and striking a flat filler; no curved surface or bore.
-- Thread-tape wrapping on pipe threads: tensioned winding, not coating; no socket.
-- PVC repair and assembly tasks (a slip coupling dry-fitted across a repair, pipes pushed into fittings): aligning,
-  sliding and inserting. Joining is excluded here; this task is the coating step before it.
-- TK-RB2759 (pending; nail polish inside the lines): a convex surface only, no load to manage, no inside surface.
-
-## Design notes
-
-- **Why the coating step on its own.** It is the step that decides whether a solvent joint leaks: a bare window is a
-  leak path, and cement wiped past the stop or pushed into the bore runs inside the pipe. It is also done against the
-  clock (the can's specification gives a set-up time of 1 to 2 minutes at 70 to 90 F), so it is one continuous unit of
-  work. Pushing the joint together afterwards is a separate insertion skill.
-- **Bores.** A bore is the whole open region inside the pipe below its end and inside the stop below its face, down to
-  the bench; any part of the swab there fails the trial.
-- **Order.** Full credit follows the can's directions: pipe, socket, pipe again, with one thin coat in the socket
-  (re-coating a quarter or more of the socket wall from another dip counts as a puddle).
-- **Estimates.** The load per dip and the squeeze limits are estimates; the section above gives a 15-minute check that
-  replaces them with measured values.
-
-## Real trials
-
-Use the products named above. Wear nitrile gloves and eye protection, ventilate, keep ignition sources away (the
-can's precautions), and lay a solvent-proof tray under the can. The grippers touch only the dauber's lid; cover each
-finger pad with a disposable nitrile finger cot so solvent on the lid cannot reach the pads. Rehearsals can use a
-water-based blue gel in the same can; scored trials use the named cement. Reset with a new pipe offcut and a new coupling on a
-new stub each trial; the dauber can be reused. Scoring photographs are taken within 30 s of the end, before the
-cement dulls.
-
-## Reset
-
-1. Clamp a new 100 mm offcut of 1-1/2 in Schedule 40 PVC upright in the first vise, standing on its base, top end
-   115 mm above the bench, axis at (290, -220); draw the line round it 18.3 mm below the top.
-2. Clamp a pipe stub upright in the second vise with a new Charlotte no. 100 coupling cemented on top, mouth 105 mm
-   above the bench, axis at (200, -100).
-3. Stir the cement; it should be about 140 mL (surface 40 mm above the can bottom). Stand the can at (180, -270)
-   (lot B: (245, -345)) and rest the lid dauber loose on the neck with the swab in the cement.
-4. Arms at their ready pose, grippers open. Start within 15 s.
+The robot must manage a finite dauber load while wiping an outside cylinder and an inside socket, avoiding a
+stop/bore and completing visible pipe/socket/pipe order. This differs from flat roller finishing (TK-7P97ME),
+roller loading (TK-F6JFF7), putty-knife filling (TK-4T97N9), and nail-polish application (TK-RB2759).
+Thread tape winds a tensioned strip; dry PVC assembly
+aligns/inserts parts. Neither is this contact coating step. No fluid bond or human baseline result is claimed.

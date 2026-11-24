@@ -1,6 +1,6 @@
 """A plumber's bench with two small bench vises. The left-hand vise (nearer the robot's right arm) holds a white
-1-1/2 inch PVC pipe upright; a black line is drawn round the pipe 18 mm below its top end. The other vise holds a
-short upright pipe stub with a white PVC coupling cemented on top, its upper socket open and facing up. A small can
+1-1/2 inch PVC pipe upright; a black line is drawn round the pipe 18.3 mm below its top end. The other vise holds a
+short upright pipe stub with a white PVC coupling pushed onto it, its upper socket open and facing up. A small can
 of blue PVC cement stands on the bench with its lid resting loosely on the neck; a wool dauber on a wire hangs from
 the lid into the cement. The can stands in a different place in some trials.
 """
@@ -31,15 +31,15 @@ EPS = 1e-9
 # ---------------------------------------------------------------------------------------------------------------
 # Sizes (m). Pipe: 1-1/2 in Schedule 40 PVC, OD 1.900 in, minimum wall 0.145 in (maker's catalogue).
 # Coupling: 1-1/2 in PVC DWV hub x hub coupling, 1-9/16 in long with a 1/8 in centre stop (maker's catalogue), so
-# each hub is 18.26 mm deep. Socket and outside diameters are estimates (ASTM D2665 class).
+# socket dimensions below are technician figures obtained by phone (Nov 2026).
 # ---------------------------------------------------------------------------------------------------------------
 R_PIPE = 0.02413  # pipe outside radius
 R_BORE = 0.02045  # pipe inside radius (also the coupling stop's inside radius)
-DEPTH = 0.01826  # socket depth = the band to coat on the pipe end
-R_SOCK = 0.02415  # socket wall radius (mouth 48.6 / root 48.2 mm, estimate)
-R_COUP = 0.0280  # coupling outside radius (estimate)
+DEPTH = 0.0183  # m: technician socket depth; also the pipe coating-band depth
+R_SOCK = 0.0486 / 2  # m: technician socket mouth diameter, represented by a straight socket
+R_COUP = 0.056 / 2  # m: technician coupling outside diameter
 STOP = 0.003175  # centre stop height
-COUPLING_LEN = 2 * DEPTH + STOP  # 39.69 mm
+COUPLING_LEN = 2 * DEPTH + STOP  # 39.775 mm from technician depth + catalogue stop
 
 H_PIPE = TOP + 0.115  # top end of the pipe in its vise
 H_COUP = TOP + 0.105  # top (mouth) of the coupling
@@ -55,12 +55,19 @@ SWAB_R, SWAB_TOP, SWAB_TIP = 0.0095, -0.053, -0.078
 CAN_R, CAN_H, NECK_R, NECK_IN, NECK_H = 0.035, 0.087, 0.018, 0.015, 0.008
 CEMENT_LEVEL = 0.040  # cement surface above the can's bottom (about 140 mL left)
 
-# Declared coating rule (see README): enough pressure is 1.0 mm or more of swab squeeze; over 5.0 mm squeezes cement
-# out (a run or pool); one dip coats about 3,200 mm2 of new surface.
-PRESS_MIN, PRESS_MAX = 0.0010, 0.0050
-LOAD_AREA = 3.2e-3  # m^2 of window area one dip can coat
+# Dry new 3/4 in Oatey dauber: 19 mm ball and about 40 g/mm radial squash, obtained by phone from a technician
+# who works with this product (Nov 2026), kitchen scale at 1/3/5 mm, three runs. Convert g-force/mm to N/m.
+# Use that stiffness at EACH compliant contact point; the aggregate simulation resistance can be higher because
+# PhysX reports multiple contacts. It must not be described as a calibrated wet-wool material curve.
+TECH_G_PER_MM = 40.0
+SWAB_K = TECH_G_PER_MM * 0.00980665 * 1000  # 392.266 N/m per contact; at least the dry technician resistance
+SWAB_DAMP = 0.5  # N s/m, contact damping (0.005 N at 10 mm/s of indentation speed; keeps the contact from ringing)
+SWAB_FRICTION = (0.20, 0.15)  # wool wet with cement on PVC (estimate: the solvent film lubricates the surface)
+F_COAT = 0.20  # N: least total normal force on a surface for the stroke to leave cement on it (estimate)
+CONTACT_ATTR_TOL = 0.002  # m: contact-point tolerance for assigning a dauber contact to the wool shape
+FOOT_ARC = 0.006  # m: a window is coated only within 6 mm (round the surface) of a reported contact point
+LOAD_AREA = 3.2e-3  # m^2 of window area one dip can coat (estimate: about 0.5 mL at a 0.15 mm film)
 DIP_DEPTH = 0.008  # swab tip at least this far below the cement surface reloads it
-POOL_SHARE = 0.25  # a quarter or more of the socket wall coated again from another dip puddles at the stop
 
 WHITE = (0.93, 0.93, 0.90)
 GREY = (0.42, 0.44, 0.46)
@@ -69,12 +76,12 @@ JAW = (0.20, 0.22, 0.24)
 LID = (0.10, 0.20, 0.62)
 CAN_COLOR = (0.70, 0.72, 0.74)
 SWAB = (0.20, 0.36, 0.86)
-SWAB_CORE = (0.18, 0.33, 0.82)
 WIRE = (0.52, 0.52, 0.50)
 MARK = (0.03, 0.03, 0.03)
 CEMENT = (0.06, 0.25, 0.85)
 LABEL = (0.05, 0.22, 0.70)
-parts.VISUAL_ONLY.update({SWAB, WIRE, MARK, CEMENT, LABEL})  # the swab's soft outer 5 mm, the thin wire, paint marks
+parts.VISUAL_ONLY.update({MARK, CEMENT, LABEL})  # the drawn line, the can's label and the cement surface: no collider
+parts.SOFT[SWAB] = (SWAB_K, SWAB_DAMP, *SWAB_FRICTION)  # the wool swab: a springy contact everywhere it touches
 
 
 def ring(r_in, r_out, z0, z1, color, at=(0.0, 0.0)):
@@ -108,15 +115,17 @@ _pipe_shapes = vise(TOP + 0.068, R_PIPE) + ring(R_BORE, R_PIPE, PLATE_H, H_PIPE 
 _pipe_shapes += [parts.cylinder(0.0009, 0.0025, ((R_PIPE + 0.0003) * math.cos(a), (R_PIPE + 0.0003) * math.sin(a),
                                                  H_PIPE - TOP - DEPTH - 0.00125), MARK)
                  for a in np.linspace(0, 2 * math.pi, 90, endpoint=False)]
-PIPE_VISE = parts.Part("pipe_vise", pos=(PIPE_XY[0], PIPE_XY[1], TOP), shapes=_pipe_shapes, friction=(0.6, 0.5))
+PIPE_VISE = parts.Part("pipe_vise", pos=(PIPE_XY[0], PIPE_XY[1], TOP), shapes=_pipe_shapes, friction=(0.6, 0.5),
+                       kinematic=True)
 
 _cb = H_COUP - TOP - COUPLING_LEN  # coupling bottom (part frame)
 _coup_shapes = vise(TOP + 0.058, R_PIPE)
-_coup_shapes += ring(R_BORE, R_PIPE, PLATE_H, _cb + DEPTH, WHITE)  # stub cemented into the lower hub
+_coup_shapes += ring(R_BORE, R_PIPE, PLATE_H, _cb + DEPTH, WHITE)  # stub pushed into the lower hub
 _coup_shapes += ring(R_SOCK, R_COUP, _cb, _cb + DEPTH, WHITE)  # lower hub
 _coup_shapes += ring(R_BORE, R_COUP, _cb + DEPTH, _cb + DEPTH + STOP, WHITE)  # centre stop
 _coup_shapes += ring(R_SOCK, R_COUP, _cb + DEPTH + STOP, H_COUP - TOP, WHITE)  # upper hub (the socket)
-COUPLING_VISE = parts.Part("coupling_vise", pos=(COUP_XY[0], COUP_XY[1], TOP), shapes=_coup_shapes, friction=(0.6, 0.5))
+COUPLING_VISE = parts.Part("coupling_vise", pos=(COUP_XY[0], COUP_XY[1], TOP), shapes=_coup_shapes,
+                           friction=(0.6, 0.5), kinematic=True)
 
 CAN = parts.Part("cement_can", pos=(CAN_A[0], CAN_A[1], TOP + CAN_H / 2), mass=0.25, friction=(0.6, 0.5), shapes=[
     parts.cylinder(CAN_R - 0.001, 0.002, (0, 0, -CAN_H / 2 + 0.001), CAN_COLOR),  # bottom
@@ -130,10 +139,8 @@ _lid_z = TOP + CAN_H + NECK_H + LID_H / 2
 DAUBER = parts.Part("dauber", pos=(CAN_A[0], CAN_A[1], _lid_z), mass=0.012, friction=(0.9, 0.8), shapes=[
     parts.cylinder(LID_R, LID_H, (0, 0, 0), LID),
     parts.cylinder(0.00125, WIRE_TOP - WIRE_BOT, (0, 0, (WIRE_TOP + WIRE_BOT) / 2), WIRE),
-    parts.cylinder(SWAB_R, SWAB_TOP - SWAB_TIP, (0, 0, (SWAB_TOP + SWAB_TIP) / 2), SWAB),
-    # the swab's stiff 9 mm core collides: squeezing the soft wool past 5 mm puts the core on the wall
-    parts.cylinder(SWAB_R - PRESS_MAX, SWAB_TOP - SWAB_TIP, (0, 0, (SWAB_TOP + SWAB_TIP) / 2), SWAB_CORE),
-])
+    parts.cylinder(SWAB_R, SWAB_TOP - SWAB_TIP, (0, 0, (SWAB_TOP + SWAB_TIP) / 2), SWAB),  # the whole swab collides
+], contact_offset=0.002, report=True, report_bench=True)
 OBJECTS = [PIPE_VISE, COUPLING_VISE, CAN, DAUBER]
 LOTS = lots.declare(
     OBJECTS,
@@ -175,9 +182,13 @@ AXIS_PTS = np.array([(0.0, 0.0, z) for z in np.linspace(SWAB_TIP, SWAB_TOP, 11)]
 
 def fresh():
     return dict(
-        p_coats=np.zeros(NWIN, int), p_first=np.full(NWIN, -1), p_last=np.full(NWIN, -1),
+        p_coats=np.zeros(NWIN, int), p_last=np.full(NWIN, -1),
         s_coats=np.zeros(NWIN, int), s_last=np.full(NWIN, -1),
-        load=LOAD_AREA, load_id=0, wet=True, in_cement=True, fail=None, max_press=0.0, prev=None,
+        load=LOAD_AREA, load_id=0, wet=True, in_cement=True, fail=None, contamination=[],
+        p_before=np.zeros(NWIN, bool), p_after=np.zeros(NWIN, bool),
+        socket_seen=False, socket_inside=False, socket_exit_dip=-1,
+        pass_angle={"before": None, "after": None}, pass_travel={"before": 0.0, "after": 0.0},
+        credited={"pipe": 0, "socket": 0}, f_coat={"pipe": [], "socket": []}, f_max={"pipe": 0.0, "socket": 0.0}, steps=0, contact_steps=0,
     )
 
 
@@ -193,56 +204,103 @@ def swab_world(pos, rot, pts):
     return np.asarray(pts) @ rot.T + pos
 
 
-def press_depths(pos, rot, pipe_xy, coup_xy):
-    """Squeeze (m) of the swab against the pipe band (swab outside the pipe) and the socket wall (swab inside)."""
-    ax = swab_world(pos, rot, AXIS_PTS)
-    out = {"pipe": 0.0, "socket": 0.0, "outside": 0.0}
-    rp = np.hypot(ax[:, 0] - pipe_xy[0], ax[:, 1] - pipe_xy[1])
-    on = ax[:, 2] <= H_PIPE + 1e-9
-    if on.any():
-        out["pipe"] = float(max(0.0, np.max(R_PIPE + SWAB_R - rp[on])))
-    rc = np.hypot(ax[:, 0] - coup_xy[0], ax[:, 1] - coup_xy[1])
-    inside = (ax[:, 2] <= H_COUP + 1e-9) & (ax[:, 2] >= Z_STOP - 1e-9) & (rc < R_SOCK)
-    if inside.any():
-        out["socket"] = float(max(0.0, np.max(rc[inside] + SWAB_R - R_SOCK)))
-    outside = (ax[:, 2] <= H_COUP + 1e-9) & (rc >= R_SOCK)
-    if outside.any():
-        out["outside"] = float(max(0.0, np.max(R_COUP + SWAB_R - rc[outside])))
-    return out
-
-
 def in_swab(pos, rot, pts):
     loc = (np.asarray(pts) - pos) @ rot
     return (loc[:, 2] >= SWAB_TIP - EPS) & (loc[:, 2] <= SWAB_TOP + EPS) & (np.hypot(loc[:, 0], loc[:, 1]) <= SWAB_R + EPS)
 
 
-def violations(pos, rot, pipe_xy, coup_xy, can_pos):
-    """Whole-trial faults for one swab pose: cement into a bore, onto the bench, or squeezed out."""
-    sw = swab_world(pos, rot, SWAB_PTS)
-    ax = swab_world(pos, rot, SWAB_PTS * (0.0, 0.0, 1.0))  # the swab's centre line at each point's height
-    rp = np.hypot(sw[:, 0] - pipe_xy[0], sw[:, 1] - pipe_xy[1])
-    rc = np.hypot(sw[:, 0] - coup_xy[0], sw[:, 1] - coup_xy[1])
-    # A bore is entered from its open end: the swab's centre line is over the pipe end or inside the socket there.
-    # (Squeezing against the outside of a wall is the separate pressed-too-hard rule.)
-    ap = np.hypot(ax[:, 0] - pipe_xy[0], ax[:, 1] - pipe_xy[1])
-    ac = np.hypot(ax[:, 0] - coup_xy[0], ax[:, 1] - coup_xy[1])
-    if np.any((rp < R_BORE) & (sw[:, 2] < H_PIPE - EPS) & (ap < R_PIPE)):
-        return "cement inside the pipe bore"
-    if np.any((rc < R_BORE) & (sw[:, 2] < Z_STOP - EPS) & (ac < R_COUP)):
-        return "cement past the stop into the bore"
-    incan = np.hypot(sw[:, 0] - can_pos[0], sw[:, 1] - can_pos[1]) < NECK_IN
-    if np.any((sw[:, 2] < TOP + 0.001) & ~incan):
-        return "cement on the bench"
-    d = press_depths(pos, rot, pipe_xy, coup_xy)
-    if max(d.values()) > PRESS_MAX + EPS:
-        return "pressed too hard: cement squeezed out"
+# ---------------------------------------------------------------------------------------------------------------
+# Contacts. On the GPU every control step reads the simulator's own contact report for the dauber against the pipe
+# (with its vise), the coupling (with its vise) and the can: each contact point and its normal force. Each point is
+# sorted by where it is. Offline controls supply explicitly synthetic records. contacts_from_pose() is only a geometric debugging
+# estimate and never supplies paint in the simulation.
+# ---------------------------------------------------------------------------------------------------------------
+def classify(part, p, normal=None):
+    """Which surface a contact point (env frame, m) is on: pipe, socket, pipe_bore, coupling_bore or other."""
+    if part == "pipe_vise":
+        r, z = float(np.hypot(p[0] - PIPE_XY[0], p[1] - PIPE_XY[1])), float(p[2])
+        if r < (R_BORE + R_PIPE) / 2 and z < H_PIPE - 0.0005:
+            return "pipe_bore"  # the inside of the pipe below its end
+        if abs(r - R_PIPE) <= 0.004 and TOP + 0.069 <= z <= H_PIPE + 0.0005:
+            return "pipe"  # the pipe's outside above the vise jaws
+        return "other"  # the cut end, the vise
+    if part == "coupling_vise":
+        r, z = float(np.hypot(p[0] - COUP_XY[0], p[1] - COUP_XY[1])), float(p[2])
+        # The wall and stop meet here: height alone mistakes a low side-wall contact for stop paint.
+        # A stop-face contact has a vertical normal; cylinder wall normals are horizontal.
+        if (R_BORE - 0.001 <= r <= R_COUP + 0.001 and abs(z - Z_STOP) <= 0.0008
+                and (normal is None or abs(float(normal[2])) >= 0.5)):
+            return "stop"
+        if r < R_BORE + 0.001 and z < Z_STOP - 0.0005:
+            return "coupling_bore"  # inside the stop's ring and below it
+        if R_SOCK - 0.004 <= r <= R_SOCK + 0.0015 and Z_STOP + 0.0003 < z <= H_COUP + 0.0005:
+            return "socket"  # the socket wall, mouth (its inner edge included) down to the stop
+        return "other"  # the stop face, the rim, the outside, the vise
+    if part == "bench":
+        return "bench"
+    return "other"  # the can
+
+
+def contacts_from_pose(pos, rot):
+    """Geometric debugging estimate only: indentation x SWAB_K, not a contact measurement or scoring input."""
+    out = []
+    ax = swab_world(pos, rot, AXIS_PTS)
+    for part, xy in (("pipe_vise", PIPE_XY), ("coupling_vise", COUP_XY)):
+        r = np.hypot(ax[:, 0] - xy[0], ax[:, 1] - xy[1])
+        if part == "pipe_vise":
+            on = (ax[:, 2] <= H_PIPE) & (r > R_PIPE)
+            depth = np.where(on, R_PIPE + SWAB_R - r, -1.0)
+            radius, top = R_PIPE, H_PIPE
+        else:
+            on = (ax[:, 2] <= H_COUP) & (ax[:, 2] >= Z_STOP) & (r < R_SOCK)
+            depth = np.where(on, r + SWAB_R - R_SOCK, -1.0)
+            radius, top = R_SOCK, H_COUP
+        k = int(np.argmax(depth))
+        if depth[k] <= 0:
+            continue
+        a = math.atan2(ax[k, 1] - xy[1], ax[k, 0] - xy[0])
+        tip_z = swab_world(pos, rot, [(0, 0, SWAB_TIP)])[0][2]
+        z = (max(tip_z, (Z_STOP if part != "pipe_vise" else H_PIPE - DEPTH)) + top) / 2
+        out.append((part, np.array((xy[0] + radius * math.cos(a), xy[1] + radius * math.sin(a), z)),
+                    float(SWAB_K * depth[k])))
+    return out
+
+
+def contact_surface(record):
+    return classify(record[0], record[1], record[3] if len(record) > 3 else None)
+
+
+def violations(pos, rot, can_pos, surfaces=()):
+    """Visible contamination comes only from a reported wet-wool contact, never from entering empty air."""
+    for surf, message in (("pipe_bore", "cement inside the pipe bore"),
+                          ("coupling_bore", "cement past the stop into the bore"),
+                          ("stop", "cement on the coupling stop"), ("bench", "cement on the bench")):
+        if surf in surfaces:
+            return message
     return None
 
 
-def apply_pose(m, pos, rot, pipe_xy, coup_xy, can_pos):
-    """Advance the declared coating state by one swab pose (pure NumPy; used on the GPU and offline)."""
+def wool_contact(pos, rot, point):
+    """Exclude lid and wire contact forces from coating and wet-wool contamination."""
+    q = (np.asarray(point, float) - pos) @ rot
+    return (SWAB_TIP - CONTACT_ATTR_TOL <= q[2] <= SWAB_TOP + CONTACT_ATTR_TOL
+            and np.hypot(q[0], q[1]) <= SWAB_R + CONTACT_ATTR_TOL)
+
+
+def socket_entry(pos, rot):
+    """A coarse visible event: any of the wool enters the open socket below its mouth."""
+    sw = swab_world(pos, rot, SWAB_PTS)
+    return bool(np.any((np.hypot(sw[:, 0] - COUP_XY[0], sw[:, 1] - COUP_XY[1]) < R_SOCK)
+                       & (sw[:, 2] < H_COUP) & (sw[:, 2] > Z_STOP)))
+
+
+def apply_contacts(m, pos, rot, contacts, can_pos):
+    """Advance the declared coating state by one control step (pure NumPy; used on the GPU and offline).
+    contacts: (part, point, normal force N[, contact normal]) records for the swab this step."""
+    m["credited"] = {"pipe": 0, "socket": 0}
     if m["fail"]:
         return
+    m["steps"] += 1
     tip = swab_world(pos, rot, [(0, 0, SWAB_TIP)])[0]
     in_cement = (np.hypot(tip[0] - can_pos[0], tip[1] - can_pos[1]) < NECK_IN
                  and tip[2] < can_pos[2] - CAN_H / 2 + CEMENT_LEVEL - DIP_DEPTH)
@@ -251,24 +309,56 @@ def apply_pose(m, pos, rot, pipe_xy, coup_xy, can_pos):
     if in_cement:
         m["load"], m["wet"] = LOAD_AREA, True
     m["in_cement"] = in_cement
+    # Missing / malformed / non-finite contact evidence never earns paint.
+    if any(not np.isfinite(np.r_[np.asarray(r[1], float), r[2], r[3] if len(r) > 3 else []]).all()
+           or r[2] < 0 for r in contacts):
+        m["fail"] = "unreadable contact record"
+        return
+    recs = [(contact_surface(r), np.asarray(r[1], float), float(r[2]))
+            for r in contacts if r[2] > 0.0 and wool_contact(pos, rot, r[1])]
+    inside = socket_entry(pos, rot)
+    if inside:
+        m["socket_seen"] = True
+        m["p_after"][:] = False  # only the pass after the final socket visit can count
+        m["pass_angle"]["after"], m["pass_travel"]["after"] = None, 0.0
+    elif m["socket_inside"]:
+        m["socket_exit_dip"] = m["load_id"]
+    m["socket_inside"] = inside
     if m["wet"]:
-        v = violations(pos, rot, pipe_xy, coup_xy, can_pos)
+        v = violations(pos, rot, can_pos, {s for s, _, _ in recs})
         if v:
             m["fail"] = v
+            m["contamination"] = [(s, p.tolist()) for s, p, _ in recs
+                                  if s in ("pipe_bore", "coupling_bore", "stop", "bench")]
             return
-    d = press_depths(pos, rot, pipe_xy, coup_xy)
-    m["max_press"] = max(m["max_press"], max(d.values()))
-    ax = swab_world(pos, rot, AXIS_PTS)
-    for name, pts, own, area, xy in (("p", P_PTS, P_OWN, P_WIN_AREA, pipe_xy), ("s", S_PTS, S_OWN, S_WIN_AREA, coup_xy)):
-        r_ax = np.hypot(ax[:, 0] - xy[0], ax[:, 1] - xy[1])
-        if name == "p":
-            ok = d["pipe"] >= PRESS_MIN - EPS and np.all(r_ax > R_PIPE)  # wiping the outside of the pipe
-        else:
-            ok = d["socket"] >= PRESS_MIN - EPS and np.all(r_ax < R_SOCK)  # wiping inside the socket
-        if not ok or m["load"] <= 0 or not m["wet"]:
+    force = {"pipe": 0.0, "socket": 0.0}
+    for s, _, f in recs:
+        if s in force:
+            force[s] += f
+    if force["pipe"] > 0 or force["socket"] > 0:
+        m["contact_steps"] += 1
+    for surf in force:
+        m["f_max"][surf] = max(m["f_max"][surf], force[surf])
+    for name, surf, pts, own, area, xy, radius in (("p", "pipe", P_PTS, P_OWN, P_WIN_AREA, PIPE_XY, R_PIPE),
+                                                   ("s", "socket", S_PTS, S_OWN, S_WIN_AREA, COUP_XY, R_SOCK)):
+        if force[surf] < F_COAT - EPS or m["load"] <= 0 or not m["wet"]:
             continue
+        if name == "p":
+            phase = "before" if not m["socket_seen"] else "after"
+            if phase == "before" or (not inside and m["load_id"] > m["socket_exit_dip"] >= 0):
+                angle = math.atan2(pos[1] - xy[1], pos[0] - xy[0])
+                previous = m["pass_angle"][phase]
+                if previous is not None:
+                    m["pass_travel"][phase] += (angle - previous + math.pi) % (2 * math.pi) - math.pi
+                m["pass_angle"][phase] = angle
         world = pts + (xy[0], xy[1], 0.0)
-        hit = np.unique(own[in_swab(pos, rot, world)])
+        a_win = np.arctan2(pts[:, 1], pts[:, 0])
+        near = np.zeros(len(pts), bool)
+        for s, p, _ in recs:
+            if s == surf:
+                d = np.abs((a_win - math.atan2(p[1] - xy[1], p[0] - xy[0]) + math.pi) % (2 * math.pi) - math.pi)
+                near |= d * radius <= FOOT_ARC + EPS
+        hit = np.unique(own[in_swab(pos, rot, world) & near])
         new = hit[m[name + "_last"][hit] < m["load_id"]]
         if not len(new):
             continue
@@ -277,31 +367,30 @@ def apply_pose(m, pos, rot, pipe_xy, coup_xy, can_pos):
             m["load"] = 0.0
             continue
         new = new[:take]
+        m["f_coat"][surf].append(force[surf])
+        m["credited"][surf] += take
         if name == "p":
-            m["p_first"][new[m["p_coats"][new] == 0]] = m["load_id"]
+            if not m["socket_seen"]:
+                m["p_before"][new] = True
+            elif not inside and m["load_id"] > m["socket_exit_dip"] >= 0:
+                m["p_after"][new] = True
         m[name + "_coats"][new] += 1
         m[name + "_last"][new] = m["load_id"]
         m["load"] = max(0.0, m["load"] - take * area)
-        if name == "s" and np.mean(m["s_coats"] >= 2) >= POOL_SHARE - EPS:
-            m["fail"] = "cement pooled in the socket (a quarter of the wall coated again from another dip)"
-            return
-
-
-def sweep(m, pos, rot, pipe_xy, coup_xy, can_pos):
-    """Apply the poses between the last control step and this one, at most 2 mm apart."""
-    prev = m["prev"]
-    m["prev"] = (np.asarray(pos, float).copy(), rot.copy())
-    if prev is None:
-        apply_pose(m, pos, rot, pipe_xy, coup_xy, can_pos)
-        return
-    n = int(min(20, max(1, math.ceil(np.linalg.norm(np.asarray(pos) - prev[0]) / 0.002))))
-    for k in range(1, n + 1):
-        apply_pose(m, prev[0] + (np.asarray(pos) - prev[0]) * k / n, rot, pipe_xy, coup_xy, can_pos)
 
 
 def coverage(m):
     return dict(pipe1=float(np.mean(m["p_coats"] >= 1)), pipe2=float(np.mean(m["p_coats"] >= 2)),
                 socket=float(np.mean(m["s_coats"] >= 1)))
+
+
+def force_summary(m):
+    """Min / median / max total normal force (N) over the steps that left cement, per surface."""
+    out = {}
+    for surf, fs in m["f_coat"].items():
+        out[surf] = [round(float(np.min(fs)), 3), round(float(np.median(fs)), 3), round(float(np.max(fs)), 3),
+                     len(fs)] if fs else [0, 0, 0, 0]
+    return out
 
 
 def stowed(dauber, can):
@@ -314,9 +403,10 @@ def stowed(dauber, can):
 
 
 def in_order(m):
-    """The can's order: every band window first coated from a dip before the socket's, and again from one after it."""
-    s = m["s_last"][m["s_coats"] > 0]
-    return bool(len(s)) and bool(np.all(m["p_first"] < s.min())) and bool(np.all(m["p_last"] > s.max()))
+    """Simulator phase masks represent whole passes before first entry and after final exit/fresh dip.
+    Real grading uses the visible whole passes and final coverage photographs, not per-window repaint history."""
+    return bool(m["socket_seen"] and np.all(m["p_before"]) and np.all(m["p_after"])
+                and all(abs(m["pass_travel"][phase]) >= 2 * math.pi - EPS for phase in ("before", "after")))
 
 
 def tier(cov, back_in_can, order=True):
@@ -413,6 +503,30 @@ def draw():
     stage = get_current_stage()
     if stage is not _stage:
         _stage, _dots = stage, {}
+    # Visible blue traces of the same actual contacts that trigger the contamination fault.
+    for i, (surface, point) in enumerate(M["contamination"]):
+        k = ("contamination", i)
+        entry = _dots.get(k)
+        if entry is not None and entry[1] == 1:
+            continue
+        point = np.asarray(point, float)
+        if surface in ("stop", "bench"):
+            point = point + (0, 0, 0.0007)
+        else:
+            xy = np.asarray(PIPE_XY if surface == "pipe_bore" else COUP_XY)
+            radial = point[:2] - xy
+            point[:2] -= radial / max(np.linalg.norm(radial), EPS) * 0.0007
+        if entry is None:
+            g = UsdGeom.Sphere.Define(stage, f"/World/CementCoat/contamination{i}")
+            g.CreateRadiusAttr().Set(0.0017)
+            ops = UsdGeom.Xformable(g.GetPrim()).GetOrderedXformOps()
+            (ops[0] if ops else g.AddTranslateOp()).Set(Gf.Vec3d(*point))
+        else:
+            g = entry[0]
+            UsdGeom.Xformable(g.GetPrim()).GetOrderedXformOps()[0].Set(Gf.Vec3d(*point))
+        UsdGeom.Imageable(g.GetPrim()).MakeVisible()
+        g.CreateDisplayColorAttr().Set([Gf.Vec3f(*CEMENT)])
+        _dots[k] = (g, 1)
     for key, centres, coats, xy in (("p", P_DOTS, M["p_coats"], PIPE_XY), ("s", S_DOTS, M["s_coats"], COUP_XY)):
         for i in np.flatnonzero(coats > 0):
             k = (key, int(i))
@@ -422,10 +536,12 @@ def draw():
                 continue  # only write to the stage when a window changes
             if entry is None:
                 g = UsdGeom.Sphere.Define(stage, f"/World/CementCoat/{key}{int(i)}")
-                g.CreateRadiusAttr(0.0017)
-                g.AddTranslateOp().Set(Gf.Vec3d(*(centres[i] + (xy[0], xy[1], 0.0))))
+                g.CreateRadiusAttr().Set(0.0017)
+                ops = UsdGeom.Xformable(g.GetPrim()).GetOrderedXformOps()
+                (ops[0] if ops else g.AddTranslateOp()).Set(Gf.Vec3d(*(centres[i] + (xy[0], xy[1], 0.0))))
             else:
                 g = entry[0]
+            UsdGeom.Imageable(g.GetPrim()).MakeVisible()
             shade = (0.03, 0.16, 0.62) if level >= 2 else (0.10, 0.36, 0.95)
             g.CreateDisplayColorAttr().Set([Gf.Vec3f(*shade)])
             _dots[k] = (g, level)
@@ -434,11 +550,97 @@ def draw():
 # ---------------------------------------------------------------------------------------------------------------
 # Simulator hooks
 # ---------------------------------------------------------------------------------------------------------------
+FILTERS = ("pipe_vise", "coupling_vise", "cement_can", "bench")
+_VIEW = {"view": None}
+
+
+def contact_view():
+    """The simulator's contact report for the dauber, filtered to the pipe, the coupling and the can (made once)."""
+    if _VIEW["view"] is None:
+        try:
+            from isaaclab_physx.physics import PhysxManager
+
+            sv = PhysxManager.get_physics_sim_view()
+        except ImportError:
+            import omni.physics.tensors as tensors
+
+            sv = tensors.create_simulation_view("torch")
+            sv.set_subspace_roots("/")
+        view = sv.create_rigid_contact_view(parts._PATHS["dauber"], filter_patterns=[parts._PATHS[n] for n in FILTERS],
+                                            max_contact_data_count=256)
+        if view.filter_count != len(FILTERS):
+            raise RuntimeError(f"contact view has {view.filter_count} filters, wanted {len(FILTERS)}")
+        print("[coat] contact view:", view.sensor_paths, view.filter_paths, flush=True)
+        _VIEW["view"] = view
+    return _VIEW["view"]
+
+
+def _arr(x) -> np.ndarray:
+    """A NumPy copy of a simulator buffer (torch tensor, warp array or array)."""
+    x = x.torch if hasattr(x, "torch") else x
+    if hasattr(x, "detach"):
+        return x.detach().cpu().numpy().astype(np.float64)
+    if hasattr(x, "numpy"):
+        return np.asarray(x.numpy(), np.float64)
+    return np.asarray(x, np.float64)
+
+
+def read_contacts(sim):
+    """(part, point in the env frame, normal force N) for every contact the simulator reports between the dauber and
+    the pipe, the coupling or the can at the last physics step. Fails closed (ValueError) on unreadable data."""
+    view = contact_view()
+    dt = float(sim.env.unwrapped.physics_dt)
+    forces, points, normals, _seps, counts, starts = view.get_contact_data(dt)
+    forces = _arr(forces).reshape(-1)
+    points = _arr(points).reshape(-1, 3)
+    normals = _arr(normals).reshape(-1, 3)
+    counts = _arr(counts).reshape(-1).astype(int)
+    starts = _arr(starts).reshape(-1).astype(int)
+    if len(counts) != len(FILTERS) or len(starts) != len(FILTERS):
+        raise ValueError("contact buffer shape")
+    origin = parts._np(sim.env.unwrapped.scene.env_origins[0])
+    out = []
+    for i, name in enumerate(FILTERS):
+        a, n = int(starts[i]), int(counts[i])
+        if n < 0 or a < 0 or a + n > len(forces):
+            raise ValueError("contact buffer")
+        f, pts, ns = forces[a:a + n], points[a:a + n], normals[a:a + n]
+        if not (np.isfinite(f).all() and np.isfinite(pts).all() and np.isfinite(ns).all()):
+            raise ValueError("contact data not finite")
+        out += [(name, pts[k] - origin, float(f[k]), ns[k]) for k in range(n)]
+    return out
+
+
 @parts.on_reset
 def reset(sim):
-    global M, H
+    global M, H, _stage, _dots
+    from isaaclab.app.settings_manager import get_settings_manager
+    from isaaclab.sim.utils import get_current_stage
+
+    from pxr import Gf, UsdGeom
+
+    # Keep stable visual prim identities. Removing runtime USD prims left stale rendered geometry.
+    # Collapse and hide every old mark by path; draw() restores only marks earned by the new specimen.
+    stage = get_current_stage()
+    root = stage.GetPrimAtPath("/World/CementCoat")
+    hidden = 0
+    if root.IsValid():
+        for prim in root.GetChildren():
+            if prim.GetTypeName() != "Sphere":
+                continue
+            geom = UsdGeom.Sphere(prim)
+            geom.GetRadiusAttr().Set(0.000001)
+            UsdGeom.Imageable(prim).MakeInvisible()
+            ops = UsdGeom.Xformable(prim).GetOrderedXformOps()
+            if ops:
+                ops[0].Set(Gf.Vec3d(0.0, 0.0, -10.0))
+            hidden += 1
+    print(f"[coat] reset paint: collapsed_hidden_marks={hidden}", flush=True)
+    _stage, _dots = stage, {}
+    _VIEW["view"] = None  # rebind contact buffers after every physics reset
+    get_settings_manager().set_bool("/physics/disableContactProcessing", False)
     M = fresh()
-    H = dict(known=False, bad=None, t=0.0, released=0.0, start=None)
+    H = dict(known=False, bad=None, t=0.0, released=0.0, start=None, log_k=0)
 
 
 @parts.on_step
@@ -446,6 +648,7 @@ def step(sim):
     states = sim.states()
     dt = float(sim.t) - H.get("t", 0.0)
     H["t"] = float(sim.t)
+    contacts = []
     try:
         d, can = states["dauber"], states["cement_can"]
         if not np.isfinite(np.r_[d.pos, d.quat_xyzw, can.pos, can.quat_xyzw]).all() or not 0 < dt <= 0.2:
@@ -456,10 +659,8 @@ def step(sim):
             H["bad"] = H["bad"] or "can tipped (spill)"
         if np.hypot(*(can.pos[:2] - H["start"][:2])) > 0.020:
             H["bad"] = H["bad"] or "can knocked across the bench"
-        for n, spec in (("pipe_vise", PIPE_VISE), ("coupling_vise", COUPLING_VISE)):
-            if np.linalg.norm(states[n].pos - np.asarray(spec.pos)) > 0.003:
-                H["bad"] = H["bad"] or f"{n} moved"
-        sweep(M, d.pos, mat(d.quat_xyzw), PIPE_XY, COUP_XY, can.pos)
+        contacts = read_contacts(sim)
+        apply_contacts(M, d.pos, mat(d.quat_xyzw), contacts, can.pos)
         still = d.resting(0.003, 0.03) and can.resting(0.003, 0.03)
         clear = False
         if still:
@@ -472,9 +673,31 @@ def step(sim):
         H["released"] = H["released"] + dt if (still and clear) else 0.0
         H["known"] = True
         draw()
-    except (ValueError, KeyError, IndexError, AttributeError) as e:
+    except (ValueError, KeyError, IndexError, AttributeError, RuntimeError) as e:
         H["known"] = False
         H["bad"] = H["bad"] or f"unreadable: {e}"
+    # A one-line record every second (in run.txt): coverage and the coating forces so far, per surface.
+    H["log_k"] = H.get("log_k", 0) + 1
+    if H["log_k"] % 20 == 0:
+        print(f"[coat] lot {lots.current().name} t={float(sim.t):.1f} cov={coverage(M)} load_id={M['load_id']} "
+              f"fail={M['fail']} bad={H['bad']} f_max={ {k: round(v, 3) for k, v in M['f_max'].items()} } "
+              f"coat_force_min_med_max_n={force_summary(M)} "
+              f"phase_degrees={ {k: round(math.degrees(v), 1) for k, v in M['pass_travel'].items()} } "
+              f"phase_coverage={[float(np.mean(M[k])) for k in ('p_before', 'p_after')]}", flush=True)
+    if os.environ.get("COAT_FORCE_LOG"):  # optional per-step record of the reported coating forces
+        force = {"pipe": 0.0, "socket": 0.0}
+        for record in contacts:
+            key = contact_surface(record)
+            if key in force and wool_contact(d.pos, mat(d.quat_xyzw), record[1]):
+                force[key] += record[2]
+        with open(os.environ["COAT_FORCE_LOG"], "a") as fh:
+            fh.write(json.dumps(dict(lot=lots.current().name, t=round(float(sim.t), 3), pipe_n=round(force["pipe"], 4),
+                                     socket_n=round(force["socket"], 4), cov=coverage(M), load_id=M["load_id"],
+                                     credited=M["credited"], phase_travel=M["pass_travel"], known=H["known"],
+                                     fail=M["fail"], bad=H["bad"], score=score(states),
+                                     dauber_pos=d.pos.tolist() if H["known"] else None,
+                                     dauber_quat=d.quat_xyzw.tolist() if H["known"] else None,
+                                     can_pos=can.pos.tolist() if H["known"] else None)) + "\n")
     if os.environ.get("TRACE_OUT"):
         robot = sim.env.unwrapped.scene["right_robot"]
         poses = parts._np(robot.data.body_link_pose_w)[0]
@@ -482,9 +705,22 @@ def step(sim):
         g = poses[robot.body_names.index("gripper")]
         tcp = mat(g[3:]) @ np.array((0.0, 0.0, 0.134)) + g[:3] - origin
         dd = states["dauber"]
-        tip = swab_world(dd.pos, mat(dd.quat_xyzw), [(0, 0, SWAB_TIP)])[0]
+        rot = mat(dd.quat_xyzw)
+        tip = swab_world(dd.pos, rot, [(0, 0, SWAB_TIP)])[0]
+        geo = {part: round(f / SWAB_K * 1000, 3) for part, _, f in contacts_from_pose(dd.pos, rot)}  # mm indentation
+        by = {}
+        for record in contacts:
+            part, pt, f = record[:3]
+            key = contact_surface(record) if part != "cement_can" else "can"
+            by.setdefault(key, [0, 0.0])
+            by[key][0] += 1
+            by[key][1] = round(by[key][1] + f, 4)
         row = dict(t=float(sim.t), lot=lots.current().name, tcp=tcp.tolist(), dauber=dd.pos.tolist(),
-                   quat=dd.quat_xyzw.tolist(), tip=tip.tolist(), press=press_depths(dd.pos, mat(dd.quat_xyzw), PIPE_XY, COUP_XY),
+                   quat=dd.quat_xyzw.tolist(), tip=tip.tolist(), indent_mm=geo, contacts=by,
+                   can=states["cement_can"].pos.tolist(),
+                   fingers={n: float(parts._np(robot.data.joint_pos)[0, i])
+                            for i, n in enumerate(robot.joint_names) if n in ("joint7", "joint8")},
+                   pts=[[r[0], [round(float(v), 5) for v in r[1]], round(r[2], 4), r[3].tolist()] for r in contacts if r[2] > 0][:24],
                    cov=coverage(M), load=M["load"], load_id=M["load_id"], fail=M["fail"], bad=H["bad"],
                    released=H["released"], score=score(states))
         with pathlib.Path(os.environ["TRACE_OUT"]).with_name("coating.jsonl").open("a") as f:
@@ -509,14 +745,19 @@ def success(objects):
 # ---------------------------------------------------------------------------------------------------------------
 GRIP_ABOVE_LID = 0.007  # TCP above the lid centre: pad tips 2 mm above the lid's lower edge
 TCP_TO_TIP = GRIP_ABOVE_LID - SWAB_TIP  # 85 mm
-FINGER_LID = -(LID_R - 0.003)  # close 3 mm past the lid's sides
+FINGER_LID = -(LID_R - 0.008)  # close 8 mm past the lid's sides: about 40 N of grip (5,000 N/m finger drive, 50 N limit)
 # Fixed corrections measured once in a trace (arm sag with the dauber held; not runtime feedback).
 SAG_Z = 0.0004  # trace 1: the swab end ran 0.4 mm low
 PIPE_FIX = (-0.0005, 0.0005)  # traces 1-2: the swab's orbit round the pipe ran about 0.5 mm off plan
-PIPE_FIX2 = (-0.0014, 0.0002)  # trace 2: after the third dip the held dauber leaned 1.1 degrees, moving the swab 1.1 mm
 SOCK_FIX = (-0.0004, -0.0002)  # traces 2 (lot A) and 7 (lot B): 0.2-0.7 mm off plan
-SQUEEZE = 0.0026  # planned squeeze of the swab on the pipe (pressing rule: 1.0 to 5.0 mm)
-SQUEEZE_SOCK = 0.0027  # in the socket (the straight moves between orbit points pull it 0.15 mm off the wall)
+INDENT = 0.0025  # planned indentation of the swab into the pipe band and the socket wall
+# The arm gives way sideways under a light load (a static press test: commanding the swab 5 mm into the pipe gave
+# 0.3-0.45 N with 0.9 mm of actual indentation), so the path is planned this much further in than the swab goes.
+# These path corrections do not enter the scorer or its synthetic controls.
+ARM_GIVE_PIPE = 0.0035  # commanded 6.0 mm in
+ARM_GIVE_SOCK = 0.0005  # commanded 3.0 mm out
+PICK_FIX_B = (0.0011, -0.0010)  # trace: open TCP at B was 1.1 mm x-low, 1.0 mm y-high
+STOW_FIX_B = (0.0040, 0.0)  # bracketed return: x correction 0 gave -7.33 mm; +7.3 gave +6.03 mm lid error
 HUB = (0.215, -0.290)  # a point clear of the pipe and coupling, used when travelling to and from the socket
 
 
@@ -540,10 +781,17 @@ def demo():
     lid_tcp = lid[2] + GRIP_ABOVE_LID
 
     # 1. take the dauber by its lid and lift it straight out of the can
-    wp(2.5, lid[:2], lid_tcp + 0.05, FINGER_OPEN, "above the lid")
-    wp(2.0, lid[:2], lid_tcp, FINGER_OPEN, "fingers round the lid")
-    wp(1.0, lid[:2], lid_tcp, f, "grip the lid")
-    wp(2.5, lid[:2], carry, f, "lift the dauber out of the can")
+    pick_fix = PICK_FIX_B if lot.name == "B" else (0.0, 0.0)
+    wp(2.5, lid[:2], lid_tcp + 0.05, FINGER_OPEN, "above the lid", pick_fix)
+    wp(2.0, lid[:2], lid_tcp, FINGER_OPEN, "fingers round the lid", pick_fix)
+    if lot.name == "B":
+        # Touch both sides gently before applying the full grip; the light lid must not be kicked sideways.
+        wp(1.0, lid[:2], lid_tcp, -LID_R, "touch both sides of the lid", pick_fix)
+        wp(1.5, lid[:2], lid_tcp, f, "grip the lid", pick_fix)
+        wp(3.0, lid[:2], carry, f, "lift the dauber out of the can", pick_fix)
+    else:
+        wp(1.0, lid[:2], lid_tcp, f, "grip the lid")
+        wp(2.5, lid[:2], carry, f, "lift the dauber out of the can")
 
     def dip(label):
         wp(2.0, can[:2], carry, f, f"over the can ({label})")
@@ -553,7 +801,7 @@ def demo():
 
     px, py = PIPE_XY
     band_tcp = tcp_for_tip(H_PIPE - DEPTH - 0.0034)  # swab spans the band with about 3 mm to spare each end
-    r_pipe = R_PIPE + SWAB_R - SQUEEZE
+    r_pipe = R_PIPE + SWAB_R - INDENT - ARM_GIVE_PIPE
     a0 = math.radians(200)  # start on the side facing the arm's base, away from the coupling
 
     def pipe_coat(label):
@@ -562,7 +810,7 @@ def demo():
         wp(1.5, start, band_tcp, f, f"down beside the band ({label})")
         for k, a in enumerate(np.linspace(a0, a0 + math.radians(390), 27)):
             wp(1.2 if k == 0 else 0.35, (px + r_pipe * math.cos(a), py + r_pipe * math.sin(a)), band_tcp, f,
-               f"round the band ({label})", PIPE_FIX if label == "first coat" else PIPE_FIX2)
+               f"round the band ({label})", PIPE_FIX)
         a1 = a0 + math.radians(390)
         out = (px + (r_pipe + 0.012) * math.cos(a1), py + (r_pipe + 0.012) * math.sin(a1))
         wp(0.8, out, band_tcp, f, f"off the band ({label})")
@@ -571,7 +819,7 @@ def demo():
     cx, cy = COUP_XY
     rim_tcp = tcp_for_tip(H_COUP + 0.004)
     sock_tcp = tcp_for_tip(Z_STOP + 0.0024)  # swab end 2.4 mm above the stop as planned; traces ran 0.5-1 mm low
-    r_sock = R_SOCK - SWAB_R + SQUEEZE_SOCK
+    r_sock = R_SOCK - SWAB_R + INDENT + ARM_GIVE_SOCK
     b0 = math.radians(270)
 
     def socket_coat():
@@ -592,9 +840,10 @@ def demo():
     dip("second coat")
     pipe_coat("second coat")
     # put the dauber back: lid on the neck, let go, hands clear
-    wp(2.5, can[:2], carry, f, "over the can")
-    wp(2.0, can[:2], lid_tcp + 0.002, f, "lid onto the neck")
-    wp(1.0, can[:2], lid_tcp + 0.002, FINGER_OPEN, "let go")
-    wp(1.5, can[:2], lid_tcp + 0.06, FINGER_OPEN, "hands clear")
-    wp(4.0, can[:2], lid_tcp + 0.06, FINGER_OPEN, "still")
+    stow_fix = STOW_FIX_B if lot.name == "B" else (0.0, 0.0)
+    wp(2.5, can[:2], carry, f, "over the can", stow_fix)
+    wp(2.0, can[:2], lid_tcp + 0.002, f, "lid onto the neck", stow_fix)
+    wp(1.0, can[:2], lid_tcp + 0.002, FINGER_OPEN, "let go", stow_fix)
+    wp(1.5, can[:2], lid_tcp + 0.06, FINGER_OPEN, "hands clear", stow_fix)
+    wp(4.0, can[:2], lid_tcp + 0.06, FINGER_OPEN, "still", stow_fix)
     return {"right": W}

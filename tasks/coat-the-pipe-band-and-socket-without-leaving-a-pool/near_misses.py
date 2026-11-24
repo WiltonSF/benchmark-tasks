@@ -1,160 +1,127 @@
-"""Near misses and shortcuts.
+"""Pure scorer controls using synthetic contact records, not physical simulation results.
 
-CASES are end states with no coating history; check.py scores them in lot A (all must be 0: nothing was coated).
-Running this file (python near_misses.py) replays scripted strategies through the scorer's declared coating rule
-offline: the dauber follows the gripper exactly while held (no arm sag), then the end-state rules are applied. Each
-strategy's expected score is asserted. The simulator run adds physics; this checks the rule itself.
+These fixtures explicitly provide wool poses and contact forces to test the scoring contract. GPU runs separately
+validate that real simulator contacts occur. No synthetic control is a measured demo or a robot result.
 """
-
+import importlib.util
 import math
 import pathlib
 import sys
-
 import numpy as np
 
-CASES = [
-    ("do nothing", {}, 0.0, False),
-    ("dauber lifted out and hung back without coating", {}, 0.0, False),
-]
-
-
-SAG = (0.0, 0.0, -0.001)  # the held dauber ran about 1 mm below its commanded height in the GPU traces
-
-
-def _replay(T, W, lot="A", offset=SAG):
-    from yam_arena.task_file import ObjectState
-
-    T.lots.use(lot)
-    L = T.lots.current()
-    can = np.asarray(L.pos("cement_can"))
-    m = T.fresh()
-    held, dauber = False, np.asarray(L.pos("dauber"), float)
-    cur = np.asarray(W[0].pos) + (0, 0, 0.1)
-    for w in W:
-        n = max(1, round(w.duration * 20))
-        start, goal = cur.copy(), np.asarray(w.pos) + offset
-        for k in range(1, n + 1):
-            s = k / n
-            s = s * s * (3 - 2 * s)
-            cur = start + (goal - start) * s
-            if held:
-                dauber = cur - (0, 0, T.GRIP_ABOVE_LID)
-            T.sweep(m, dauber, np.eye(3), T.PIPE_XY, T.COUP_XY, can)
-        if w.finger > T.FINGER_OPEN + 0.01 and abs(cur[0] - dauber[0]) < 0.01 and abs(cur[1] - dauber[1]) < 0.01 \
-                and abs(cur[2] - T.GRIP_ABOVE_LID - dauber[2]) < 0.004:
-            held = True
-        if w.finger <= T.FINGER_OPEN + 1e-6 and held:
-            held = False
-            neck = can[2] + T.CAN_H / 2 + T.NECK_H
-            if np.hypot(*(dauber[:2] - can[:2])) < 0.006 and dauber[2] - T.LID_H / 2 - neck < 0.004:
-                dauber = np.array([can[0], can[1], neck + T.LID_H / 2])
-    T.M = m
-    T.H = dict(known=True, bad=None, t=0.0, released=0.0 if held else 2.0, start=can)
-    st = lambda p: ObjectState(pos=np.asarray(p, float), quat_xyzw=np.array([0, 0, 0, 1.0]), lin_vel=np.zeros(3),
-                               ang_vel=np.zeros(3), low=np.asarray(p, float), high=np.asarray(p, float))
-    objs = {"dauber": st(dauber), "cement_can": st(can)}
-    out = T.score(objs)
-    T.lots.use(None)
-    return out, m
-
-
-def _cut(W, first, last):
-    """Drop waypoints from the first whose label contains `first` through the last whose label contains `last`."""
-    i = next(k for k, w in enumerate(W) if first in w.label)
-    j = max(k for k, w in enumerate(W) if last in w.label)
-    return W[:i] + W[j + 1:]
-
-
-def _move(W, label_part, d_radius, centre):
-    """Push the waypoints with `label_part` radially away from `centre` by d_radius (m)."""
-    from yam_arena.demo import Waypoint
-
-    out = []
-    for w in W:
-        if label_part in w.label:
-            v = np.asarray(w.pos[:2]) - centre
-            r = np.linalg.norm(v)
-            p = np.asarray(centre) + v / r * (r + d_radius)
-            w = Waypoint(w.duration, (float(p[0]), float(p[1]), w.pos[2]), w.finger, w.label, w.yaw)
-        out.append(w)
-    return out
+CASES = [("no-op", {}, 0.0, False), ("objects at start without coating history", {}, 0.0, False)]
 
 
 def _run():
     folder = pathlib.Path(__file__).resolve().parent
     sys.path.insert(0, str(folder))
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location("task_nm", folder / "task.py")
+    spec = importlib.util.spec_from_file_location("coat_controls", folder / "task.py")
     T = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(T)
-    from yam_arena.demo import Waypoint
-
     T.lots.use("A")
-    D = T.demo()["right"]
-    T.lots.use(None)
-    grab = D[:4]  # take the lid and lift the dauber out
-    stow = D[-5:]  # over the can, lid on the neck, let go, clear, still
-    f = T.FINGER_LID
-    cx, cy = T.COUP_XY
-    px, py = T.PIPE_XY
-    rim = T.H_COUP + 0.004 + T.TCP_TO_TIP
-    results = []
+    can = np.asarray(T.lots.current().pos("cement_can"))
+    rot = np.eye(3)
+    passed = []
 
-    def case(name, W, want, lot="A", offset=SAG):
-        got, m = _replay(T, W, lot, offset)
-        ok = abs(got - want) < 1e-9
-        results.append(ok)
-        print(f"{'ok ' if ok else 'BAD'} {name}: {got} (expected {want}); coverage {T.coverage(m)}, fail {m['fail']}")
+    def check(label, truth):
+        passed.append(bool(truth))
+        print(f"{'ok ' if truth else 'BAD'} {label}")
 
-    case("demo, lot A", D, 1.0)
-    T.lots.use("B")
-    DB = T.demo()["right"]
+    def pose(surf, a=0):
+        if surf == "pipe":
+            xy, r, tip = T.PIPE_XY, T.R_PIPE + T.SWAB_R - .0025, T.H_PIPE - T.DEPTH - .0034
+        else:
+            xy, r, tip = T.COUP_XY, T.R_SOCK - T.SWAB_R + .0025, T.Z_STOP + .0024
+        return np.array([xy[0] + r * math.cos(a), xy[1] + r * math.sin(a), tip - T.SWAB_TIP])
+
+    def record(surf, a=0, force=.4):
+        xy, r, low, part = (T.PIPE_XY, T.R_PIPE, T.H_PIPE - T.DEPTH, "pipe_vise") if surf == "pipe" else (
+            T.COUP_XY, T.R_SOCK, T.Z_STOP, "coupling_vise")
+        return (part, np.array([xy[0] + r * math.cos(a), xy[1] + r * math.sin(a), low + T.DEPTH / 2]), force)
+
+    def dip(m):
+        T.apply_contacts(m, np.array([can[0], can[1], T.TOP + .20]), rot, [], can)
+        T.apply_contacts(m, np.array([can[0], can[1], T.TOP + .02 - T.SWAB_TIP]), rot, [], can)
+
+    def scan(m, surf, force=.4, reported=True):
+        for a in np.linspace(0, 2 * math.pi, 97):
+            T.apply_contacts(m, pose(surf, a), rot, [record(surf, a, force)] if reported else [], can)
+
+    def sequence(names, force=.4, reported=True):
+        m = T.fresh()
+        for k, name in enumerate(names):
+            if k:
+                dip(m)
+            scan(m, name, force, reported)
+        T.apply_contacts(m, np.array([can[0], can[1], T.TOP + .20]), rot, [], can)
+        return m
+
+    def score(m, released=2.0):
+        T.M = m
+        T.H = dict(known=True, bad=None, released=released)
+        return T.score({"dauber": T.DAUBER.state(), "cement_can": T.CAN.state()})
+
+    good = sequence(["pipe", "socket", "pipe"])
+    check("complete contact sequence reaches 1.0", score(good) == 1)
+    check("no-op is zero", score(T.fresh()) == 0)
+    check("no contacts cannot paint despite overlap", score(sequence(["pipe", "socket", "pipe"], reported=False)) == 0)
+    check("0.19 N cannot paint", score(sequence(["pipe", "socket", "pipe"], force=.19)) == 0)
+    check("0.20 N can paint", score(sequence(["pipe", "socket", "pipe"], force=.20)) == 1)
+    check("force above 1 N is not a squeeze penalty", score(sequence(["pipe", "socket", "pipe"], force=1.2)) == 1)
+    check("held dauber earns zero", score(good, released=0) == 0)
+    check("less than one second released earns zero", score(good, released=.95) == 0)
+    check("no second pipe pass is 0.75", score(sequence(["pipe", "socket"])) == .75)
+    check("pipe, pipe, socket has wrong order", score(sequence(["pipe", "pipe", "socket"])) == .75)
+    check("socket, pipe, pipe has wrong order", score(sequence(["socket", "pipe", "pipe"])) == .75)
+    check("extra socket coat is not penalized", score(sequence(["pipe", "socket", "socket", "pipe"])) == 1)
+    check("returning to socket after final pipe invalidates order", score(sequence(["pipe", "socket", "pipe", "socket"])) == .75)
+    check("pipe alone is 0.25", score(sequence(["pipe"])) == .25)
+    check("socket alone is 0.25", score(sequence(["socket"])) == .25)
+
+    # A contact at the bottom of the wall must not be confused with the stop face.
+    low_wall = np.array([T.COUP_XY[0] + T.R_SOCK, T.COUP_XY[1], T.Z_STOP + .0005])
+    check("low wall contact with radial normal is socket", T.classify("coupling_vise", low_wall, [1, 0, 0]) == "socket")
+    check("stop face with vertical normal is stop", T.classify("coupling_vise", low_wall, [0, 0, 1]) == "stop")
+    edge = low_wall.copy(); edge[2] = T.Z_STOP + .0003
+    check("radial contact at conservative wall exclusion boundary is not stop", T.classify("coupling_vise", edge, [1, 0, 0]) == "other")
+
+    m = T.fresh()
+    p = pose("socket")
+    T.apply_contacts(m, p, rot, [record("pipe", force=1)], can)
+    check("force on a different surface cannot credit socket", not np.any(m["s_coats"]))
+    m = T.fresh()
+    # A wire contact near the socket mouth, with the actual wool entirely below the contact.
+    wire_pose = record("socket")[1] + np.array([0, 0, .03])
+    T.apply_contacts(m, wire_pose, rot, [record("socket", force=1)], can)
+    check("wire contact is not wool force", not np.any(m["s_coats"]))
+
+    def fault(label, part, point, expected):
+        m = sequence(["pipe", "socket", "pipe"])
+        p = np.asarray(point) + np.array([0, 0, -(T.SWAB_TOP + T.SWAB_TIP) / 2])
+        T.apply_contacts(m, p, rot, [(part, np.asarray(point), .01)], can)
+        check(label, m["fail"] == expected and score(m) == 0)
+
+    fault("any wet wool contact on pipe bore fails", "pipe_vise",
+          (T.PIPE_XY[0] + T.R_BORE, T.PIPE_XY[1], T.H_PIPE - .005), "cement inside the pipe bore")
+    fault("any wet wool contact below socket stop fails", "coupling_vise",
+          (T.COUP_XY[0] + T.R_BORE, T.COUP_XY[1], T.Z_STOP - .003), "cement past the stop into the bore")
+    fault("visible stop-face contamination fails", "coupling_vise",
+          (T.COUP_XY[0] + T.R_BORE + .001, T.COUP_XY[1], T.Z_STOP), "cement on the coupling stop")
+    fault("actual wet wool bench contact fails", "bench", (.40, .20, T.TOP), "cement on the bench")
+    m = T.fresh()
+    T.apply_contacts(m, np.array([T.PIPE_XY[0], T.PIPE_XY[1], T.H_PIPE + .060]), rot, [], can)
+    check("swab in empty bore air without contact is not contamination", m["fail"] is None)
+    m = T.fresh()
+    T.apply_contacts(m, pose("socket"), rot, [("coupling_vise", record("socket")[1], float('nan'))], can)
+    check("nonfinite force fails closed", m["fail"] == "unreadable contact record" and not np.any(m["s_coats"]))
+    # A short angular stroke cannot fill a whole surface or the before/after phase masks.
+    m = T.fresh()
+    for a in np.linspace(0, math.pi, 49):
+        T.apply_contacts(m, pose("pipe", a), rot, [record("pipe", a)], can)
+    check("half an orbit is not a complete surface", T.coverage(m)["pipe1"] < 1 and score(m) == 0)
     T.lots.use(None)
-    case("demo, lot B", DB, 1.0, "B")
-    case("lot A demo replayed in lot B (fixed habit)", D, 0.0, "B")
-    for off in [(0, 0, -0.0004), (0, 0, -0.0016), (0.0014, 0, -0.001), (0, -0.0014, -0.001)]:  # around the 1 mm sag
-        case(f"demo with a {off} m tracking error", D, 1.0, "A", off)
-    case("demo 3.5 mm too low (swab end past the stop)", D, 0.0, "A", (0, 0, -0.0035))
-    case("no second pipe coat", _cut(D, "over the can (second coat)", "up (second coat)"), 0.75)
-    case("dauber kept in the hand", [w for w in D if w.label not in ("let go", "hands clear", "still")], 0.0)
-    case("pipe only, then back in the can", _cut(D, "over the can (for the socket)", "up (second coat)"), 0.25)
-    case("socket only, then back in the can",
-         _cut(_cut(D, "beside the pipe (first coat)", "up (first coat)"), "over the can (second coat)", "up (second coat)"), 0.25)
-    case("no re-dip before the socket (dauber runs dry)", _cut(D, "over the can (for the socket)", "lift out (for the socket)"), 0.25)
-    names = ("up to rim height", "round the pipe vise", "over the socket", "down into the socket", "round the socket wall",
-             "back to the centre", "up out of the socket", "back round the pipe vise")
-    sock = [w for w in D if w.label in names]
-    i = max(k for k, w in enumerate(D) if w.label == "back round the pipe vise")
-    dip2 = [w for w in D if w.label in ("over the can (second coat)", "dip (second coat)", "soak (second coat)", "lift out (second coat)")]
-    case("socket coated again from a second dip (puddle)", D[:i + 1] + dip2 + sock + D[i + 1:], 0.0)
-    # Order: the can asks for pipe, socket, then pipe again. Both coats on the pipe first, then the socket: 0.75.
-    a0 = next(k for k, w in enumerate(D) if w.label == "over the can (for the socket)")
-    b0 = next(k for k, w in enumerate(D) if w.label == "over the can (second coat)")
-    b1 = max(k for k, w in enumerate(D) if w.label == "up (second coat)")
-    first = [w for w in D[4:a0]]  # first pipe coat (after taking the dauber)
-    socket_part = D[a0:b0]  # dip, socket
-    second = D[b0:b1 + 1]  # dip, pipe again
-    case("pipe, pipe, then socket (order wrong)", D[:4] + first + second + socket_part + stow, 0.75)
-    redip_first = [w for w in D if w.label in ("over the can (for the socket)", "dip (for the socket)", "soak (for the socket)",
-                                               "lift out (for the socket)")]
-    case("socket first, then pipe twice (order wrong)", D[:4] + socket_part[4:] + redip_first + first + second + stow, 0.75)
-    case("pressed 3 mm harder on the pipe (squeezed out)", _move(D, "round the band", -0.003, np.array((px, py))), 0.0)
-    case("swab held 2 mm off the pipe (no contact; socket still done)", _move(D, "round the band", 0.0049, np.array((px, py))), 0.25)
-    case("socket swab held 2 mm off the wall (pipe still done)", _move(D, "round the socket wall", -0.0049, np.array((cx, cy))), 0.25)
-    jab = grab + [Waypoint(1.5, (D[3].pos[0], D[3].pos[1], rim), f, "up"), Waypoint(2.0, (T.HUB[0], T.HUB[1], rim), f, "hub"),
-                  Waypoint(2.0, (cx, cy, rim), f, "over socket"),
-                  Waypoint(1.5, (cx, cy, T.Z_STOP - 0.004 + T.TCP_TO_TIP), f, "jab to the bottom")] + stow
-    case("loaded dauber pushed straight down into the socket (puddle in the bore)", jab, 0.0)
-    pipe_jab = grab + [Waypoint(2.0, (px, py, T.H_PIPE + 0.006 + T.TCP_TO_TIP), f, "over the pipe end"),
-                       Waypoint(1.5, (px, py, T.H_PIPE - 0.01 + T.TCP_TO_TIP), f, "into the pipe end")] + stow
-    case("swab pushed into the pipe end", pipe_jab, 0.0)
-    low = _move(D, "round the band", 0.0, np.array((px, py)))
-    low = [Waypoint(w.duration, (w.pos[0], w.pos[1], w.pos[2] + (0.008 if "band" in w.label else 0.0)), w.finger, w.label, w.yaw)
-           for w in low]
-    case("band coated 8 mm short of the line (bottom rows bare)", low, 0.5)
-    print("PASS" if all(results) else "FAIL", f"{sum(results)}/{len(results)} strategies scored as declared")
-    return 0 if all(results) else 1
+    print(f"{'PASS' if all(passed) else 'FAIL'} {sum(passed)}/{len(passed)} synthetic scorer controls")
+    return 0 if all(passed) else 1
 
 
 if __name__ == "__main__":

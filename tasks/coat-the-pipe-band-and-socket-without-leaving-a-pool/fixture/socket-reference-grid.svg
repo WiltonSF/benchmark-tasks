@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="162.68140mm" height="35mm" viewBox="0 0 162.68140 35">
+<rect width="100%" height="100%" fill="white"/>
+<text x="5" y="4" font-family="sans-serif" font-size="2.3">6 rows x 48 sectors; socket-reference-grid.svg; print 100%, no fit-to-page</text>
+<g stroke="black" stroke-width=".10" fill="none">
+<path d="M5.00000,8 v18.3"/>
+<path d="M8.18086,8 v18.3"/>
+<path d="M11.36173,8 v18.3"/>
+<path d="M14.54259,8 v18.3"/>
+<path d="M17.72345,8 v18.3"/>
+<path d="M20.90431,8 v18.3"/>
+<path d="M24.08518,8 v18.3"/>
+<path d="M27.26604,8 v18.3"/>
+<path d="M30.44690,8 v18.3"/>
+<path d="M33.62776,8 v18.3"/>
+<path d="M36.80863,8 v18.3"/>
+<path d="M39.98949,8 v18.3"/>
+<path d="M43.17035,8 v18.3"/>
+<path d="M46.35121,8 v18.3"/>
+<path d="M49.53208,8 v18.3"/>
+<path d="M52.71294,8 v18.3"/>
+<path d="M55.89380,8 v18.3"/>
+<path d="M59.07466,8 v18.3"/>
+<path d="M62.25553,8 v18.3"/>
+<path d="M65.43639,8 v18.3"/>
+<path d="M68.61725,8 v18.3"/>
+<path d="M71.79811,8 v18.3"/>
+<path d="M74.97898,8 v18.3"/>
+<path d="M78.15984,8 v18.3"/>
+<path d="M81.34070,8 v18.3"/>
+<path d="M84.52156,8 v18.3"/>
+<path d="M87.70243,8 v18.3"/>
+<path d="M90.88329,8 v18.3"/>
+<path d="M94.06415,8 v18.3"/>
+<path d="M97.24501,8 v18.3"/>
+<path d="M100.42588,8 v18.3"/>
+<path d="M103.60674,8 v18.3"/>
+<path d="M106.78760,8 v18.3"/>
+<path d="M109.96846,8 v18.3"/>
+<path d="M113.14933,8 v18.3"/>
+<path d="M116.33019,8 v18.3"/>
+<path d="M119.51105,8 v18.3"/>
+<path d="M122.69191,8 v18.3"/>
+<path d="M125.87278,8 v18.3"/>
+<path d="M129.05364,8 v18.3"/>
+<path d="M132.23450,8 v18.3"/>
+<path d="M135.41537,8 v18.3"/>
+<path d="M138.59623,8 v18.3"/>
+<path d="M141.77709,8 v18.3"/>
+<path d="M144.95795,8 v18.3"/>
+<path d="M148.13882,8 v18.3"/>
+<path d="M151.31968,8 v18.3"/>
+<path d="M154.50054,8 v18.3"/>
+<path d="M157.68140,8 v18.3"/>
+<path d="M5,8.00000 h152.68140"/>
+<path d="M5,11.05000 h152.68140"/>
+<path d="M5,14.10000 h152.68140"/>
+<path d="M5,17.15000 h152.68140"/>
+<path d="M5,20.20000 h152.68140"/>
+<path d="M5,23.25000 h152.68140"/>
+<path d="M5,26.30000 h152.68140"/>
+</g>
+<path d="M5,30 h50 m-50,-1 v2 m50,-2 v2" stroke="black" stroke-width=".15"/>
+<text x="5" y="34" font-family="sans-serif" font-size="2.3">Check bar = 50 mm. Align ends at 0/360 degrees; no overlap of scored cells.</text>
+</svg>

@@ -38,6 +38,11 @@ CONTACT_OFFSET, REST_OFFSET = 0.005, 0.0  # as yam_arena's free objects
 SOLVER_ITERATIONS = (32, 4)  # articulation position, velocity iterations
 MAX_DEPENETRATION = 1.0  # m/s: caps how hard PhysX pushes overlapping bodies apart
 VISUAL_ONLY: set[tuple[float, float, float]] = set()  # shape colours drawn without a collider (task sets them)
+# This task's copy adds: shape colours in SOFT collide through their own compliant (springy) contact material
+# {colour: (stiffness N/m, damping N s/m, static friction, dynamic friction)}; a Part may set its own contact offset,
+# report its contacts to the simulator (``report=True``, PhysxContactReportAPI) and, when fixed, be authored as one
+# kinematic body (``kinematic=True``) so contacts with it can be filtered by its path. _PATHS maps part name -> path.
+SOFT: dict[tuple[float, float, float], tuple[float, float, float, float]] = {}
 
 
 # -- geometry (NumPy) -------------------------------------------------------------------------------------------
@@ -185,6 +190,10 @@ class Part(task_file.Box):
     shapes: tuple[Shape, ...] = ()
     joints: tuple[Joint, ...] = ()
     friction: tuple[float, float] = FRICTION
+    contact_offset: float = CONTACT_OFFSET
+    report: bool = False
+    kinematic: bool = False
+    report_bench: bool = False
 
     def __post_init__(self):
         object.__setattr__(self, "shapes", tuple(self.shapes))
@@ -316,6 +325,9 @@ def _usd_quat(m):
     return Gf.Quatf(float(w), float(x), float(y), float(z))
 
 
+_PATHS: dict[str, str] = {}  # part name -> its root prim path in env 0 (set while authoring)
+
+
 def _author(part: Part, root_path: str, translation, orientation):
     """Write the part to the stage: rigid bodies with their colliders and looks, and its joints."""
     import isaaclab.sim as sim_utils
@@ -326,11 +338,31 @@ def _author(part: Part, root_path: str, translation, orientation):
 
     stage = get_current_stage()
     root = create_prim(root_path, "Xform", translation=translation, orientation=orientation, stage=stage)
+    _PATHS[part.name] = root_path
+    if part.report_bench:
+        # Keep the station's existing bench collider and pose. A fixed kinematic body lets the contact tensor
+        # name it, just as for the vise-held specimens; no duplicate collision geometry is introduced.
+        bench_path = root_path.rsplit("/", 1)[0] + "/table"
+        bench = stage.GetPrimAtPath(bench_path)
+        if not bench.IsValid():
+            raise ValueError(f"bench collider not found: {bench_path}")
+        UsdPhysics.RigidBodyAPI.Apply(bench).CreateKinematicEnabledAttr(True)
+        _PATHS["bench"] = bench_path
     friction = f"{root_path}/friction"
     spawn_physics_material(
         friction, sim_utils.RigidBodyMaterialCfg(static_friction=part.friction[0], dynamic_friction=part.friction[1])
     )
     looks: dict[tuple, str] = {}
+    soft: dict[tuple, str] = {}
+
+    def soft_material(color) -> str:
+        if color not in soft:
+            k, c, fs, fd = SOFT[color]
+            soft[color] = f"{root_path}/soft{len(soft)}"
+            spawn_physics_material(soft[color], sim_utils.RigidBodyMaterialCfg(
+                static_friction=fs, dynamic_friction=fd,
+                compliant_contact_stiffness=float(k), compliant_contact_damping=float(c)))
+        return soft[color]
 
     def look(color) -> str:
         if color not in looks:
@@ -342,6 +374,8 @@ def _author(part: Part, root_path: str, translation, orientation):
     def body(path: str, mass: float | None):
         prim = stage.GetPrimAtPath(path)
         if mass is None:
+            if part.kinematic:  # fixed, but one body the simulator can name in a contact filter
+                UsdPhysics.RigidBodyAPI.Apply(prim).CreateKinematicEnabledAttr(True)
             return
         UsdPhysics.RigidBodyAPI.Apply(prim)
         PhysxSchema.PhysxRigidBodyAPI.Apply(prim).CreateMaxDepenetrationVelocityAttr(MAX_DEPENETRATION)
@@ -366,13 +400,16 @@ def _author(part: Part, root_path: str, translation, orientation):
                 continue
             UsdPhysics.CollisionAPI.Apply(geom.GetPrim())
             col = PhysxSchema.PhysxCollisionAPI.Apply(geom.GetPrim())
-            col.CreateContactOffsetAttr(CONTACT_OFFSET)
+            col.CreateContactOffsetAttr(float(part.contact_offset))
             col.CreateRestOffsetAttr(REST_OFFSET)
-            bind_physics_material(sp, friction, stage=stage)
+            bind_physics_material(sp, soft_material(tuple(s.color)) if tuple(s.color) in SOFT else friction, stage=stage)
 
     if not part.joints:  # one rigid body (loose) or a static collider (fixed) at the root
         body(root_path, part.mass)
         colliders(root_path, np.zeros(3), part.shapes)
+        if part.report:
+            api = PhysxSchema.PhysxContactReportAPI.Apply(stage.GetPrimAtPath(root_path))
+            api.CreateThresholdAttr(0.0)
         return root
 
     UsdPhysics.ArticulationRootAPI.Apply(root)
@@ -539,10 +576,32 @@ def _patch_embodiment(module) -> None:
 
     def patched_reset(self, scene, *, seed=None):
         if self._env is not None:
+            # Clear the previous specimen's visual marks before the stock reset renders.
+            # This task's reset hook only clears score/contact caches and visual prims.
+            for fn in _ON_RESET:
+                fn(Sim(self))
             _reset_targets(self._base)
         obs = reset(self, scene, seed=seed)
         for fn in _ON_RESET:
             fn(Sim(self))
+        # Reset callbacks can change visual-only score markers. Refresh camera tensors after them;
+        # the observation captured by the underlying reset predates those scene changes.
+        if _ON_RESET:
+            # Publish changed visual geometry even though no physics step has occurred.
+            # The renderer normally deduplicates scene updates by physics-step number.
+            self._base.sim.render_context.reset_scene_state_cadence()
+            # Reset previous-frame color/lighting history after replacing the painted specimen.
+            import omni.usd
+            omni.usd.get_context().reset_renderer_accumulation()
+            from inspect_robots_yam.config import DEFAULT_CAMERAS
+            for _ in range(4):
+                self._base.sim.render()
+                for name in DEFAULT_CAMERAS:
+                    camera = self._base.scene[name]
+                    # Invalidate the public camera buffers without advancing physics or sensor time.
+                    camera.reset()
+                    camera.update(dt=0.0, force_recompute=True)
+            obs = self._observation()
         return obs
 
     cls._task_step, cls.reset = patched_task_step, patched_reset
