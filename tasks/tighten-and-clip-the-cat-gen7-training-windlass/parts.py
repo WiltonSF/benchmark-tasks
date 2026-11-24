@@ -87,6 +87,11 @@ class Shape:
     at: tuple[float, float, float]  # centre in the part frame, at joint position 0 (m)
     color: tuple[float, float, float] = GREY  # sRGB 0..1
     axis: str = "z"  # cylinder axis in the part frame: "x", "y" or "z"
+    roll: float = 0.0  # fixed local rotation about x, radians
+
+    @property
+    def rotation(self) -> np.ndarray:
+        return _rot((1, 0, 0), self.roll)
 
     @property
     def half(self) -> np.ndarray:
@@ -97,8 +102,8 @@ class Shape:
         return np.array([h / 2 if self.axis == a else r for a in "xyz"])
 
 
-def box(size, at=(0.0, 0.0, 0.0), color=GREY) -> Shape:
-    return Shape("box", tuple(float(s) for s in size), tuple(float(a) for a in at), tuple(color))
+def box(size, at=(0.0, 0.0, 0.0), color=GREY, roll=0.0) -> Shape:
+    return Shape("box", tuple(float(s) for s in size), tuple(float(a) for a in at), tuple(color), roll=float(roll))
 
 
 def cylinder(radius, height, at=(0.0, 0.0, 0.0), color=GREY, axis="z") -> Shape:
@@ -187,6 +192,7 @@ class Part(task_file.Box):
     joints: tuple[Joint, ...] = ()
     friction: tuple[float, float] = FRICTION
     pitch: float = 0.0
+    friction_combine_mode: str = "average"
 
     def __post_init__(self):
         object.__setattr__(self, "pos", tuple(float(v) for v in self.pos))
@@ -203,6 +209,10 @@ class Part(task_file.Box):
         if not self.shapes:
             raise ValueError(f"{self.name}: a Part needs at least one shape")
         super()._check()
+        if self.friction_combine_mode not in ("average", "min", "multiply", "max"):
+            raise ValueError("invalid friction combine mode")
+        if len(self.friction)!=2 or not all(math.isfinite(v) and v>=0 for v in self.friction) or self.friction[1]>self.friction[0]:
+            raise ValueError("invalid static/dynamic friction coefficients")
         names = [j.name for j in self.joints]
         if len(set(names)) != len(names) or "base" in names or not all(n.isidentifier() for n in names):
             raise ValueError(f"{self.name}: joint names must be unique identifiers other than 'base', got {names}")
@@ -216,7 +226,7 @@ class Part(task_file.Box):
             if j.spring < 0 or j.damping < 0 or not np.linalg.norm(j.axis) > 0:
                 raise ValueError(f"{self.name}.{j.name}: spring and damping must be >= 0 and the axis non-zero")
         for s in self.shapes + tuple(s for j in self.joints for s in j.shapes):
-            if any(not 0.0 <= c <= 1.0 for c in s.color) or any(v <= 0 for v in s.half):
+            if any(not 0.0 <= c <= 1.0 for c in s.color) or any(v <= 0 for v in s.half) or not math.isfinite(s.roll):
                 raise ValueError(f"{self.name}: shape {s} needs positive sizes and an sRGB colour in 0..1")
 
     @property
@@ -230,7 +240,7 @@ class Part(task_file.Box):
 
     def _local_box(self):
         corners = np.array([[sx, sy, sz] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)], float)
-        pts = [np.asarray(s.at) + corners * s.half for _, _, shapes in self.links for s in shapes]
+        pts = [np.asarray(s.at) + (corners * s.half) @ s.rotation.T for _, _, shapes in self.links for s in shapes]
         pts = np.concatenate(pts) if pts else np.zeros((1, 3))
         return pts.min(axis=0), pts.max(axis=0)
 
@@ -242,7 +252,7 @@ class Part(task_file.Box):
                 continue
             p, r = link_poses[name]
             for s in shapes:
-                out.append((name, p + r @ (np.asarray(s.at) - origin), r, 2 * s.half))
+                out.append((name, p + r @ (np.asarray(s.at) - origin), r @ s.rotation, 2 * s.half))
         return out
 
     def make_state(self, link_poses, joints, lin_vel=None, ang_vel=None) -> PartState:
@@ -343,7 +353,7 @@ def _author(part: Part, root_path: str, translation, orientation):
     root = create_prim(root_path, "Xform", translation=translation, orientation=orientation, stage=stage)
     friction = f"{root_path}/friction"
     spawn_physics_material(
-        friction, sim_utils.RigidBodyMaterialCfg(static_friction=part.friction[0], dynamic_friction=part.friction[1])
+        friction, sim_utils.RigidBodyMaterialCfg(static_friction=part.friction[0], dynamic_friction=part.friction[1], friction_combine_mode=part.friction_combine_mode)
     )
     looks: dict[tuple, str] = {}
 
@@ -370,6 +380,8 @@ def _author(part: Part, root_path: str, translation, orientation):
                 geom = UsdGeom.Cube.Define(stage, sp)
                 geom.CreateSizeAttr(1.0)
                 geom.AddTranslateOp().Set(Gf.Vec3d(*(np.asarray(s.at) - origin)))
+                if s.roll:
+                    geom.AddOrientOp().Set(Gf.Quatf(math.cos(s.roll / 2), Gf.Vec3f(math.sin(s.roll / 2), 0, 0)))
                 geom.AddScaleOp().Set(Gf.Vec3f(*s.size))
             else:
                 geom = UsdGeom.Cylinder.Define(stage, sp)

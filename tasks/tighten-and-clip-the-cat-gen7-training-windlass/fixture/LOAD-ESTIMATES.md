@@ -1,6 +1,10 @@
+# Historical estimates — superseded
+
+The November 2026 C-A-T Gen 7 trainer measurements (with a scale, by a technician who works with this product) in evidence/TECHNICIAN-READINGS-NOV23.md supersede these winding and clip priors. This file records development history, not current inputs. Pressure shape, tilt and unreported geometry remain model assumptions.
+
 # Estimated mechanical loads
 
-These are engineering estimates for simulation, not measurements of a C-A-T trainer. No physical force reading is present in this folder. The November 19 verdict's request for measurements on NAR 30-0033 remains open.
+These are historical engineering estimates for simulation, not measurements of a C-A-T trainer. At the time of these estimates, no physical force reading had been supplied and the November 19/22 measurement request remained open. That status is superseded by the trainer figures in evidence/TECHNICIAN-READINGS-NOV23.md; the calculations below preserve the earlier development history.
 
 ## Winding
 
@@ -24,4 +28,11 @@ A 12 mm rod must spread an approximately 11 mm mouth. The minimum credited snap 
 
 The stated clip prior now uses a 13 mm channel, 10.7 mm entry mouth and 12 mm sidewalls. The mouth was adjusted by 0.3 mm from the approximately 11 mm prior to meet the stated approximately 10 N insertion prior without lowering the force gate. These dimensions remain estimates rather than NAR CAD. A 50 kN/m spring and 8 g effective mode have critical damping 2sqrt(km)=40 N s/m; that damping replaces the earlier 2 N s/m numerical mode. At the slow entry speed it adds little quasistatic force. The 40 N spring-drive cap remains. Full-load CPU tests now retain the winding degree of freedom, actual anchor and surrounding plate/cylinder. Native confirmation is still required.
 
-Normal qualification on the 10.9 mm estimate retained physically in both lots, but the sampled insertion peak was 10.34 N in A and 9.40 N in B; the latter correctly failed the unchanged 10 N gate. The mouth estimate is now 10.7 mm (bead centres +/-6.10 mm, bead radius0.75 mm) to provide physical force margin. Springs, caps, damping, winding load and contact-work requirements are unchanged. This is a simulation sensitivity adjustment within the unpublished geometry estimate, not a hardware measurement.
+Normal qualification on the 10.9 mm estimate retained physically in both lots, but the sampled insertion peak was 10.34 N in A and 9.40 N in B; the latter correctly failed the unchanged 10 N gate. The mouth estimate is now 10.7 mm (bead centres +/-6.10 mm, bead radius 0.75 mm) to provide physical force margin. Springs, caps, damping, winding load and contact-work requirements are unchanged. This is a simulation sensitivity adjustment within the unpublished geometry estimate, not a hardware measurement.
+
+
+## November 23 analytic input wiring
+
+The historical 50 kN/m prior above is retained as provenance. The executable now fits stiffness from the separately named insertion/extraction estimates. At 10 N/10 N inputs, the 1.10 target margin and 0.986 native/model insertion factor give approximately 49,553 N/m, 39.82 N s/m damping and a 39.64 N spring-drive cap. The resulting analytic target is 11 N in each direction, not a measured pull-out force. The native/model factor came from an earlier insertion trace and is not validated for extraction or arbitrary changed geometry. Where insertion is below extraction, a fitted lead-in face lowers the analytic insertion target; this is a reduced contact model, requiring native checks in both directions. If insertion exceeds extraction, the current symmetric edge fits the larger value and cannot claim to reproduce the lower extraction value. Such data requires a new geometry fit before a matched-load claim.
+
+Named winding input 29.85 N at 0.065 m gives 1.94025 N m at 210 degrees and 0.52938 N m/rad. The pressure proxy scales to 270 mmHg at that lock angle while estimated; validated measured pressure points replace it only in measured mode. Hook geometry is independent. The hardware measurement request remains open.

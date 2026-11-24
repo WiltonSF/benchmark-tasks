@@ -39,8 +39,17 @@ def run():
     face=[p+r@__import__('numpy').array((x,y,.0065)) for x in (-.03,0,.03) for y in (-.03,0,.03)]
     gap=task.clearance([__import__('numpy').array(face)],task.WINDLASS.state())
     assert gap<.001, gap
-    assert not task.CALIBRATED
-    print(f'{len(tests)+2} synthetic boundary, release-face and fail-closed checks passed; no physical-validation claim')
+    # A lip's interior surface must count even when the fixed base is farther.
+    import numpy as np
+    c=task.CLIPS[0];cs=c.state();states={c.name:cs for c in task.CLIPS}
+    point=np.array(c.pos)+c.rotation@np.array((0.,task.CLIP_MOUTH/2+task.LIP_BEAD_R,task.LIP_BEAD_Z))
+    assert task.clearance([point[None,:]],task.WINDLASS.state(),states)<1e-9
+    cs.links.pop('lip_a')
+    try:task.clearance([point[None,:]],task.WINDLASS.state(),states)
+    except ValueError:pass
+    else:raise AssertionError('missing live lip pose did not fail closed')
+    assert task.LOAD_SOURCE in ('estimate','measured','technician_phone')
+    print(f'{len(tests)+4} synthetic boundary, release-face and fail-closed checks passed; no physical-validation claim')
 
 def run_snap_controls():
     """Exercise the production observer accumulator, not a supplied verified flag."""
@@ -50,6 +59,7 @@ def run_snap_controls():
         q=task.new_snap();observed=[]
         for row in rows:
             z,n,*extra=row;kind=extra[0] if extra else ''
+            n=n*task.SNAP_GATE_N/10.  # synthetic forces scale with the unchanged physical gate
             f=np.array([[0.,0.,n/2],[0.,0.,n/2]])
             if kind=='one':f[1]=0.
             d=(.02 if kind=='outside' else 0.,0.,z)
@@ -70,8 +80,9 @@ def run_snap_controls():
       'below-lip oscillation':[(.0004,20),(.0006,20)]*40,
       'no above-mouth entry':crossing,
       'force-free entry':[(z,0) for z,_ in approach+crossing],
-      'below ten newtons':[(z,min(n,9)) for z,n in approach+crossing],
+      'below insertion force gate':[(z,min(n,9)) for z,n in approach+crossing],
       'one lip only':[(z,n,'one') for z,n in approach+crossing],
+      'post-capture pulse cannot complete under-force entry':approach+[(z,min(n,9)) for z,n in crossing[:5]]+[(.0025,-5),(.0015,-5),(.001,0),(.0004,30),(.0003,40),(.0002,40),(0.,0)],
       'slow reversal cannot bank work':approach+crossing[:4]+[(.004+i*.0001,0) for i in range(1,21)]+[(.001,0)],
       'reversal after contact':approach+crossing[:4]+[(.005,20)]+crossing[4:],
       'changed rod end':approach+crossing[:4]+[(.0035,20,'other')]+crossing[5:],
@@ -85,8 +96,9 @@ def run_snap_controls():
     # A verified entry is revoked after extraction, not reused on return.
     v,q=replay(approach+crossing+[(.006,0),(.0005,20)]);assert not v[-1]
     assert task.clip_retained(True,{'lip_a':.0002,'lip_b':0.})[0]
-    assert not task.clip_retained(True,{'lip_a':.0012,'lip_b':0.})[0]
-    assert not task.clip_retained(True,{'lip_a':.0006,'lip_b':.0006})[0]
+    spread=task.ROD_DIAMETER_M-task.CLIP_MOUTH_M
+    assert not task.clip_retained(True,{'lip_a':spread,'lip_b':0.})[0]
+    assert not task.clip_retained(True,{'lip_a':spread/2,'lip_b':spread/2})[0]
     assert not task.clip_retained(False,{'lip_a':0.,'lip_b':0.})[0]
     print(f'{len(controls)+9} production snap-entry/reversal/force/history controls passed')
 
