@@ -46,8 +46,8 @@ from yam_arena.task_file import GREY, ObjectState
 
 FRICTION = (1.2, 1.0)  # static, dynamic: yam_arena's grippy material
 CONTACT_OFFSET, REST_OFFSET = 0.005, 0.0  # as yam_arena's free objects
-SOLVER_ITERATIONS = (32, 4)  # articulation position, velocity iterations
-MAX_DEPENETRATION = 1.0  # m/s: caps how hard PhysX pushes overlapping bodies apart
+SOLVER_ITERATIONS = (128, 4)  # articulation position, velocity iterations
+MAX_DEPENETRATION = 0.1  # m/s: caps how hard PhysX pushes overlapping bodies apart
 
 
 # -- geometry (NumPy) -------------------------------------------------------------------------------------------
@@ -69,13 +69,25 @@ def _quat_to_matrix(q) -> np.ndarray:
 
 
 def _matrix_to_quat(m) -> np.ndarray:
-    """xyzw, w >= 0."""
-    w = math.sqrt(max(0.0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2
-    x = math.copysign(math.sqrt(max(0.0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2, m[2, 1] - m[1, 2])
-    y = math.copysign(math.sqrt(max(0.0, 1 - m[0, 0] + m[1, 1] - m[2, 2])) / 2, m[0, 2] - m[2, 0])
-    z = math.copysign(math.sqrt(max(0.0, 1 - m[0, 0] - m[1, 1] + m[2, 2])) / 2, m[1, 0] - m[0, 1])
-    q = np.array([x, y, z, w])
-    return q / np.linalg.norm(q)
+    """xyzw, w >= 0; largest-diagonal branches also handle exact 180-degree rotations."""
+    m = np.asarray(m, float)
+    tr = float(np.trace(m))
+    if tr > 0.0:
+        scale = 2.0 * math.sqrt(max(0.0, tr + 1.0))
+        q = np.array([(m[2, 1] - m[1, 2]) / scale,
+                      (m[0, 2] - m[2, 0]) / scale,
+                      (m[1, 0] - m[0, 1]) / scale, scale / 4.0])
+    else:
+        i = int(np.argmax(np.diag(m)))
+        j, k = (i + 1) % 3, (i + 2) % 3
+        scale = 2.0 * math.sqrt(max(0.0, 1.0 + m[i, i] - m[j, j] - m[k, k]))
+        q = np.zeros(4)
+        q[i] = scale / 4.0
+        q[j] = (m[j, i] + m[i, j]) / scale
+        q[k] = (m[k, i] + m[i, k]) / scale
+        q[3] = (m[k, j] - m[j, k]) / scale
+    q /= np.linalg.norm(q)
+    return -q if q[3] < 0.0 else q
 
 
 def _x_to(axis) -> np.ndarray:
@@ -177,6 +189,7 @@ class Hinge:
     friction: float = 0.0
     dynamic_friction: float = 0.0
     parent: str = "base"  # the link this joint hangs from: "base" or an earlier joint's name
+    bend2: bool = False  # D6: axis is the tangent; lock twist and translate, spring both swings
 
     @property
     def origin(self) -> np.ndarray:
@@ -239,6 +252,7 @@ class Fixed:
     at: tuple[float, float, float]
     mass: float = 0.01
     parent: str = "base"
+    instrument: bool = False  # collisionless structural sensing frame
 
     @property
     def origin(self) -> np.ndarray:
@@ -278,6 +292,7 @@ class Part(task_file.Box):
     visuals: tuple[Visual, ...] = ()
     link_friction: tuple[tuple[str, tuple[float, float]], ...] = ()  # (link, (static, dynamic)) overrides
     angular_damping: float | None = None  # 1/s, PhysX rigid-body angular damping (None: PhysX default)
+    self_collide: bool = True  # an articulated part's links collide with each other (except jointed pairs)
 
     def __post_init__(self):
         object.__setattr__(self, "shapes", tuple(self.shapes))
@@ -300,7 +315,7 @@ class Part(task_file.Box):
             if j.parent != "base" and j.parent not in names[:k]:
                 raise ValueError(f"{self.name}.{j.name}: parent {j.parent!r} must be 'base' or an earlier joint")
             if isinstance(j, Fixed):
-                if not j.shapes or not j.mass > 0:
+                if (not j.shapes and not j.instrument) or not j.mass > 0:
                     raise ValueError(f"{self.name}.{j.name}: a fixed link needs shapes and a positive mass")
                 continue
             if not j.shapes or not j.mass > 0 or not j.lower <= 0.0 <= j.upper or j.lower == j.upper:
@@ -457,7 +472,7 @@ def _author(part: Part, root_path: str, translation, orientation):
     mats = {}
     for i, (lk, fr) in enumerate(part.link_friction):
         mats[lk] = f"{root_path}/friction_{i}"
-        spawn_physics_material(mats[lk], sim_utils.RigidBodyMaterialCfg(static_friction=fr[0], dynamic_friction=fr[1]))
+        spawn_physics_material(mats[lk], sim_utils.RigidBodyMaterialCfg(static_friction=fr[0], dynamic_friction=fr[1], friction_combine_mode="min"))
     looks: dict[tuple, str] = {}
 
     def look(color) -> str:
@@ -474,6 +489,7 @@ def _author(part: Part, root_path: str, translation, orientation):
         UsdPhysics.RigidBodyAPI.Apply(prim)
         rb = PhysxSchema.PhysxRigidBodyAPI.Apply(prim)
         rb.CreateMaxDepenetrationVelocityAttr(MAX_DEPENETRATION)
+        rb.CreateEnableSpeculativeCCDAttr(True)
         if part.angular_damping is not None:
             rb.CreateAngularDampingAttr(float(part.angular_damping))
         UsdPhysics.MassAPI.Apply(prim).CreateMassAttr(float(mass))
@@ -564,7 +580,7 @@ def _author(part: Part, root_path: str, translation, orientation):
 
     UsdPhysics.ArticulationRootAPI.Apply(root)
     art = PhysxSchema.PhysxArticulationAPI.Apply(root)
-    art.CreateEnabledSelfCollisionsAttr(True)  # links collide with each other, except jointed pairs
+    art.CreateEnabledSelfCollisionsAttr(bool(part.self_collide))  # links collide with each other, except jointed pairs
     art.CreateSolverPositionIterationCountAttr(SOLVER_ITERATIONS[0])
     art.CreateSolverVelocityIterationCountAttr(SOLVER_ITERATIONS[1])
     for name, origin, shapes in part.links:
@@ -592,6 +608,26 @@ def _author(part: Part, root_path: str, translation, orientation):
             weld.CreateLocalPos1Attr().Set(Gf.Vec3f(0.0))
             weld.CreateLocalRot1Attr().Set(Gf.Quatf(1.0))
             continue
+        if getattr(j, "bend2", False):
+            joint = UsdPhysics.Joint.Define(stage, f"{root_path}/joints/{j.name}")
+            joint.CreateBody0Rel().SetTargets([Sdf.Path(f"{root_path}/{j.parent}")])
+            joint.CreateBody1Rel().SetTargets([Sdf.Path(f"{root_path}/{j.name}")])
+            frame = _usd_quat(_x_to(j.axis))
+            joint.CreateLocalPos0Attr().Set(Gf.Vec3f(*map(float,j.origin-part.joint_origin(j.parent))))
+            joint.CreateLocalPos1Attr().Set(Gf.Vec3f(0.))
+            joint.CreateLocalRot0Attr().Set(frame);joint.CreateLocalRot1Attr().Set(frame)
+            for axis in ("transX", "transY", "transZ", "rotX"):
+                limit = UsdPhysics.LimitAPI.Apply(joint.GetPrim(),axis)
+                limit.CreateLowAttr(1.);limit.CreateHighAttr(-1.)
+            for axis in ("rotY", "rotZ"):
+                limit = UsdPhysics.LimitAPI.Apply(joint.GetPrim(),axis)
+                limit.CreateLowAttr(math.degrees(j.lower));limit.CreateHighAttr(math.degrees(j.upper))
+                drive=UsdPhysics.DriveAPI.Apply(joint.GetPrim(),axis)
+                drive.CreateTypeAttr("force")
+                drive.CreateStiffnessAttr(j.spring/math.degrees(1.))
+                drive.CreateDampingAttr(j.damping/math.degrees(1.))
+                drive.CreateTargetPositionAttr(0.);drive.CreateMaxForceAttr(j.max_effort)
+            continue
         hinge = isinstance(j, Hinge)
         kind = UsdPhysics.RevoluteJoint if hinge else UsdPhysics.PrismaticJoint
         joint = kind.Define(stage, f"{root_path}/joints/{j.name}")
@@ -612,6 +648,14 @@ def _author(part: Part, root_path: str, translation, orientation):
         drive.CreateDampingAttr(j.damping / unit)
         drive.CreateTargetPositionAttr(float(j.target) * unit)
         drive.CreateMaxForceAttr(j.max_effort)
+    if part.mass is not None and any(getattr(j,"bend2",False) for j in part.joints):
+        root.RemoveAPI(UsdPhysics.ArticulationRootAPI);root.RemoveAPI(PhysxSchema.PhysxArticulationAPI)
+        base=stage.GetPrimAtPath(root_path+"/base")
+        UsdPhysics.ArticulationRootAPI.Apply(base)
+        api=PhysxSchema.PhysxArticulationAPI.Apply(base)
+        api.CreateEnabledSelfCollisionsAttr(bool(part.self_collide))
+        api.CreateSolverPositionIterationCountAttr(SOLVER_ITERATIONS[0])
+        api.CreateSolverVelocityIterationCountAttr(SOLVER_ITERATIONS[1])
     return root
 
 
@@ -632,14 +676,15 @@ def _arena_object(part: Part):
 
     class PartObject(Object):
         def _generate_articulation_cfg(self):
-            actuators = {
-                j.name: ImplicitActuatorCfg(
-                    joint_names_expr=[j.name], stiffness=j.spring, damping=j.damping, effort_limit_sim=j.max_effort,
-                    **({"friction": float(j.friction), "dynamic_friction": float(j.dynamic_friction)}
-                       if j.friction or j.dynamic_friction else {}),
-                )
-                for j in actuated(part)
-            }
+            actuators={}
+            bend=[j for j in actuated(part) if getattr(j,"bend2",False)]
+            if bend:
+                actuators["bristles"]=ImplicitActuatorCfg(joint_names_expr=["t.*"],armature=1e-8,
+                    stiffness=bend[0].spring,damping=bend[0].damping,effort_limit_sim=bend[0].max_effort)
+            for j in actuated(part):
+                if getattr(j,"bend2",False):continue
+                actuators[j.name]=ImplicitActuatorCfg(joint_names_expr=[j.name],armature=1e-8,
+                    stiffness=j.spring,damping=j.damping,effort_limit_sim=j.max_effort)
             return self._add_initial_pose_to_cfg(
                 ArticulationCfg(prim_path=self.prim_path, spawn=self.spawner_cfg, actuators=actuators)
             )
@@ -697,18 +742,36 @@ def _set_target(base, part: str, joint: str, value: float) -> None:
 
 
 def _reset_targets(base) -> None:
+    import torch
     for part in _SPECS.values():
-        for j in actuated(part):
-            _set_target(base, part.name, j.name, float(j.target))
+        if not part.joints:continue
+        asset=base.scene[part.name]
+        ids=list(range(len(asset.joint_names)))
+        asset.set_joint_position_target_index(target=torch.zeros((1,len(ids)),dtype=torch.float32,device=base.device),joint_ids=ids)
 
 
 # -- hooks: patch yam_arena when its modules load ---------------------------------------------------------------
 
 
 def _patch_scene(scene) -> None:
+    scene.PHYSICS_DT = 1.0 / 1920.0  # task-local contact resolution
     if getattr(scene, "_parts_patched", False):
         return
     task_object, object_states = scene.task_object, scene.object_states
+    base_callback = scene.env_cfg_callback
+    def configured_callback(*args, **kwargs):
+        configure = base_callback(*args, **kwargs)
+        def configure_scaled(cfg):
+            cfg = configure(cfg)
+            physics = getattr(cfg.sim, "physics", getattr(cfg.sim, "physx", None))
+            physics.solve_articulation_contact_last = True
+            physics.gpu_max_num_partitions = 1
+            physics.friction_offset_threshold = 0.0001
+            physics.friction_correlation_distance = 0.0001
+            print("[numerics] articulation_contact_last=True, contact_offset=30um friction_offset/correlation=100um partitions=1", flush=True)
+            return cfg
+        return configure_scaled
+    scene.env_cfg_callback = configured_callback
 
     def patched_task_object(spec):
         if isinstance(spec, Part):

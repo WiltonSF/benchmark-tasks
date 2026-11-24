@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="65mm" viewBox="0 0 100 65">
+<rect width="100" height="65" fill="white"/>
+<g fill="none" stroke="black" stroke-width="0.1">
+<path d="M 10 15 v 20"/>
+<path d="M 10 15 h 20"/>
+<path d="M 12 15 v 20"/>
+<path d="M 10 17 h 20"/>
+<path d="M 14 15 v 20"/>
+<path d="M 10 19 h 20"/>
+<path d="M 16 15 v 20"/>
+<path d="M 10 21 h 20"/>
+<path d="M 18 15 v 20"/>
+<path d="M 10 23 h 20"/>
+<path d="M 20 15 v 20"/>
+<path d="M 10 25 h 20"/>
+<path d="M 22 15 v 20"/>
+<path d="M 10 27 h 20"/>
+<path d="M 24 15 v 20"/>
+<path d="M 10 29 h 20"/>
+<path d="M 26 15 v 20"/>
+<path d="M 10 31 h 20"/>
+<path d="M 28 15 v 20"/>
+<path d="M 10 33 h 20"/>
+<path d="M 30 15 v 20"/>
+<path d="M 10 35 h 20"/>
+<path d="M 10 43 h 10 M10 42 v2 M20 42 v2"/>
+<path d="M 55 25 v 15 M53 25 h4 M53 40 h4"/>
+<path d="M 55 36.5 h 3 v-1 h-6 v1 h3"/>
+</g>
+<g font-family="sans-serif" font-size="3"><text x="8" y="7">Print 100%. Check bar before cutting.</text><text x="8" y="12">Full-loft coupons: 2 x 2 mm each</text><text x="10" y="49">10 mm bar</text><text x="40" y="20">Pusher schematic</text><text x="61" y="34">6 mm collar</text><text x="60" y="38">3.5 mm tip</text><text x="8" y="58">No metal in port. One press per coupon.</text></g></svg>
