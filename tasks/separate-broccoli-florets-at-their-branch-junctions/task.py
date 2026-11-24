@@ -1,7 +1,7 @@
-"""A trimmed green broccoli head lies on its side on a white cutting board, its thick main stem toward one arm and six
-rounded floret crowns fanned toward the other arm on short pale-green stalks. A black-handled 76 mm paring knife
-stands on the flat underside of its handle near the right-hand edge of the board, its edge resting on the board.
-A steel ruler lies beside the board. The second layout mirrors the scene and exchanges the two arms' roles.
+"""A fresh half head of broccoli lies cut-face down on a white cutting board. Six short, unequal branches grow
+from different points along its pale-green main stem, three on each side. The green crowns face the cutting arm.
+A black-handled 76 mm paring knife stands on the flat underside of its handle near the board edge, blade toward -x and edge down.
+A steel ruler lies beside the board. The second layout mirrors the head and exchanges the arms' roles.
 """
 from __future__ import annotations
 import json
@@ -28,98 +28,107 @@ SURFACE = TOP + BOARD_H
 GREEN = (0.16, 0.38, 0.12)
 STALK = (0.43, 0.66, 0.25)
 BUD = (0.08, 0.28, 0.08)
-STEM_R = 0.017
-Z_STEM = SURFACE + STEM_R + 0.0005          # stem axis = stalk axis height when the head lies on the board
-Z_KNIFE = SURFACE + 0.012 + 0.0005          # handle origin when the knife stands on its handle underside
-ANCHOR = np.array([0., -0.065, 0.])
-ANGLES = np.radians([-22, -49, -76, -104, -131, -158])
-RADII = np.array([0.067, 0.072, 0.075, 0.075, 0.072, 0.067])
+# Representative half-head, informed by Nov 23 readings: 4/4 halves had six usable florets; 23-39 mm free stalks,
+# 5-10 mm thickness (median 7 mm), 29-48 mm crowns. Only these size ranges/count and whole-half masses were measured.
+# The symmetric branch origins/angles, main-stem dimensions and branch heights below are explicit geometric estimates.
+STEM_R = .020        # estimated radius of original main stem; its upper semicircle remains after halving
+STEM_Y = (-.085,.060)
+STEM_TIP_R = .016     # estimated taper: original diameter32 mm over the last25 mm
+STEM_TIP_END = -.060
+Z_STEM = SURFACE + .0005       # flat cut face, not the centre of a whole cylinder
+Z_KNIFE = SURFACE + .012 + .0005
+ANGLES = np.radians([-10, -40, -65, -115, -140, -170])
+ORIGINS = np.array([[.016,-.015,.013], [.016,-.045,.013], [.010,-.070,.013],
+                    [-.010,-.070,.013], [-.016,-.045,.013], [-.016,-.015,.013]])
+LENGTHS = np.array([.027, .032, .033, .033, .032, .027])  # origin to first side branch, within measured range
 NAMES = tuple(f'floret_{i+1}' for i in range(6))
-WIDTHS = (0.038, 0.040, 0.042, 0.042, 0.040, 0.038)
-# Cutting resistance on the blade while its edge is inside a stalk, per metre of edge inside the 16 mm section:
-# feed resistance opposing the edge's advance, and drag opposing the blade's motion relative to the stalk.
-# Estimates: blade tests on parsley stems give 2.25 mJ/mm^2 specific cutting energy (Chem. Proc. 2022, 10, 16), about
-# 2.25 N per mm of edge; a tender
-# broccoli stalk under a sharp, thin paring blade is taken as about a fifth of that (0.4 N/mm), plus 0.15 N/mm of
-# face friction. Across the full 16 mm section that is 6.4 N feed + 2.4 N drag.
+CROWN_WIDTHS = np.array([.038, .040, .044, .044, .040, .038])
+WIDTHS = CROWN_WIDTHS/.9  # compound crown's widest dimension is .9 times this construction parameter
+# Blade contact estimate, per metre of edge in actual stalk tissue. Chen et al.2018, DOI
+# 10.11975/j.issn.1002-6819.2018.23.005: Table3 13.50 +/-1.69 kPa (straight8-degree blade), Table5 up to17.44 kPa.
+# Those stresses imply0.52-0.67 N on a7 mm circular section. This model keeps its previous engineering coefficients,
+# hence3.85 N for a square advancing7 mm cut (2.8 feed+1.05 drag). It is an uncalibrated allowance for a different
+# 15-degree Mercer edge and stalk variation, not a measurement, fit or proven upper bound. Replace FEED/DRAG with
+# setup-specific readings when available. No coefficient was reduced for the measured thinner geometry.
 FEED = 400.
 DRAG = 150.
 SLOW = 0.005          # m/s: drag acts above this relative speed; feed stops when the edge is drawn back faster than this
 SMOOTH = 3            # control steps over which the edge's motion relative to the stalk is measured (0.15 s)
-STALK_R = 0.008
+STALK_R = .0035     # measured sample median thickness 7 mm; representative constant across all six branches
 ARMS = ('left', 'right')
-FORK = 0.026          # severing reference plane to the first bud-bearing side branch
-ALONG = (-0.030, 0.024)   # section rays from 56 mm to 2 mm below the first side branch: any full cut there separates
+FORK = .026         # reference plane to first side branch; not the origin-to-branch length
+ALONG = tuple((float(FORK-length), FORK-.002) for length in LENGTHS)  # only existing, unbranched tissue
 SETUP_TOL = (0.004, 3.0)
+# Unmeasured physical properties. Replace these constants when setup-specific readings are supplied.
+KNIFE_MASS = .05       # kg, estimate from 0.11 lb retailer shipping weight, not a weighed knife
+HALF_MASS = .125       # kg, one measured half (observed halves 112, 125, 131, 133 g)
+FLORET_MASS = .014     # kg per distal floret, estimated allocation, not individually weighed
+STEM_MASS = HALF_MASS-6*FLORET_MASS  # remaining main stem + attached proximal branches, 41 g
+BOARD_FRICTION = (.7, .6)
+PRODUCE_FRICTION = (.6, .5)
+KNIFE_FRICTION = (.7, .6)
+HANDLE_SIZE = (.100, .022, .024)       # m; estimates, not maker dimensions
+GUARD_SIZE = (.010, .030, .026)
+GUARD_AT = (.050, 0., .001)
+BLADE_SIZE = (.076, .002, .018)        # 76 mm maker blade length; thickness and height estimates
+BLADE_AT = (.088, 0., -.003)
 
 
 def rz(a): return parts._rot((0, 0, 1), a)
 def rot(q): return parts._quat_to_matrix(q)
 def xyz(p): return tuple(float(v) for v in p)
 
-BOARD = parts.Part('board', pos=(0.29, 0., TOP), friction=(0.7, 0.6), shapes=[
+BOARD = parts.Part('board', pos=(0.29, 0., TOP), friction=BOARD_FRICTION, shapes=[
     parts.box((0.3683, 0.53594, BOARD_H), (0, 0, BOARD_H/2), (0.91, 0.91, 0.87)),
     *[parts.box((0.012, 0.02, 0.004), (x, y, 0.002), (0.16, 0.17, 0.18)) for x in (-0.165, 0.165) for y in (-0.24, 0.24)]])
 RULER = parts.Part('ruler', pos=(0.49, 0., TOP+0.001), shapes=[
     parts.box((0.020, 0.30, 0.002), color=(0.62, 0.65, 0.66)),
     *[parts.box((0.012 if i % 5 == 0 else 0.006, 0.001, 0.0004), (0, i*.01-.15, .0012), (0.08, .08, .08), solid=False) for i in range(31)]])
-# The main stem body includes the six 16 mm shoots from the stem end up to 1 mm short of each severing reference
-# plane. Each distal floret is its own body, held to the stem by a tissue joint until it is cut.
-base_shapes = [parts.cylinder(STEM_R, .100, (0, -.015, 0), STALK, axis='y')]
+# Flat-faced half stem with an estimated narrower head end, approximated by2 mm horizontal layers.
+base_shapes = []
+for low_y,high_y,radius in ((STEM_TIP_END,STEM_Y[1],STEM_R),(STEM_Y[0],STEM_TIP_END,STEM_TIP_R)):
+    for z in np.arange(.001,radius,.002):
+        width = 2*math.sqrt(radius**2-z**2)
+        base_shapes.append(parts.box((width,high_y-low_y,.002),(0,(high_y+low_y)/2,z),STALK))
+STEM_MAIN_SHAPES = len(base_shapes)
 CUTS = []
-for angle, radius in zip(ANGLES, RADII):
+for i, angle in enumerate(ANGLES):
     u = np.array([math.cos(angle), math.sin(angle), 0.])
-    CUTS.append(ANCHOR+radius*u)
-    base_shapes.append(parts.cylinder(.008, radius-.001, xyz(ANCHOR+(radius-.001)/2*u), STALK, axis='x', yaw=float(angle)))
-
-# Layout A: stem along +y toward the left arm, florets toward the right arm. B mirrors A across y = 0.
-HEAD_A = np.array([0.270, -0.030, Z_STEM])
+    length = LENGTHS[i]-FORK
+    CUTS.append(ORIGINS[i]+length*u)
+    base_shapes.append(parts.cylinder(STALK_R, length, xyz(ORIGINS[i]+length/2*u), STALK, axis='x', yaw=float(angle)))
+# Layout A: bare stem butt toward the holding arm. B reflects the symmetric representative half-head.
+HEAD_A = np.array([.240,-.030,Z_STEM])
 HEAD_YAW_A = math.radians(40)
-KNIFE_A = (np.array([0.200, -0.225, Z_KNIFE]), 0.0)
-STEM = parts.Part('stem', pos=xyz(HEAD_A), yaw=HEAD_YAW_A, mass=.10, friction=(.6, .5), shapes=base_shapes)
+WORK_HEAD_A = np.array([.240,-.030,Z_STEM])
+WORK_YAW_A = math.radians(40)
+KNIFE_A = (np.array([.330, -.225, Z_KNIFE]), math.pi)
+STEM = parts.Part('stem', pos=xyz(HEAD_A), yaw=HEAD_YAW_A, mass=STEM_MASS, friction=PRODUCE_FRICTION, shapes=base_shapes)
 FLORETS = []
 for i, (c, a, w) in enumerate(zip(CUTS, ANGLES, WIDTHS)):
-    shapes = [parts.cylinder(.008, .035, (.0175, 0, 0), STALK, axis='x'),
-              parts.cylinder(.003, .020, (FORK, 0, 0), STALK, axis='y')]
-    shapes += [parts.cylinder(w*.27, .025, (.042, 0, .004), GREEN)]
+    shapes = [parts.cylinder(STALK_R, .035, (.0175, 0, 0), STALK, axis='x'),
+              parts.cylinder(.0025, .020, (FORK, 0, 0), STALK, axis='y'),
+              parts.cylinder(w*.27, .025, (.042, 0, 0), GREEN)]
     for phi in np.linspace(0, 2*math.pi, 7)[:-1]:
         shapes.append(parts.cylinder(w*.16, .017, (.042+w*.29*math.cos(phi), w*.29*math.sin(phi), .009), BUD))
-    FLORETS.append(parts.Part(NAMES[i], pos=xyz(HEAD_A+rz(HEAD_YAW_A)@c), yaw=float(HEAD_YAW_A+a), mass=.025, friction=(.6, .5), shapes=shapes))
+    FLORETS.append(parts.Part(NAMES[i], pos=xyz(HEAD_A+rz(HEAD_YAW_A)@c), yaw=float(HEAD_YAW_A+a), mass=FLORET_MASS, friction=PRODUCE_FRICTION, shapes=shapes))
 # Handle origin is the native grip centre; handle, finger guard and edge share one flat underside (z = -12 mm).
-KNIFE = parts.Part('knife', pos=xyz(KNIFE_A[0]), yaw=KNIFE_A[1], mass=.05, friction=(.7, .6), shapes=[
-    parts.box((.100, .022, .024), color=(.07, .07, .07)),
-    parts.box((.010, .030, .026), (.050, 0, .001), (.09, .09, .09)),
-    parts.box((.076, .002, .018), (.088, 0, -.003), (.68, .70, .71), solid=False),
+KNIFE = parts.Part('knife', pos=xyz(KNIFE_A[0]), yaw=KNIFE_A[1], mass=KNIFE_MASS, friction=KNIFE_FRICTION, shapes=[
+    parts.box(HANDLE_SIZE, color=(.07, .07, .07)),
+    parts.box(GUARD_SIZE, GUARD_AT, (.09, .09, .09)),
+    parts.box(BLADE_SIZE, BLADE_AT, (.68, .70, .71)),
     parts.box((.072, .0025, .0015), (.088, 0, -.0112), (.93, .94, .94), solid=False)])
 OBJECTS = [BOARD, RULER, STEM, KNIFE, *FLORETS]
 KNIFE_SOLID = type('KnifeSolid', (), {'shapes': KNIFE.shapes})()   # whole knife, blade included, for the on-board check
 MOVE = [STEM, KNIFE, *FLORETS]
 
 
-PIVOT = np.array([0., -0.065, -STEM_R])   # bottom of the stem's head end: the head tips forward about it
 def rx(a): return parts._rot((1, 0, 0), a)
-
-def rest_pitch():
-    """Forward tilt (rad) at which the lowest crown touches the board while the stem's head end stays down."""
-    lo, hi = 0., math.radians(15)
-    for _ in range(60):
-        b = (lo+hi)/2; r = rx(b); low = 0.
-        for i, spec in enumerate(FLORETS):
-            for sh in spec.shapes:
-                if sh.kind != 'cylinder': continue
-                for ph in np.linspace(0, 2*math.pi, 72, endpoint=False):
-                    for zz in (-sh.size[1]/2, sh.size[1]/2):
-                        a = np.asarray(sh.at)+(np.array([0, 0, zz]) if sh.axis == 'z' else np.zeros(3))
-                        d = np.array([math.cos(ph), math.sin(ph), 0.])*sh.size[0] if sh.axis == 'z' else np.zeros(3)
-                        pt = CUTS[i]+rz(ANGLES[i])@(a+d)
-                        low = min(low, float((r@(pt-PIVOT))[2]))
-        if low < 0: hi = b
-        else: lo = b
-    return lo
-PITCH = rest_pitch()
+PITCH = 0.  # the halved main stem rests on its flat face; no imposed crown-support tilt
+PIVOT = np.zeros(3)
 
 def head_layout(origin, yaw):
-    """Exact resting poses of stem and florets: the head lies on its stem and tips forward onto its crowns."""
+    """Exact resting poses of stem and florets: the halved main stem rests on its flat cut face."""
     turn = rz(yaw); r = turn@rx(PITCH)
     base = np.asarray(origin)+turn@PIVOT-r@PIVOT
     place = {'stem': xyz(base)}; quat = {'stem': parts._matrix_to_quat(r)}; yaws = {'stem': float(yaw)}
@@ -141,7 +150,7 @@ def lot_rotation(lot, name):
     return rot(q) if q is not None else rz(lot.yaw_of(name))
 
 # Disk of stalk cross-section, in a branch frame with x along the stalk, y across, z up.
-GRID = np.array([[y, z] for y in np.linspace(-.008, .008, 7) for z in np.linspace(-.008, .008, 7) if y*y+z*z <= .008**2+1e-10])
+GRID = np.array([[y,z] for y in np.linspace(-STALK_R,STALK_R,7) for z in np.linspace(-STALK_R,STALK_R,7) if y*y+z*z <= STALK_R**2+1e-10])
 EDGE_X = np.linspace(.054, .124, 36)
 _REC = {}
 _JOINS = {}
@@ -163,7 +172,7 @@ def edge(st):
     r = rot(st.quat_xyzw)
     return np.asarray(st.pos)+np.column_stack((EDGE_X, np.zeros(len(EDGE_X)), np.full(len(EDGE_X), -.012)))@r.T
 
-def chord(knife, food, shift=(0., 0., 0.)):
+def chord(knife, food, shift=(0., 0., 0.), i=0):
     """Length (m) and midpoint (world) of the knife edge, moved by shift, inside the stalk cylinder (scored window)."""
     r = rot(food.quat_xyzw); a, b = (edge(knife)[[0, -1]]+np.asarray(shift)-np.asarray(food.pos))@r; d = b-a
     qa = d[1]**2+d[2]**2; qb = 2*(a[1]*d[1]+a[2]*d[2]); qc = a[1]**2+a[2]**2-STALK_R**2
@@ -175,9 +184,9 @@ def chord(knife, food, shift=(0., 0., 0.)):
         if disc <= 0: return 0., None
         root = math.sqrt(disc); s0 = max(0., (-qb-root)/(2*qa)); s1 = min(1., (-qb+root)/(2*qa))
     if abs(d[0]) > 1e-12:
-        sa = (ALONG[0]-a[0])/d[0]; sb = (.035-a[0])/d[0]
+        sa = (ALONG[i][0]-a[0])/d[0]; sb = (.035-a[0])/d[0]
         s0 = max(s0, min(sa, sb)); s1 = min(s1, max(sa, sb))
-    elif not ALONG[0] <= a[0] <= .035: return 0., None
+    elif not ALONG[i][0] <= a[0] <= .035: return 0., None
     if s1 <= s0: return 0., None
     return float((s1-s0)*np.linalg.norm(d)), np.asarray(food.pos)+r@(a+d*(s0+s1)/2)-np.asarray(shift)
 
@@ -187,7 +196,7 @@ def edge_mid(knife, food):
     return (np.asarray(knife.pos)+rot(knife.quat_xyzw)@np.array([.089, 0., -.012])-np.asarray(food.pos))@rot(food.quat_xyzw)
 
 
-def cutting_force(oldknife, knife, oldfood, food, dt, v=None):
+def cutting_force(oldknife, knife, oldfood, food, dt, v=None, i=0):
     """Resisting force on the knife (world, N), its point and the edge length in the stalk, for the coming control step.
 
     The force depends on where the edge is now: it acts only while the edge is inside the stalk section. Feed resistance
@@ -195,7 +204,7 @@ def cutting_force(oldknife, knife, oldfood, food, dt, v=None):
     faster than SLOW; drag (DRAG per metre) opposes the edge's motion relative to the stalk when that is faster than
     SLOW. v is that relative velocity (world, m/s), measured over the last SMOOTH steps by update(); without it, the
     motion from oldknife/oldfood over dt is used."""
-    length, point = chord(knife, food)
+    length, point = chord(knife, food, i=i)
     if length <= 0: return np.zeros(3), None, 0.
     if v is None:
         v = rot(food.quat_xyzw)@((edge_mid(knife, food)-edge_mid(oldknife, oldfood))/dt) if dt > 0 else np.zeros(3)
@@ -219,7 +228,7 @@ def edge_sides(line, facing):
     return rel@n2, a[0]+s*d[0], (s >= 0.) & (s <= 1.)
 
 
-def edge_hits(oldknife, knife, oldfood, food):
+def edge_hits(oldknife, knife, oldfood, food, i=0):
     """Section points the edge passes, edge-first, between two control steps, judged RELATIVE to the stalk.
 
     Both edge positions are expressed in the stalk's own frame at their own time, so knife and food moving together
@@ -238,7 +247,7 @@ def edge_hits(oldknife, knife, oldfood, food):
     crossed = (d0 > 0) & (d1 <= 0) & in0 & in1
     frac = np.where(crossed, d0/np.maximum(d0-d1, 1e-15), 0.)
     x = x0+(x1-x0)*frac
-    crossed &= (x >= ALONG[0]-1e-9) & (x <= ALONG[1]+1e-9)
+    crossed &= (x >= ALONG[i][0]-1e-9) & (x <= ALONG[i][1]+1e-9)
     hits[crossed] = True; axial[crossed] = x[crossed]
     return hits, axial
 
@@ -255,7 +264,7 @@ class HandClouds(dict):
 
 
 def native_grasp(clouds, arm, stem):
-    """Two opposed fingertips contacting the native stem cylinder, with a closed physical opening."""
+    """Opposed fingertips contact the physical half-stem layers, within a closed physical opening."""
     if not hasattr(clouds, 'fingers') or arm not in clouds.fingers: return False
     if not .020 <= clouds.opening.get(arm, -1) <= .055: return False
     directions = []
@@ -264,12 +273,11 @@ def native_grasp(clouds, arm, stem):
         pts = clouds.fingers[arm].get(name)
         if pts is None or not len(pts): return False
         q = (pts-stem.pos)@r
-        radial = np.linalg.norm(q[:, [0, 2]], axis=1)-STEM_R
-        axial = np.abs(q[:, 1]+.015)-.050
-        d = np.linalg.norm(np.column_stack((np.maximum(radial, 0.), np.maximum(axial, 0.))), axis=1)
-        near = q[d <= .003]
+        distances = [np.linalg.norm(np.maximum(np.abs(q-np.asarray(sh.at))-np.asarray(sh.size)/2, 0.), axis=1)
+                     for sh in STEM.shapes[:STEM_MAIN_SHAPES]]
+        near = q[np.min(distances,axis=0) <= .003]
         if not len(near): return False
-        v = near[:, [0, 2]].mean(axis=0)
+        v = (near[:, [0, 2]]-np.array([0., .010])).mean(axis=0)
         if np.linalg.norm(v) < .008: return False
         directions.append(v/np.linalg.norm(v))
     return bool(directions[0]@directions[1] < -.5)
@@ -283,7 +291,7 @@ def native_handle(clouds, arm, knife):
         pts = clouds.fingers.get(arm, {}).get(name)
         if pts is None or not len(pts): return False
         q = (pts-knife.pos)@r
-        d = np.linalg.norm(np.maximum(np.abs(q)-np.array([.050, .011, .012]), 0.), axis=1)
+        d = np.linalg.norm(np.maximum(np.abs(q)-np.asarray(HANDLE_SIZE)/2, 0.), axis=1)
         near = q[d <= .003]
         if not len(near): return False
         sides.append(float(near[:, 1].mean()))
@@ -308,7 +316,7 @@ def blade_clearance(clouds, previous, arm, objects, oldobjects):
         closest = min(closest, distance)
         if distance <= .0015: contact = True
         # Contact with the native handle or guard also invalidates a holding hand.
-        for size, at in (((.100, .022, .024), (0, 0, 0)), ((.010, .030, .026), (.05, 0, .001))):
+        for size, at in ((HANDLE_SIZE, (0, 0, 0)), (GUARD_SIZE, GUARD_AT)):
             if float(distance_box(hand, p+r@np.asarray(at), r, size).min()) <= .0015: contact = True
     return closest, contact
 
@@ -519,7 +527,7 @@ def update(objects, clouds, t):
     for i in range(6):
         st = objects[NAMES[i]]; r = rot(st.quat_xyzw)
         local = (e-st.pos)@r
-        touching = bool(np.any((local[:, 0] >= ALONG[0]-.002) & (local[:, 0] <= .035) & (np.linalg.norm(local[:, 1:], axis=1) < .014)))
+        touching = bool(np.any((local[:, 0] >= ALONG[i][0]-.002) & (local[:, 0] <= .035) & (np.linalg.norm(local[:, 1:], axis=1) < .014)))
         if touching and i not in _REC['cuts']:
             in_stalk = True
             _REC['engaged'].add(i)
@@ -540,7 +548,7 @@ def update(objects, clouds, t):
         if blade_damage(oldknife, knife, oldst, st, FLORETS[i], .003): _REC['damaged'].add(i)
         if prev is None or i in _REC['cuts']: continue
         _, oldstates = prev
-        crossing, axial = edge_hits(oldstates['knife'], knife, oldstates[NAMES[i]], st)
+        crossing, axial = edge_hits(oldstates['knife'], knife, oldstates[NAMES[i]], st, i=i)
         pending = _REC['pending'].pop(i, None)
         if two_grips and i in _REC['engaged'] and i in _REC['applied']:
             # Only the path the edge followed while the cutting resistance acted on it is credited. The simulator
@@ -575,7 +583,7 @@ def update(objects, clouds, t):
         track.append((t, edge_mid(knife, objects[NAMES[i]]))); del track[:-(SMOOTH+1)]
         span = track[-1][0]-track[0][0]
         v = rot(objects[NAMES[i]].quat_xyzw)@((track[-1][1]-track[0][1])/span) if span > 0 else np.zeros(3)
-        f, point, length = cutting_force(knife, knife, objects[NAMES[i]], objects[NAMES[i]], 0., v)
+        f, point, length = cutting_force(knife, knife, objects[NAMES[i]], objects[NAMES[i]], 0., v, i=i)
         if point is not None and np.linalg.norm(f) > 1e-9: forces[i] = (f, point, length)
     _REC.update(level=level, clear=clear, still=still, stamp=stamp(objects), prev=(e, dict(objects)), next_forces=forces,
                 clouds={a: clouds[a] for a in ARMS}, holding=list(hold))
@@ -641,16 +649,22 @@ def floret_com(spec):
 FLORET_COM = [floret_com(f) for f in FLORETS]
 
 def knife_com():
-    """Centre of mass of the knife's colliders (handle and finger guard; the blade has none), body frame."""
+    """Centre of mass of the knife's colliders (handle, finger guard and blade), body frame."""
     vol = np.array([float(np.prod(sh.size)) for sh in KNIFE.shapes if sh.solid])
     at = np.array([sh.at for sh in KNIFE.shapes if sh.solid], float)
     return (at*vol[:, None]).sum(0)/vol.sum()
 KNIFE_COM = knife_com()
 
+def grip_deviation(hand_rotation, knife_rotation, reference):
+    """Observation-only knife rotation in the grip since its first opposed-handle contact, in degrees."""
+    relative = np.asarray(hand_rotation).T@np.asarray(knife_rotation)
+    delta = np.asarray(reference).T@relative
+    return math.degrees(math.acos(float(np.clip((np.trace(delta)-1)/2, -1., 1.))))
+
+
 def knife_wrench(knife, forces):
-    """Total resistance on the knife and the moment it would have about the knife's centre of mass (world frame),
-    taking each stalk's force where the edge is in that stalk. Only the force is applied (see apply_load); the moment
-    is logged in traces."""
+    """Total resistance on the knife and its moment about the knife's centre of mass (world frame), taking each
+    stalk's force where the edge is in that stalk. apply_load applies both, so the load acts at the blade."""
     com = np.asarray(knife.pos)+rot(knife.quat_xyzw)@KNIFE_COM
     total = np.zeros(3); moment = np.zeros(3)
     for force, point, _ in forces.values():
@@ -658,13 +672,12 @@ def knife_wrench(knife, forces):
     return total, moment
 
 def apply_load(sim, on):
-    """Cutting resistance: on the knife at its centre of mass (where the demo grips the handle), without the moment
-    about it; the equal and opposite reaction on the stalk where the edge is. With the moment applied (trace of
-    21 Nov), the first stalk contact turned the knife about 33 degrees in the fingertip pinch within one control step."""
+    """Cutting resistance at the blade: the knife gets the summed force at its centre of mass plus the moment of that
+    force about it (equivalent to the force acting where the edge is in each stalk); each stalk gets the equal and
+    opposite force at the same point, with its moment about the floret's centre of mass."""
     import torch
     base = sim.env.unwrapped
     mark_applied(on)
-    origin = parts._np(base.scene.env_origins[0])
     states = sim.states() if on and _REC['next_forces'] else {}
     total = np.zeros(3); moment = np.zeros(3)
     if states: total, moment = knife_wrench(states['knife'], _REC['next_forces'])
@@ -679,7 +692,7 @@ def apply_load(sim, on):
         obj.set_external_force_and_torque(f, m, env_ids=torch.tensor([0], device=dev), is_global=True)
     obj = base.scene['knife']; dev = obj.device
     f = torch.tensor(total, device=dev, dtype=torch.float32).reshape(1, 1, 3)
-    m = torch.zeros_like(f)
+    m = torch.tensor(moment, device=dev, dtype=torch.float32).reshape(1, 1, 3)
     _REC['grip_moment'] = float(np.linalg.norm(moment))
     obj.set_external_force_and_torque(f, m, env_ids=torch.tensor([0], device=dev), is_global=True)
 
@@ -744,7 +757,18 @@ def reset(sim):
             robot = base.scene[f'{arm}_robot']
             ids = robot.find_joints(['joint7', 'joint8'], preserve_order=True)[0]
             robot.write_joint_effort_limit_to_sim_index(limits=40., joint_ids=ids)
-        from pxr import Usd, UsdPhysics, PhysxSchema
+        from pxr import Usd, UsdPhysics, PhysxSchema, Sdf
+        # The main half-stem stays physical; only the six branch stalks/crowns use the cutting proxy.
+        knife_path = body_path(base, 'knife'); stem_path = body_path(base, 'stem')
+        blade_prim = stage().GetPrimAtPath(knife_path+'/s2')
+        if not blade_prim.HasAPI(UsdPhysics.CollisionAPI): raise ValueError('blade collider missing')
+        targets = [Sdf.Path(body_path(base, n)) for n in NAMES]
+        for shape_index in range(STEM_MAIN_SHAPES, STEM_MAIN_SHAPES+6):
+            stalk_path = stem_path+f'/s{shape_index}'
+            if not stage().GetPrimAtPath(stalk_path).HasAPI(UsdPhysics.CollisionAPI):
+                raise ValueError('proximal stalk collider missing: '+stalk_path)
+            targets.append(Sdf.Path(stalk_path))
+        UsdPhysics.FilteredPairsAPI.Apply(blade_prim).CreateFilteredPairsRel().SetTargets(targets)
         touched = 0
         env = base.scene.env_prim_paths[0]
         for prim in Usd.PrimRange(stage().GetPrimAtPath(env)):
@@ -768,13 +792,37 @@ def step(sim):
         apply_load(sim, bool(_REC.get('next_forces')))
         if os.environ.get('TRACE_OUT'):
             row = {k: _REC[k] for k in ('t', 'zero', 'invalid', 'setup', 'clear', 'still', 'level', 'since', 'forces', 'min_clearance')}
-            row['grip_moment'] = round(_REC.get('grip_moment', 0.), 3)
+            row['com_moment'] = round(_REC.get('grip_moment', 0.), 3)
+            if 'knife_com' not in _SIM:
+                try:   # the simulator's own centre of mass for the knife body, against KNIFE_COM (trace check only)
+                    data = sim.env.unwrapped.scene['knife'].data
+                    _SIM['knife_com'] = np.round(parts._np(getattr(data, 'body_com_pos_b', None))[0].reshape(-1)[:3], 5).tolist()
+                except Exception as e: _SIM['knife_com'] = repr(e)
+                row['knife_com'] = _SIM['knife_com']; row['knife_com_declared'] = np.round(KNIFE_COM, 5).tolist()
             row['hands'] = {}
             from yam_arena.constants import TCP_OFFSET
             base = sim.env.unwrapped; origin = parts._np(base.scene.env_origins[0])
             for arm in ARMS:
                 robot = base.scene[f'{arm}_robot']; pose = parts._np(robot.data.body_link_pose_w)[0, robot.body_names.index('gripper')]
                 row['hands'][arm] = {'tcp': np.round(pose[:3]-origin+rot(pose[3:])@np.array(TCP_OFFSET), 5).tolist(), 'quat': np.round(pose[3:], 5).tolist()}
+                # Observation only: arm joints are rotary (N m); the last two gripper joints are prismatic (N).
+                row['hands'][arm]['joint_names'] = list(robot.joint_names)
+                for field in ('joint_pos', 'applied_torque', 'joint_pos_target', 'joint_effort_limits'):
+                    try: row['hands'][arm][field] = np.round(parts._np(getattr(robot.data, field))[0], 4).tolist()
+                    except Exception as ex: row['hands'][arm][field] = repr(ex)
+
+            row['grip_moment'] = 0.; row['knife_in_grip_deg'] = None
+            tool = _REC.get('tool_holding', [])
+            if tool:
+                arm = tool[0]; grip = np.asarray(row['hands'][arm]['tcp'])
+                moment = sum((np.cross(np.asarray(p)-grip, f) for f, p, _ in _REC['next_forces'].values()), np.zeros(3))
+                row['grip_moment'] = round(float(np.linalg.norm(moment)), 3)
+                gr = rot(row['hands'][arm]['quat']); kr = rot(st['knife'].quat_xyzw)
+                refs = _REC.setdefault('grip_refs', {})
+                if arm not in refs: refs[arm] = gr.T@kr
+                row['knife_in_grip_deg'] = round(grip_deviation(gr, kr, refs[arm]), 3)
+            else: _REC.pop('grip_refs', None)
+            row['grip_rotation_warning'] = row['knife_in_grip_deg'] is not None and row['knife_in_grip_deg'] > 5.
             row['holding'] = _REC.get('holding', []); row['tool_holding'] = _REC.get('tool_holding', [])
             row['opening'] = dict(hands.opening)
             # Observation-only object poses for diagnosis; the demo never reads them.
@@ -788,84 +836,72 @@ def step(sim):
         _SIM['broken'] = repr(e); _REC['invalid'] = True
 
 
-# -- open-loop demo: reads only the published layout (lots.current()), never simulated state or cut flags -----------
-ORDER = (5, 4, 3, 2, 1, 0)       # outermost first; every cut leaves the next stalk's clockwise side open
-AIM = 0.006                      # cut 6 mm beyond the severing reference plane: about 20 mm of stalk is retained
-SLIDE = 0.062                    # after each cut the head is moved 62 mm straight back along that floret's axis
-HOP = 0.015                      # ...lifted 15 mm while it moves, so board friction cannot hold it back
-PUSH = 0.030                     # the knife is commanded 30 mm below the board: the arm must push through the resistance
-X_CUT = 0.104                    # edge point (knife frame) placed under the stalk axis; the tip passes 20 mm beyond
-GRASP = np.array([0.0065, 0., 0.004])   # TCP in the knife frame: near the estimated handle centre of mass
-GRIP_Y = 0.010                   # stem grasp 75 mm behind the branch bases, toward the stem's butt
-TRANSIT = SURFACE+0.062          # edge height while the knife moves between cuts
+# -- board-supported open-loop side cuts; no simulated state feedback --------------------
+ORDER = (5,4,3,2,1,0)
+AIM = .006
+AIM_BY = {5:.008,4:.009,3:.010,2:.0115,1:.010,0:.006}
+AIM_FIX = {'A':(0.,)*6,'B':(0.,2.,0.,0.,0.,0.)}  # mm toward first branch on Bsecond, unchanged10-30 mm score band
+X_CUT_FIX = {'A':(0.,)*6,'B':(0.,-.003,0.,0.,0.,0.)}  # metres along blade; second B stroke keeps extra tip span
+SLIDE = .035
+MID_SHIFT = np.zeros(3)
+GRASP = np.array([.0275,0.,0.])
+KNIFE_GRIP_FLIP = math.pi  # exchange the opposed pads; native handle pinch is unchanged
+GRIP_X = 0.
+GRIP_Y = .060
+GRIP_Z = .016
+HOLD_TILT = 45.
+HOLD_YAW = -math.pi/2
+HEAD_LIFT = 0.
+CARRY_TIME = 0.
+FIRST_APPROACH = 8.5
+LIFT = .060
+TRANSIT = SURFACE+.065
+X_CUT = .118
+X_CUT_BY = {5: 0.118, 4: 0.118, 3: 0.118, 2: 0.118, 1: 0.118, 0: 0.118}
+CUT_PITCH = 60.
+PITCH_BY = {5:45,4:45,3:45,2:45,1:50,0:65}
+CHECK_PAST_POSES = True
+SIDE_Z_OFFSET = -.001
+SIDE_TRAVEL = .010
+SIDE_TRAVEL_BY = {5:.016,4:.020,3:.014,2:.020,1:.020,0:.014}
+SIDE_START_BY = {5:.008,4:.008,2:.008,1:.008}
+FEED_TIME_BY = {2:8.}  # slower fourth stroke, unchanged force law and positions
+FINISH_TIME_BY = {2:2.}  # allow the unchanged loaded section to settle before lifting
+# Side-entry blade headings, expressed as obliquity from branch+90; the opposed-pad pickup keeps the wrist reachable.
+OBLIQUE = {i:math.radians(v) for i,v in {5: 195.0, 4: 140.0, 3: 175.0, 2: 220.0, 1: 190.0, 0: 190.0}.items()}
 PARK_A = KNIFE_A
-HOLD_YAW = -math.pi/2            # holding grip turned so the fingers close across the stem
-LIFT = 0.06                      # hand lift above a grasp height
-HOLD_TILT = 45.                  # holding grip leans its fingertips toward the head, keeping its wrist back
-OBLIQUE = {5: math.radians(25)}  # the first cut turns the knife 25 degrees so its handle points away from the holding hand
-AIM_BY = {5: 0.009}              # that oblique cut aims 3 mm further out, keeping its whole 7 mm spread inside the 10-30 mm band
-# Per-cut aim corrections (mm, + = further from the stem), one per cut in order, from the traced cut positions of each
-# layout: the loaded arm lands a few mm off its command, differently for the two arms. They centre each cut's
-# retained stalk near 20 mm. They depend only on the published layout, never on simulated state.
-AIM_FIX = {'A': (2.0, -0.5, 3.0, 0.5, 2.5, 3.5), 'B': (-5.0, -3.0, -3.5, -2.0, -2.5, -4.5)}
 
 
-
-def plan_a(fix=(0.,)*6):
-    """Waypoints (holding, cutting) in layout A's frame; B is its mirror image with the arms exchanged."""
-    yaw_hold = HEAD_YAW_A+HOLD_YAW
-    R = rz(HEAD_YAW_A)                       # heading of the head; it also rests tilted forward by PITCH
-    tilted = rot(QA['stem'])
-    head = np.array(PA['stem'])              # published resting pose of the stem body
-    grip = tilted@np.array([0., GRIP_Y, 0.])+np.array([0., 0., 0.004])
-    g = head+grip
-    hold = [Waypoint(2.5, xyz(g+[0, 0, LIFT]), -.030, 'above stem', yaw_hold), Waypoint(2.0, xyz(g), -.030, 'around stem', yaw_hold),
-            Waypoint(1.0, xyz(g), -.010, 'grip stem', yaw_hold), Waypoint(3.0, xyz(g), -.010, 'hold stem', yaw_hold)]
-    k0, th0 = KNIFE_A
-    kg = k0+rz(th0)@GRASP
-    knife = [Waypoint(2.5, xyz(kg+[0, 0, LIFT]), -.025, 'above handle', th0), Waypoint(2.0, xyz(kg), -.025, 'around handle', th0),
-             Waypoint(1.0, xyz(kg), -.004, 'grip handle', th0), Waypoint(1.0, xyz(kg), -.004, 'settle handle', th0),
-             Waypoint(2.0, xyz(kg+[0, 0, TRANSIT-SURFACE]), -.004, 'lift knife', th0)]
-
-    def tcp(edge_point, theta):
-        origin = np.asarray(edge_point)-rz(theta)@np.array([X_CUT, 0, -.012])
-        return xyz(origin+rz(theta)@GRASP)
-    for visit, i in enumerate(ORDER):
-        u = R@np.array([math.cos(ANGLES[i]), math.sin(ANGLES[i]), 0.])
-        c = head+tilted@(ANCHOR+(RADII[i]+AIM_BY.get(i, AIM)+fix[visit]/1000)*np.array([math.cos(ANGLES[i]), math.sin(ANGLES[i]), 0.]))
-        theta = float(HEAD_YAW_A+ANGLES[i]+math.pi/2+OBLIQUE.get(i, 0.))
-        knife += [Waypoint(2.5, tcp((c[0], c[1], TRANSIT), theta), -.004, f'over stalk {i+1}', theta),
-                  Waypoint(1.5, tcp((c[0], c[1], Z_STEM+.014), theta), -.004, 'edge above stalk', theta),
-                  Waypoint(4.0, tcp((c[0], c[1], SURFACE-PUSH), theta), -.004, 'cut to board', theta),
-                  Waypoint(0.7, tcp((c[0], c[1], SURFACE-PUSH), theta), -.004, 'edge on board', theta),
-                  Waypoint(1.5, tcp((c[0], c[1], TRANSIT), theta), -.004, 'lift edge', theta)]
-        hold += [Waypoint(10.2, xyz(g), -.010, f'hold for cut {i+1}', yaw_hold)]
-        if visit < len(ORDER)-1:
-            # Lift the head clear of the board, carry it straight back along this floret's axis, set it down.
-            up = np.array([0., 0., HOP])
-            hold += [Waypoint(0.8, xyz(g+up), -.010, 'lift head', yaw_hold)]
-            head = head-SLIDE*u
-            g = head+grip
-            hold += [Waypoint(2.2, xyz(g+up), -.010, 'move head clear', yaw_hold), Waypoint(0.8, xyz(g), -.010, 'set head down', yaw_hold)]
-            knife += [Waypoint(3.8, knife[-1].pos, -.004, 'wait', theta)]
-    p0, th = PARK_A
-    pg = p0+rz(th)@GRASP
-    knife += [Waypoint(3.0, xyz(pg+[0, 0, TRANSIT-SURFACE]), -.004, 'carry knife back', th),
-              Waypoint(2.0, xyz(pg+[0, 0, .002]), -.004, 'set knife down', th),
-              Waypoint(1.0, xyz(pg+[0, 0, .002]), -.025, 'release knife', th),
-              Waypoint(2.0, xyz(pg+[0, 0, LIFT]), -.025, 'lift clear', th),
-              Waypoint(3.0, xyz(pg+[0, 0, LIFT]), -.025, 'still', th)]
-    hold += [Waypoint(1.0, xyz(g), -.030, 'release stem', yaw_hold), Waypoint(2.0, xyz(g+[0, 0, LIFT]), -.030, 'lift clear', yaw_hold)]
-    rest = sum(w.duration for w in knife)-sum(w.duration for w in hold)
-    hold += [Waypoint(max(rest, 3.0), xyz(g+[0, 0, LIFT]), -.030, 'still', yaw_hold)]
-    heading = HEAD_YAW_A-math.pi/2       # along the stem toward the branches: away from the holding arm's base
-    hold = [tilt.Waypoint(w.duration, w.pos, w.finger, w.label, float(w.yaw), tilt=HOLD_TILT, heading=heading) for w in hold]
-    return hold, knife
+def plan_a(fix=(0.,)*6, xcut_fix=(0.,)*6):
+    R=rz(HEAD_YAW_A);head=np.array(PA['stem']);grip=R@np.array([GRIP_X,GRIP_Y,GRIP_Z]);g=head+grip;yawH=HEAD_YAW_A+HOLD_YAW
+    hold=[Waypoint(2.5,xyz(g+[0,0,LIFT]),-.030,'above stem',yawH),Waypoint(2.,xyz(g),-.030,'around stem',yawH),Waypoint(1.,xyz(g),-.010,'grip stem',yawH),Waypoint(3.,xyz(g),-.010,'steady board-supported half',yawH)]
+    k0,th0=KNIFE_A;kg=k0+rz(th0)@GRASP
+    knife=[Waypoint(2.5,xyz(kg+[0,0,LIFT]),-.025,'above handle',th0+KNIFE_GRIP_FLIP),Waypoint(2.,xyz(kg),-.025,'around handle',th0+KNIFE_GRIP_FLIP),Waypoint(1.,xyz(kg),-.004,'grip handle',th0+KNIFE_GRIP_FLIP),Waypoint(1.,xyz(kg),-.004,'seat handle',th0+KNIFE_GRIP_FLIP),Waypoint(2.,xyz(kg+[0,0,TRANSIT-SURFACE]),-.004,'lift knife',th0+KNIFE_GRIP_FLIP)]
+    for visit,i in enumerate(ORDER):
+        theta=float(HEAD_YAW_A+ANGLES[i]+math.pi/2+OBLIQUE.get(i,0.));pitch=PITCH_BY.get(i,CUT_PITCH);xcut=X_CUT_BY.get(i,X_CUT)+xcut_fix[visit]
+        kr=rz(theta)@parts._rot((0,1,0),math.radians(pitch));u=rz(theta)@np.array([1.,0.,0.]);axis=R@np.array([math.cos(ANGLES[i]),math.sin(ANGLES[i]),0.])
+        c=head+R@(CUTS[i]+(AIM_BY.get(i,AIM)+fix[visit]/1000)*np.array([math.cos(ANGLES[i]),math.sin(ANGLES[i]),0.]))
+        travel=SIDE_TRAVEL_BY.get(i,SIDE_TRAVEL);c=c+np.array([0.,0.,SIDE_Z_OFFSET]);p0=c+SIDE_START_BY.get(i,travel)*u;p1=c-travel*u
+        def tcp(edge):return xyz(np.asarray(edge)+kr@(GRASP-np.array([xcut,0.,-.012])))
+        def wp(d,p,label):return tilt.Waypoint(d,tcp(p),-.004,label,theta+KNIFE_GRIP_FLIP,tilt=-pitch,heading=theta)
+        feed_time=FEED_TIME_BY.get(i,4.);finish_time=FINISH_TIME_BY.get(i,.7)
+        knife += [wp(2.5,(p0[0],p0[1],TRANSIT),f'over stalk {i+1}'),wp(1.5,p0,'beside stalk'),wp(feed_time,p1,'slice across section'),wp(finish_time,p1,'finish section'),wp(1.5,(p1[0],p1[1],TRANSIT),'lift edge')]
+        hold.append(Waypoint(10.2+feed_time-4.+finish_time-.7,xyz(g),-.010,f'steady cut {i+1}',yawH))
+        if visit<5:
+            head=head-SLIDE*axis
+            if visit==2:head=head+MID_SHIFT
+            g=head+grip;hold.append(Waypoint(3.8,xyz(g),-.010,'slide remaining half on board',yawH));neutral=xyz(kg+[0,0,TRANSIT-SURFACE+.040]);knife += [Waypoint(1.9,neutral,-.004,'neutral between cuts',th0+KNIFE_GRIP_FLIP),Waypoint(1.9,neutral,-.004,'settle neutral',th0+KNIFE_GRIP_FLIP)]
+    p0,th=PARK_A;pg=p0+rz(th)@GRASP
+    knife += [Waypoint(3.,xyz(pg+[0,0,TRANSIT-SURFACE]),-.004,'carry knife back',th+KNIFE_GRIP_FLIP),Waypoint(2.,xyz(pg+[0,0,.002]),-.004,'set knife down',th+KNIFE_GRIP_FLIP),Waypoint(1.,xyz(pg+[0,0,.002]),-.025,'release knife',th+KNIFE_GRIP_FLIP),Waypoint(2.,xyz(pg+[0,0,LIFT]),-.025,'lift clear',th+KNIFE_GRIP_FLIP),Waypoint(3.,xyz(pg+[0,0,LIFT]),-.025,'still',th+KNIFE_GRIP_FLIP)]
+    hold += [Waypoint(1.,xyz(g),-.030,'release stem',yawH),Waypoint(2.,xyz(g+[0,0,LIFT]),-.030,'lift clear',yawH)]
+    rest=sum(w.duration for w in knife)-sum(w.duration for w in hold);hold.append(Waypoint(max(rest,3.),xyz(g+[0,0,LIFT]),-.030,'still',yawH))
+    hold=[tilt.Waypoint(w.duration,w.pos,w.finger,w.label,float(w.yaw),tilt=HOLD_TILT,heading=HEAD_YAW_A-math.pi/2) for w in hold]
+    return hold,knife
 
 
 def demo():
     name = lots.current().name
-    hold, knife = plan_a(AIM_FIX[name])
+    hold, knife = plan_a(AIM_FIX[name],X_CUT_FIX[name])
     if name == 'B':
         def mirror(w):
             if getattr(w, 'tilt', 0.):

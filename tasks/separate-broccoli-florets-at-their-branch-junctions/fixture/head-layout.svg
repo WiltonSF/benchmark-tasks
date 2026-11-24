@@ -1,81 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1130" viewBox="0 0 1200 1130">
-<rect width="1200" height="1130" fill="white"/>
-<g font-family="Arial" fill="#17212a"><text x="40" y="35" font-size="24">Broccoli head, paring knife and board: plan view of layouts A and B</text><text x="40" y="60" font-size="15">Dimensions in mm. Synthetic trimmed head (not a scan); catalogue board size; 76 mm blade. Head tipped 3.9 deg onto its crowns.</text>
-<text x="65" y="95" font-size="19">Layout A</text>
-<rect x="65.0" y="120.0" width="383.03200000000004" height="557.3776" fill="#f2f3ec" stroke="#65747c" stroke-width="2"/>
-<line x1="213.19" y1="403.04" x2="280.04" y2="482.71" stroke="#71a548" stroke-width="35.36" stroke-linecap="round"/>
-<line x1="280.04" y1="482.71" x2="346.17" y2="461.01" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="346.17" y1="461.01" x2="380.79" y2="449.77" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="387.71" cy="447.52" r="17.78" fill="#245d29" stroke="#173f20"/>
-<circle cx="346.17" cy="461.01" r="4" fill="#cf4b2c"/><text x="352.17" y="453.01" font-size="14">1</text>
-<line x1="280.04" y1="482.71" x2="353.81" y2="494.21" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="353.81" y1="494.21" x2="389.77" y2="499.90" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="396.96" cy="501.04" r="18.72" fill="#245d29" stroke="#173f20"/>
-<circle cx="353.81" cy="494.21" r="4" fill="#cf4b2c"/><text x="359.81" y="486.21" font-size="14">2</text>
-<line x1="280.04" y1="482.71" x2="342.93" y2="528.31" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="342.93" y1="528.31" x2="372.38" y2="549.70" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="378.27" cy="553.98" r="19.66" fill="#245d29" stroke="#173f20"/>
-<circle cx="342.93" cy="528.31" r="4" fill="#cf4b2c"/><text x="348.93" y="520.31" font-size="14">3</text>
-<line x1="280.04" y1="482.71" x2="314.02" y2="552.57" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="314.02" y1="552.57" x2="329.98" y2="585.28" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="333.17" cy="591.82" r="19.66" fill="#245d29" stroke="#173f20"/>
-<circle cx="314.02" cy="552.57" r="4" fill="#cf4b2c"/><text x="320.02" y="544.57" font-size="14">4</text>
-<line x1="280.04" y1="482.71" x2="278.55" y2="557.36" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="278.55" y1="557.36" x2="277.91" y2="593.76" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="277.79" cy="601.04" r="18.72" fill="#245d29" stroke="#173f20"/>
-<circle cx="278.55" cy="557.36" r="4" fill="#cf4b2c"/><text x="284.55" y="549.36" font-size="14">5</text>
-<line x1="280.04" y1="482.71" x2="247.19" y2="544.07" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="247.19" y1="544.07" x2="230.10" y2="576.21" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="226.68" cy="582.64" r="17.78" fill="#245d29" stroke="#173f20"/>
-<circle cx="247.19" cy="544.07" r="4" fill="#cf4b2c"/><text x="253.19" y="536.07" font-size="14">6</text>
-<line x1="110.92" y1="632.69" x2="214.92" y2="632.69" stroke="#202528" stroke-width="22.880000000000003" stroke-linecap="round"/>
-<line x1="214.92" y1="632.69" x2="293.96" y2="632.69" stroke="#9ca8b0" stroke-width="5" stroke-linecap="round"/>
-<text x="65" y="700" font-size="15">Board 368.3 x 535.9 x 16 (thickness estimated)</text>
-<text x="65" y="724" font-size="15">Stem 34 x 100; stalks 16; crowns 34-38 across</text>
-<text x="65" y="748" font-size="15">Red dots: reference planes; side branch 26 mm beyond</text>
-<text x="655" y="95" font-size="19">Layout B</text>
-<rect x="655.0" y="120.0" width="383.03200000000004" height="557.3776" fill="#f2f3ec" stroke="#65747c" stroke-width="2"/>
-<line x1="803.19" y1="394.33" x2="870.04" y2="314.66" stroke="#71a548" stroke-width="35.36" stroke-linecap="round"/>
-<line x1="870.04" y1="314.66" x2="837.19" y2="253.31" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="837.19" y1="253.31" x2="820.10" y2="221.17" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="816.68" cy="214.74" r="17.78" fill="#245d29" stroke="#173f20"/>
-<circle cx="837.19" cy="253.31" r="4" fill="#cf4b2c"/><text x="843.19" y="245.31" font-size="14">1</text>
-<line x1="870.04" y1="314.66" x2="868.55" y2="240.02" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="868.55" y1="240.02" x2="867.91" y2="203.62" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="867.79" cy="196.34" r="18.72" fill="#245d29" stroke="#173f20"/>
-<circle cx="868.55" cy="240.02" r="4" fill="#cf4b2c"/><text x="874.55" y="232.02" font-size="14">2</text>
-<line x1="870.04" y1="314.66" x2="904.02" y2="244.81" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="904.02" y1="244.81" x2="919.98" y2="212.10" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="923.17" cy="205.55" r="19.66" fill="#245d29" stroke="#173f20"/>
-<circle cx="904.02" cy="244.81" r="4" fill="#cf4b2c"/><text x="910.02" y="236.81" font-size="14">3</text>
-<line x1="870.04" y1="314.66" x2="932.93" y2="269.07" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="932.93" y1="269.07" x2="962.38" y2="247.68" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="968.27" cy="243.40" r="19.66" fill="#245d29" stroke="#173f20"/>
-<circle cx="932.93" cy="269.07" r="4" fill="#cf4b2c"/><text x="938.93" y="261.07" font-size="14">4</text>
-<line x1="870.04" y1="314.66" x2="943.81" y2="303.17" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="943.81" y1="303.17" x2="979.77" y2="297.48" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="986.96" cy="296.34" r="18.72" fill="#245d29" stroke="#173f20"/>
-<circle cx="943.81" cy="303.17" r="4" fill="#cf4b2c"/><text x="949.81" y="295.17" font-size="14">5</text>
-<line x1="870.04" y1="314.66" x2="936.17" y2="336.36" stroke="#80ad59" stroke-width="13.52" stroke-linecap="round"/>
-<line x1="936.17" y1="336.36" x2="970.79" y2="347.61" stroke="#86b553" stroke-width="16.64" stroke-linecap="round"/>
-<circle cx="977.71" cy="349.86" r="17.78" fill="#245d29" stroke="#173f20"/>
-<circle cx="936.17" cy="336.36" r="4" fill="#cf4b2c"/><text x="942.17" y="328.36" font-size="14">6</text>
-<line x1="700.92" y1="164.69" x2="804.92" y2="164.69" stroke="#202528" stroke-width="22.880000000000003" stroke-linecap="round"/>
-<line x1="804.92" y1="164.69" x2="883.96" y2="164.69" stroke="#9ca8b0" stroke-width="5" stroke-linecap="round"/>
-<text x="655" y="700" font-size="15">Board 368.3 x 535.9 x 16 (thickness estimated)</text>
-<text x="655" y="724" font-size="15">Stem 34 x 100; stalks 16; crowns 34-38 across</text>
-<text x="655" y="748" font-size="15">Red dots: reference planes; side branch 26 mm beyond</text>
-<text x="40" y="845" font-size="19">Side elevation along one floret (schematic, untipped): mm above the board top</text>
-<line x1="45.0" y1="1060.0" x2="1170.0" y2="1060.0" stroke="#65747c" stroke-width="3"/>
-<rect x="573.0" y="940.0" width="60.0" height="123.0" fill="#f4d7cf" stroke="#2f4a20"/>
-<rect x="60.0" y="956.5" width="300.0" height="102.0" fill="#71a548" stroke="#2f4a20"/>
-<rect x="360.0" y="988.0" width="225.0" height="39.0" fill="#80ad59" stroke="#2f4a20"/>
-<rect x="585.0" y="983.5" width="105.0" height="48.0" fill="#86b553" stroke="#2f4a20"/>
-<ellipse cx="711.0" cy="994.0" rx="57.0" ry="37.5" fill="#245d29" stroke="#173f20"/>
-<line x1="663.0" y1="977.5" x2="663.0" y2="1037.5" stroke="#cf4b2c" stroke-width="2"/>
-<text x="573.0" y="928.0" font-size="14">shaded: cut band, 10-30 mm below the side branch (red)</text>
-<text x="60.0" y="1090.0" font-size="14">stem 34 dia, axis 17.5 up; shoot 16 dia; crown 34-38 across, top about 35; at rest the head tips 3.9 deg onto its crowns</text>
-<rect x="987.0" y="988.0" width="66.0" height="72.0" fill="#202528" stroke="#2f4a20"/>
-<text x="900.0" y="958.0" font-size="14">knife end view: handle 22 x 24,</text><text x="900.0" y="976.0" font-size="14">edge flush with its underside</text>
-<text x="40" y="1120" font-size="15">Angles -22,-49,-76,-104,-131,-158 degrees; bough radii 67,72,75,75,72,67 mm. See task.py for exact frames.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1050" viewBox="0 0 1200 1050">
+<rect width="1200" height="1050" fill="white"/><g font-family="Arial" fill="#17212a">
+<text x="40" y="35" font-size="22">Natural half head, paring knife and board: layouts A and B</text>
+<text x="40" y="62" font-size="16">Dimensions in mm; guide only. Green: produce. Red dots: severing reference planes.</text>
+<text x="65" y="101" font-size="19">Layout A: holding arm left</text>
+<rect x="65.0" y="125.0" width="383.03200000000004" height="557.3776" fill="#f2f3ec" stroke="#65747c" stroke-width="2"/>
+<polygon points="248.59,513.30 274.09,491.91 257.37,471.99 260.56,469.32 180.34,373.72 148.47,400.46 228.69,496.06 231.88,493.39" fill="#85ab65" stroke="#466d37"/>
+<line x1="227.29" y1="436.14" x2="259.71" y2="417.42" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="266.02" cy="413.78" r="19.76" fill="#245d29" stroke="#173f20"/>
+<circle cx="228.19" cy="435.62" r="3" fill="#cf4b2c"/><text x="233.19" y="428.62" font-size="13">1</text>
+<line x1="247.35" y1="460.04" x2="289.99" y2="460.04" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="297.27" cy="460.04" r="20.80" fill="#245d29" stroke="#173f20"/>
+<circle cx="253.59" cy="460.04" r="3" fill="#cf4b2c"/><text x="258.59" y="453.04" font-size="13">2</text>
+<line x1="259.28" y1="483.97" x2="298.87" y2="502.43" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="305.46" cy="505.51" r="22.88" fill="#245d29" stroke="#173f20"/>
+<circle cx="265.88" cy="487.05" r="3" fill="#cf4b2c"/><text x="270.88" y="480.05" font-size="13">3</text>
+<line x1="243.34" y1="497.34" x2="254.65" y2="539.53" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="256.53" cy="546.57" r="22.88" fill="#245d29" stroke="#173f20"/>
+<circle cx="245.23" cy="504.37" r="3" fill="#cf4b2c"/><text x="250.23" y="497.37" font-size="13">4</text>
+<line x1="221.85" y1="481.44" x2="214.45" y2="523.43" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="213.18" cy="530.60" r="20.80" fill="#245d29" stroke="#173f20"/>
+<circle cx="220.77" cy="487.58" r="3" fill="#cf4b2c"/><text x="225.77" y="480.58" font-size="13">5</text>
+<line x1="201.80" y1="457.54" x2="177.73" y2="486.22" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="173.05" cy="491.79" r="19.76" fill="#245d29" stroke="#173f20"/>
+<circle cx="201.13" cy="458.33" r="3" fill="#cf4b2c"/><text x="206.13" y="451.33" font-size="13">6</text>
+<line x1="350.12" y1="637.69" x2="246.12" y2="637.69" stroke="#202528" stroke-width="22.880000000000003" stroke-linecap="round"/>
+<line x1="246.12" y1="637.69" x2="167.08" y2="637.69" stroke="#9ca8b0" stroke-width="5" stroke-linecap="round"/>
+<text x="65" y="710" font-size="15">Board 368.3 x 535.9; knife blade 76</text>
+<text x="65" y="735" font-size="15">Stalks 27,32,33,33,32,27 long; thickness 7</text>
+<text x="65" y="760" font-size="15">Crowns 38,40,44,44,40,38; total mass 125 g</text>
+<text x="655" y="101" font-size="19">Layout B: holding arm right</text>
+<rect x="655.0" y="125.0" width="383.03200000000004" height="557.3776" fill="#f2f3ec" stroke="#65747c" stroke-width="2"/>
+<polygon points="864.09,315.47 838.59,294.07 821.88,313.99 818.69,311.32 738.47,406.92 770.34,433.66 850.56,338.06 847.37,335.38" fill="#85ab65" stroke="#466d37"/>
+<line x1="791.80" y1="349.84" x2="767.73" y2="321.16" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="763.05" cy="315.59" r="19.76" fill="#245d29" stroke="#173f20"/>
+<circle cx="791.13" cy="349.05" r="3" fill="#cf4b2c"/><text x="796.13" y="342.05" font-size="13">1</text>
+<line x1="811.85" y1="325.94" x2="804.45" y2="283.95" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="803.18" cy="276.78" r="20.80" fill="#245d29" stroke="#173f20"/>
+<circle cx="810.77" cy="319.80" r="3" fill="#cf4b2c"/><text x="815.77" y="312.80" font-size="13">2</text>
+<line x1="833.34" y1="310.04" x2="844.65" y2="267.84" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="846.53" cy="260.81" r="22.88" fill="#245d29" stroke="#173f20"/>
+<circle cx="835.23" cy="303.00" r="3" fill="#cf4b2c"/><text x="840.23" y="296.00" font-size="13">3</text>
+<line x1="849.28" y1="323.41" x2="888.87" y2="304.95" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="895.46" cy="301.87" r="22.88" fill="#245d29" stroke="#173f20"/>
+<circle cx="855.88" cy="320.33" r="3" fill="#cf4b2c"/><text x="860.88" y="313.33" font-size="13">4</text>
+<line x1="837.35" y1="347.33" x2="879.99" y2="347.33" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="887.27" cy="347.33" r="20.80" fill="#245d29" stroke="#173f20"/>
+<circle cx="843.59" cy="347.33" r="3" fill="#cf4b2c"/><text x="848.59" y="340.33" font-size="13">5</text>
+<line x1="817.29" y1="371.23" x2="849.71" y2="389.95" stroke="#86b553" stroke-width="7.28" stroke-linecap="round"/>
+<circle cx="856.02" cy="393.59" r="19.76" fill="#245d29" stroke="#173f20"/>
+<circle cx="818.19" cy="371.75" r="3" fill="#cf4b2c"/><text x="823.19" y="364.75" font-size="13">6</text>
+<line x1="940.12" y1="169.69" x2="836.12" y2="169.69" stroke="#202528" stroke-width="22.880000000000003" stroke-linecap="round"/>
+<line x1="836.12" y1="169.69" x2="757.08" y2="169.69" stroke="#9ca8b0" stroke-width="5" stroke-linecap="round"/>
+<text x="655" y="710" font-size="15">Board 368.3 x 535.9; knife blade 76</text>
+<text x="655" y="735" font-size="15">Stalks 27,32,33,33,32,27 long; thickness 7</text>
+<text x="655" y="760" font-size="15">Crowns 38,40,44,44,40,38; total mass 125 g</text>
+<text x="40" y="815" font-size="19">Measured sample and geometric estimates</text>
+<text x="40" y="845" font-size="16">Two heads, four halves: leaves off, halve through main stem, lay cut-face down. Timed 47 / 53 s per head.</text>
+<text x="40" y="872" font-size="16">Free stalks 23-39; thickness 5-10 (median 7); largest-six crowns 29-48. Crown acceptance remains 30-50.</text>
+<text x="40" y="899" font-size="16">Main stem: estimated original diameter 40, distal 25 long narrows to 32; length 145. Branch axes 13 above flat face.</text>
+<text x="40" y="926" font-size="16">Branch origins, angles, heights and individual mass allocation are estimates; no forced fan or printed holder.</text>
+<text x="40" y="953" font-size="16">Red reference to first side branch: 26. Cut-face acceptance: every point 10-30 below its first side branch.</text>
+<text x="40" y="980" font-size="16">This is a representative symmetric model within measured ranges, not a measured natural specimen outline.</text>
+<text x="40" y="1015" font-size="15">Guide only, not a full-size template. Transfer setup coordinates by ruler. See task.py for exact frames.</text>
 </g></svg>

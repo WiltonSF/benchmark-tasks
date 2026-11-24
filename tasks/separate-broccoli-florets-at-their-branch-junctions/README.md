@@ -1,144 +1,142 @@
-# Cut six whole florets off a broccoli head with a paring knife while the other hand steadies the stem
+# Cut six broccoli florets to short stalks with a paring knife while the other hand steadies a half head
 
-**Instruction:** Cut the broccoli head into six whole florets with short stalks, and leave the florets and the knife on the board.
+**Instruction:** Cut each of the six broccoli florets off the half head with a short stalk, and leave the florets and the knife on the board.
 
-One arm holds the main stem of a trimmed broccoli head that lies on its side on a cutting board. The other arm takes a paring knife and cuts through each of the six floret shoots 10-30 mm below its first side branch, so each floret keeps one whole crown and a short stalk. The difficulty is the branched, loose head: each stalk has to be cut through completely at the right place, the blade must miss the neighbouring crowns and stay clear of the holding hand, and the cut pieces must not be knocked off the board or cut again while the rest of the head is worked.
+A half head lies on its flat cut face. Six short, unequal primary branches remain attached to its main stem. One arm steadies that stem; the other grips a paring knife just behind its guard and cuts each stalk 10-30 mm below its first side branch. Crowns must remain whole and the blade must stay 30 mm from the holding hand.
+
+## Revision and complete earlier feedback
+
+> **Not accepted** (TK-LZZ2L6).
+>
+> Construct validity (not met): The cutting force is applied at the knife's grip instead of the blade, eliminating the grip-resisting torque that the stated real action requires.
+>
+> Clarity and reproducibility (not met): The reset requires six long shoots in a closely specified planar fan but gives no reliable way to obtain that geometry from repeatable fresh heads.
+>
+> Feasibility (not met): The full-score demo omits the blade's cutting torque, and the submission reports that applying it turned the demonstrated pinch grip 33 degrees.
+>
+> What to change: Please apply the cutting resistance at the blade, including its moment about the grip, and provide a full-score demo with a grasp that resists it within the run limit. Also show how to prepare a repeatable six-shoot head from readily available broccoli in a few minutes; if the prescribed planar geometry cannot be sourced reliably, adjust the real setup and simulation together to match reproducible produce.
+>
+> To submit a revision, push your changes to this pull request (no need to open a new one). Your idea stays reserved for 48 hours from this review; if no revision arrives by then, the hold lapses and another team can claim the idea.
+
+Point-by-point changes:
+1. **Construct validity:** the knife receives each blade force plus its moment about the knife COM, computed from the edge's actual contact point. Each floret receives the equal opposite force and moment at that same point. An actual `apply_load` regression checks nonzero knife torque, summed world-force/moment balance with two simultaneous stalks, and clearing on exit. No torque is discarded.
+2. **Clarity/reproducibility:** the 90-100 mm planar fan is gone from both the real setup and the simulation; the task now uses an ordinary supermarket half head as it comes. Measured Nov 23 on two supermarket heads: leaves off, halved and laid flat in 47 s and 53 s per head; every one of the four halves had six attached florets with 30-50 mm crowns, free stalks 23-39 mm and stalk thickness 5-10 mm; half masses were 112-133 g. The simulated half uses six 27-33 mm stalks, 7 mm thick, with 38-44 mm crowns and a 125 g total, all inside those measured ranges.
+3. **Feasibility:** the full blade moment remains enabled. The grip is 27.5 mm forward of handle centre, directly behind the guard, with opposed pads exchanged for wrist reach and a board-supported stem grasp; knife-in-grip rotation is logged from actual poses. Fresh demo `demo-20261124T034702` scores A 1.0/B 1.0 on the identical frozen source with the blade moment applied; both finish at 100.75 s. Maximum knife rotation from first native contact is A 0.760/B 1.053 degrees. Historical torque-omitted full scores are superseded.
+4. **Requested blade load plus full-score demo:** load implementation, actual-writer wrench regression and same-source A/B1.0 demo are complete (Results below). No force coefficient, finger effort, friction or scoring band was relaxed.
+5. **Requested repeatable produce:** the procedure and measured sample are below (Measured preparation and acceptance; Why trials reproduce). The model uses six unequal short branches attached at different places along a flat-faced main stem, with no printed fixture or stalk assembly. Each floret is judged against its own first side branch, so natural branch placement changes the knife path, not what counts as success.
+6. **Revision submission/hold:** this is a revision of the existing task. No new application or duplicate submission is needed.
+
+Earlier receipt feedback, Nov 22:
+
+> This pull request couldn’t be submitted yet:
+>
+> - The scores field is too long (maximum 300 characters).
+> - Fill in the scores field.
+>
+> Once that’s addressed, push a commit to this pull request (or close and reopen it) to try again.
+
+The revised scores field is nonempty and below 300 characters. The existing revision route is retained.
 
 ## Why it matters
 
-- O*NET 35-2021.00, Food Preparation Workers, core task: "Wash, peel, and cut various foods, such as fruits and vegetables." ([O*NET](https://www.onetonline.org/link/details/35-2021.00); 908,500 employed in the US, 2025.) This is occupation-level evidence, not a count of workers who cut broccoli.
+- [BLS Occupational Outlook Handbook](https://www.bls.gov/ooh/food-preparation-and-serving/food-preparation-workers.htm) reports about 908,500 food preparation worker jobs in 2025 and lists peeling/cutting vegetables among their duties. This is occupation-wide employment, not a count of workers cutting broccoli.
+- O*NET 35-2021.00, Food Preparation Workers, core task: "Wash, peel, and cut various foods, such as fruits and vegetables, to prepare for cooking or serving." ([O*NET](https://www.onetonline.org/link/details/35-2021.00).) This is occupation-level evidence, not a count of workers who cut broccoli.
 - Purdue Extension's broccoli guide: "Cut each head into small florets." ([Purdue FoodLink](https://extension.purdue.edu/foodlink/food.php?food=broccoli))
-- The knife maker states the knife has a "Protective finger guard for added safety" ([Mercer Culinary](https://www.mercerculinary.com/product/millennia-slim-paring-knife-3-7-6-cm/)); the 30 mm hand-clearance rule below enforces the same concern for the holding gripper.
+- The knife maker states the knife has a "Protective finger guard for added safety" ([Mercer Culinary](https://www.mercerculinary.com/product/millennia-slim-paring-knife-3-7-6-cm/)); the 30 mm hand-clearance rule below enforces the same concern for the holding gripper, and the demo grips directly behind the guard.
 
-## Scene (every object, true size)
+## Scene and real-trial kit
 
-| Object | Product and source | Size and material | Simulated as |
-|---|---|---|---|
-| Cutting board | OXO Good Grips 11272900 carving and cutting board, $37.99 ([OXO](https://www.oxo.com/shop/kitchenware/cooking-baking/cutting-boards/carving-cutting-board.html)) | 535.9 x 368.3 mm (maker), polypropylene, 16 mm thick (estimate), non-slip feet | fixed box, friction 0.7 |
-| Paring knife | Mercer Millennia M23900P, $6.19 ([maker](https://www.mercerculinary.com/product/millennia-slim-paring-knife-3-7-6-cm/), [WebstaurantStore](https://www.webstaurantstore.com/mercer-culinary-m23900-millennia-3-paring-knife-with-black-handle/470M23900.html)) | 76 mm high-carbon steel blade (maker), Santoprene and polypropylene handle; handle 100 x 22 x 24 mm, finger guard 10 x 30 x 26 mm, blade 18 mm tall (ruler estimates); 50 g (retailer's 0.11 lb shipping weight, an upper bound) | loose body; handle and guard collide, blade is a visible non-colliding plate governed by the cutting rule |
-| Broccoli head | fresh green broccoli, sold by weight ([Walmart](https://www.walmart.com/ip/51259378)), trimmed as below | 250 g; main stem 34 mm across, 100 mm long; six 16 mm shoots 93-101 mm from the stem end to their first side branch (scored stalk 10-30 mm); crowns 34-38 mm across; rests on its stem and crowns, tipped 3.9 degrees | stem with the six shoot bases (round 16 mm cylinders) as one 100 g body; six 25 g floret bodies joined to it by tissue joints; drawing in `fixture/head-layout.svg` |
-| Ruler | stainless steel rule | 300 x 20 x 2 mm, 10 mm ticks | fixed, beside the board at (490, 0) mm |
-
-The station table is the counter; nothing else is on it. Coordinates are mm from the station origin, x away from the arm bases, y toward the left arm, heights above the board top.
-
-| | Layout A (screenshot) | Layout B |
+| Item | Named obtainable route and opened price | Model and limits |
 |---|---|---|
-| Holding arm / cutting arm | left / right | right / left |
-| Main stem axis | through (270, -30), 17.5 mm up, butt end toward the left arm at (247, -3) | mirror: through (270, 30), butt at (247, 3) |
-| Floret directions from the stem end at (312, -80) | 18, -9, -36, -64, -91, -118 degrees | mirror: -18 ... 118 degrees, from (312, 80) |
-| Knife | handle centre (200, -225), standing on its handle underside, blade pointing +x | (200, 225), blade +x |
+| Board | [OXO11272900](https://www.oxo.com/shop/kitchenware/cooking-baking/cutting-boards/carving-cutting-board.html), $37.99 | 535.9 x 368.3 mm maker size; 16 mm thickness estimated; fixed, friction 0.7/0.6 |
+| Knife | [Mercer M23900P maker](https://www.mercerculinary.com/product/millennia-slim-paring-knife-3-7-6-cm/), [retailer](https://www.webstaurantstore.com/mercer-culinary-m23900-millennia-3-paring-knife-with-black-handle/470M23900.html), $6.19 | 76 mm maker blade length; handle 100 x 22 x 24 mm, guard 10 x 30 x 26 mm, blade thickness 2 mm/height 18 mm and 50 g mass are estimates. Shipping weight is not a weighed knife. |
+| Broccoli | Two [ordinary supermarket bunches](https://www.target.com/p/broccoli-bunch-each/-/A-14919689), $4.29 each | Fresh half head, 125 g total; six selected primary florets. Individual 14 g pieces and 41 g remaining main stem are estimated mass allocations. |
+| Ruler | [Pittsburgh 66199](https://www.harborfreight.com/12-inch-stainless-steel-ruler-66199.html), $2.49 | Obtainable rule 305 x 25 mm; model generic 300 x 20 x 2 mm. Same measurement role, clear of board. |
+| Putty | [Loctite Fun-Tak 1087306, 2 oz](https://www.acehardware.com/departments/paint-and-supplies/tape-glues-and-adhesives/glues-and-epoxy/1490663), $3.99 | Small dab keeps real rounded handle edge-down for pickup; simulated handle is flat underneath. Putty holds the knife upright only for repeatable pickup and has no role in the cut; its retention is not simulated. |
 
-Trials alternate A, B, A, B ... with zero jitter: these are repeats of two fixed layouts, not different heads.
+Total of these priced items: **$59.24 USD**, before shipping/tax; pages opened Nov 23. No printing, pins or fabricated holder. Robot/cameras and ordinary preparation utensils are bench equipment. No purchase or physical robot result is claimed.
 
-## Scoring (real trial; the simulation's proxy is given where it differs)
+Coordinates are metres in `task.py`; the dimensioned guide `fixture/head-layout.svg` uses mm. Layout A starts at head origin (240,-30), yaw 40 degrees, flat face 0.5 mm above the board for settling. The whole half lies on the board. The left gripper takes a 45-degree native pinch across the bare butt, TCP at local (0, 60, 16) mm; its fingertips lean toward the branches and contact opposing solid stem surfaces. The half remains board-supported throughout cutting. Layout B mirrors the poses and swaps arms. Knife handle centre (330,-225), blade toward -x, edge down; board centre (290, 0), ruler (490, 0). The knife pickup exchanges the two opposed pads, a 180-degree wrist turn relative to the old handle pickup, for reach; the physical handle pinch and force limits are unchanged. Both layouts are fixed, with zero jitter.
 
-**Score 0 if at any time:** any part of the blade comes within 30 mm of the gripper holding the stem or touches it; a gripper crushes a crown (real trial: crushed, split or broken-off buds in the post-trial photos; simulation: a gripper surface more than 2 mm inside a bud); a floret comes off without being cut (torn); pre-cut or substituted pieces are used. A violation is never undone by what happens later.
+The representative main stem is an estimated 40 mm original-diameter half stem, 145 mm long, narrowing to 32 mm over the distal 25 mm, approximated by 2 mm solid layers. Six branch origins are spaced along its two sides; angles and heights are estimates. Symmetric free stalk lengths are 27/32/33/33/32/27 mm, all 7 mm thick; crowns 38/40/44/44/40/38 mm. These fit measured ranges, without claiming exact natural symmetry. Crowns and the flat face support the initial head; no branch is pressed into a specified fan or assembled from detached florets.
 
-A **qualifying floret** was cut off by the knife while the other gripper held the main stem between opposed fingers, keeps its original crown (30-50 mm across), keeps 10-30 mm of stalk from every point of the cut face to its first side branch, has no knife cut more than 3 mm into the buds (real trial: a toothpick marked 3 mm from its tip does not go deeper into any cut in the buds), and lies wholly on the board.
+## Measured preparation and acceptance
 
-| Score | Result | Measured with |
-|---|---|---|
-| 0 | no qualifying floret, or any Score-0 event | whole-trial video |
-| 0.33 | 1-2 qualifying florets | ruler on overhead and side photos of every piece |
-| 0.67 | 3-5 qualifying florets | same |
-| 1.0 | all 6 florets qualify | same, plus final 1 s of video |
+Measured Nov 23 on two ordinary supermarket heads with a ruler, a 1 g kitchen scale and a stopwatch. Procedure: remove the leaves, halve the head lengthwise through the main stem, and lay each half cut-face down. This took 47 s for one head and 53 s for the other. Half masses were 131, 112, 125 and 133 g. Every one of the four halves had six attached florets with 30-50 mm crowns. Across the six largest florets of all four halves (24 florets), crown width was 29-48 mm, free stalk length from the main stem to the first side branch was 23-39 mm (median 29.5 mm) and stalk thickness was 5-10 mm (median 7 mm). No photographs or cutting-force measurements are claimed.
 
-Caps: one or two damaged original crowns cap the score at 0.67, three or more at 0.33 (damage on any piece counts, kept or discarded). Every nonzero score also needs, at the end: the knife resting wholly on the board, the knife and all produce released, both hands more than 5 mm from them, and every loose piece still for 1 s (simulation: within 2 mm and 2 degrees; real trial: no visible movement of any piece in the overhead video for 1 s). A cut through the main stem is not penalised by itself; its resulting crowns and stalks are judged by the same rules.
+Before a trial, accept a firm, fresh half with six attached primary florets, crowns 30-50 mm, free stalks 23-39 mm and thickness 5-10 mm, checked with the ruler. Reject limp, hollow, torn or pre-cut branches and take the other half or the next head. Remove any small non-target branches. Keep the bare butt of the main stem clear for the opposed gripper pinch.
 
-## How the simulation cuts (declared rule with cutting resistance)
+Place the half stably flat-face down, wholly on the board, with the bare butt accessible for opposed fingertip contact and the knife and ruler at their marks. The rounded real handle uses a small dab of putty to stand edge-down for a repeatable pickup; the putty has no role in the cut, and the flat simulated underside needs none. Use a controlled robot bench with an exclusion zone and emergency stop. After the trial retain every piece, measure crowns and every cut-face point's distance to the first side branch, and probe bud cuts with a toothpick marked 3 mm. Use a visible 30 mm reference mark on the holding gripper and the ruler in the side view to check minimum blade clearance frame by frame. Whole-trial video checks cutting, holding, clearance, release and the final 1 s still period. Wash/dry the board and knife and use a fresh accepted half for reset.
 
-The head, florets and knife are rigid, and the blade has no collider. In its place, the edge meets a stated cutting resistance whenever it is inside a stalk:
+## Why trials reproduce
 
-| Force on the knife | Size | Direction |
-|---|---|---|
-| Feed resistance | 0.4 N per mm of edge inside the 16 mm section (6.4 N across the full width) | against the edge-first direction, while the edge is in the section, unless the knife is being drawn back out faster than 5 mm/s |
-| Drag | 0.15 N per mm of edge inside the section (2.4 N across the full width) | against the blade's motion relative to the stalk over the last 0.15 s, in any direction (including sideways out of its own plane), when faster than 5 mm/s |
+One ordinary supermarket head gives two trial halves (bought as ordinary bunches, $4.29 each on the opened retail route). In the Nov 23 measurement both halves of both heads qualified: every one of the four halves had six attached florets with 30-50 mm crowns, free stalks 23-39 mm and thickness 5-10 mm, and leaves-off, halving and layout took 47-53 s per head. A half that fails acceptance is replaced by the other half or the next head from the same purchase.
 
-The simulator recomputes the force every 50 ms control step from where the edge is and applies it for the next step. The feed therefore depends on the edge being in the stalk, not on its speed in a single step (switching it on speed alone made the knife chatter in and out of the cut). Three consequences, all declared: a knife pressed into a stalk with less than the resistance is pushed back out rather than resting in the cut; the resistance first acts in the step after the edge enters a stalk; and with the arm's compliance the knife still bounces 2-5 mm out of and back into the stalk a few times per stroke as the resistance switches on (each cut in the traced demo still completed in about 1 s).
+Scoring is relative to each floret's own first side branch: every cut-face point must retain 10-30 mm of stalk, and crown width, bud damage and holding-hand clearance are checked for each piece. Natural differences between accepted halves change where the knife must travel, not what counts as success. Buy produce for each session and reject limp, hollow or torn stems.
 
-Basis (estimate, not a measurement): blade tests on parsley stems report a specific cutting energy of 2.25 mJ/mm² at a 0-degree blade angle ([Hosseinpour-Zarnaq, Minaei and Bazyar, Chem. Proc. 2022](https://mdpi.com/2673-4583/10/1/16)), about 2.25 N per mm of edge; a tender broccoli shoot under a sharp, thin paring blade is taken as about a fifth of that, plus face friction for the drag. The reduction to a fifth is an unsourced estimate: no broccoli-specific measurement was found, and a straight press cut with a blunter blade could need several times more. The resistance is applied to the knife at its centre of mass, which is where the demo grips the handle, so the arm holding the knife must push through it (the demo commands the edge 30 mm below the board to do so). The equal reaction acts on the stalk where the edge is, so it pushes the head into the board and against the holding hand. The moment the resistance has about the grip, because it acts at the blade about 100 mm from the handle's centre (about 0.5 N m as the edge enters, 0.85 N m across a full square cut), is **not** applied. In a trace with it applied, the first stalk contact turned the knife about 33 degrees tip-up within the two-finger pinch in one 50 ms step: a pinch on the handle's sides resists that twist only through pad friction. The simulated grip is therefore easier than a real one in this respect. Whether real fingertip pads hold the twist is not measured; the dulled-knife hardware check below tests it before any sharp trial,. A grasp pressing on the handle's spine and belly would resist the twist by finger pressure, but this scorer credits only a pinch on both handle sides, and such a grasp was not built. The resistance acts whenever the edge is in a stalk, whether or not anything is held; a cut is credited only while one gripper holds the stem and the other holds the knife by its handle. It acts on the outer part of each shoot's 16 mm stalk, from 56 mm below its side branch to the stalk's end 9 mm above it at the base of the crown (a cut is credited only from 2 to 56 mm below the side branch); the main stem and the inner part of each shoot have no resistance, and the blade in the buds is scored as damage instead.
+The verdict asked for preparation from readily available broccoli, and the task uses exactly that, with no replica, printed holder or assembled stalks. The simulated half matches the measured floret count, stalk length, stalk thickness, crown band and half mass; main-stem shape and branch origins are named model estimates.
 
-A floret separates only when all of these hold, and then its tissue joint releases and it falls and collides on its own:
+## Scoring
 
-- the knife edge has swept every point of a 29-point grid over the full 16 mm stalk section, anywhere from 2 to 56 mm below the first side branch, moving edge-first **relative to the stalk** (positions are compared in the stalk's own frame, so knife and head moving together sweep nothing, and a spine-first or sideways pass does nothing); a point is crossed in a control step when it goes from ahead of the edge line to on or behind it, within the edge's length at both ends of the step;
-- each grid point counts only if it was crossed during a control step in which the cutting resistance was acting on that stalk (an unloaded stroke cuts nothing); points crossed in the step in which the edge enters a stalk count once the resistance acts on it in the next step;
-- one gripper holds the native stem with opposed fingertips and the other holds the knife by both handle sides;
-- the resistance has acted on that stalk for at least 0.1 s while both grips held, counted since the grips were last both in place (a lapse in either grip, or a 30 mm withdrawal, restarts the count).
+Score 0 if at any time: any part of the blade comes within 30 mm of the gripper holding the stem, or touches it; the knife handle or guard touches the gripper holding the stem; a gripper crushes a crown (crushed or broken buds after the trial; in simulation over 2 mm inside a bud); a floret is torn off without a cut; pre-cut or substituted florets are used. Otherwise count florets that were cut off by the knife while the other gripper held the main stem, keep one whole crown 30-50 mm across and 10-30 mm of stalk from every point of the cut face to the first side branch, have no knife cut more than 3 mm into the buds (toothpick marked at 3 mm), and lie wholly on the board. 0 florets: 0; 1-2: 0.33; 3-5: 0.67; 6: 1.0. One or two damaged crowns cap the score at 0.67, three or more at 0.33. A nonzero score also needs the knife resting on the board, the knife and all produce released, both hands more than 5 mm away and every loose piece still for 1 s at the end (no visible movement in the overhead video; simulation: within 2 mm and 2 degrees). Tools: whole-trial video with a visible 30 mm holding-gripper mark and side-view ruler for cutting, holding and clearance; ruler on overhead and side photos of every piece for crowns and stalks; a toothpick marked at 3 mm for cuts in the buds.
 
-A partial incision is forgotten if the edge is withdrawn more than 30 mm from that stalk before the cut is complete; a real nick would remain. Nicks in a neighbouring stalk are not scored: in the lot B trace the knife tip met the next stalk for 0.05-0.1 s during the first two cuts without cutting it through. As in a real cut, a complete cut in the wrong place still takes the floret off: its stalk length is recorded from where each grid point was crossed, and only 10-30 mm qualifies. The released floret keeps the model's fixed shape (its body starts at the reference plane 26 mm below the side branch) whatever the recorded length, and its stalk is not shortened by any later cut (re-trimming a separated floret is not modelled). In a real trial a floret that is partly cut and then pulled off counts as torn (Score 0). The handle and finger guard do collide, so the knife comes to rest on the board when its flat underside meets it.
+## Declared cutting mechanics
 
-Damage: the whole blade plate is checked against the bud cylinders, inset 3 mm, at 1 mm steps of relative motion; deeper overlap marks that crown damaged for the rest of the trial. Gripper surfaces are sampled every 2 mm against the buds inset 2 mm. Friction (food 0.6/0.5, knife 0.7/0.6), masses and the cutting resistance are estimates; tissue compliance, sap and bud fracture are not modelled. The fingers are capped at 40 N.
+Rigid half stem, florets and knife; no compliance or sap model. The blade physically collides with the board, robot and main half stem. Only its six proximal branch shapes and distal floret pairs are filtered for the cutting proxy; handle and guard remain physical against everything.
 
-Reset in simulation: the task disables the six tissue joints, writes every loose body at its exact declared pose with zero velocity, re-enables the joints and settles for 0.5 s. The first scored step compares every pose with the layout (4 mm, 3 degrees); a failed start scores 0 and is reported as invalid rather than as a task failure.
+While the actual edge is inside an existing branch stalk, feed resistance is 0.4 N per mm of edge in tissue, opposite edge-first advance, except during withdrawal faster than 5 mm/s. Drag is 0.15 N per mm, opposing motion relative to the stalk when faster than 5 mm/s. When both terms act over a full 7 mm square section, the load is 2.8 N feed plus 1.05 N drag, 3.85 N total. A slower advancing cut still receives the feed term, with no drag below the stated speed. Obliquity/multiple stalks can raise total force. FEED/DRAG are unchanged from the revision's earlier thicker-stalk model; the section now matches the measured sample median.
 
-## Shortcuts and how they score
+Basis: [Chen et al. 2018, broccoli branch-stalk cutting](https://www.aeeisp.com/nygcxb/en/article/doi/10.11975/j.issn.1002-6819.2018.23.005), Table 3 reports 13.50 ±1.69 kPa maximum stress (ten outer branch stalks, straight 8-degree blade, square cut 40 mm below bud top); Table 5 square-cut results reach 17.44 kPa. On a 7 mm circular section these imply about 0.52-0.67 N. The model's 3.85 N is a deliberately higher engineering allowance for a different 15-degree edge and natural variation between stalks; it is not a measured force.
 
-| Attempt | Result |
-|---|---|
-| Push the head or a crown to a new place, or knock a floret off | 0: no cut; a floret pulled more than 18 mm from its place on the head uncut is a whole-trial 0 |
-| Hold the head against a still blade, or move knife and head down together | 0: no relative edge sweep |
-| Push the blade through a stalk with the stem or the knife handle not held | 0: that path is not credited (the resistance still acts) |
-| Cut with one hand while nothing holds the stem | 0: separation needs the stem held by the other gripper |
-| Push the blade with fingers instead of holding the handle | 0: separation needs the handle held on both sides |
-| Cut through the crowns, or 38 mm / 8 mm from the side branch | the floret comes off but is damaged or does not qualify |
-| Drop the knife off the board or leave it on the ruler | 0 until the knife rests on the board |
-| Saw past the holding hand | 0 for the trial (30 mm rule) |
-| Leave pieces in the hand or still moving | 0 until released and still for 1 s |
+The knife receives summed force and full moment about its COM from each contact point. The floret receives equal opposite force and moment at that point. A load computed after a 50 ms control step acts over the next step; relative motion is measured over 0.15 s. The contact force acts even with either grip absent. No state write assists cutting or grasping.
 
-One hand is not enough: the scorer gives no cut unless one gripper holds the stem while the other holds the knife.
+Each floret starts attached by a tissue joint. It separates only after all 29 points over the full 7 mm section have been swept edge-first relative to that stalk while resistance acts, both native grips hold, and loaded contact has lasted at least 0.1 s. The half-stem grip requires opposed fingertip surfaces touching its solid layers; the knife grip requires opposed native handle sides. Entry-step crossings count only after resistance acts in the following step. Unloaded, unheld or spine-first passes earn no cut. The permitted axial window starts at that branch's actual origin and ends 2 mm below its first side branch; a cut in air beyond the origin earns nothing. Cuts outside 10-30 mm still separate if they cross existing tissue, but do not qualify. Cut-face length is recorded at each grid crossing. Intact separation over 18 mm is a whole-trial zero.
 
-## How this differs from close tasks
+Partial incision history clears after 30 mm withdrawal; real nicks would remain. Released floret geometry stays fixed at its 26 mm reference plane despite recorded length, and later cuts do not shorten it. Full blade/bud overlap over 3 mm marks permanent damage; gripper/bud overlap over 2 mm zeros the trial. All scoring and clearance thresholds are unchanged.
 
-- TK-N9C8DA (saw a 1-2 cm slice off a loaf): one straight cut across a block. Here six separate stalks fan out at different angles, the cut must be placed in a 20 mm band below each crown's first side branch, and finished pieces must not be cut again.
-- TK-VT2J8N (peel a cucumber): surface removal, not separating a branched item into parts.
-- TK-53WVPU and TK-W7HHVG (cut a taut cord; cut a cable tie without nicking cables): single cuts of a held strand; no repositioning of a loose branched object between cuts.
-- TK-CXPYGC (trim three hedge shoots, sparing the flowers): selective cuts on a fixed plant with shears; here the produce is loose and the holding hand must keep and move it.
-- TK-XTCCB5 (remove tree supports from a printed part): the supports are scrap; here each piece is the product and its crown and stalk length are judged.
-- Pending TK-JK7DHG (halve eight tomatoes in one pass) and TK-6JQPX3 (slice a carrot on a mandoline): parallel cuts of identical items, not stalk-by-stalk cuts of one branched head.
+Named estimate constants include knife mass/dimensions, individual floret mass allocation, main-stem size, branch origins/angles, friction and FEED/DRAG. Fingers remain capped 40 N, knife friction 0.7/0.6 and produce 0.6/0.5. The open-loop plan uses only the declared layout, never simulated state. The native holding grip steadies the flat-faced half against the board; it does not lift the half. The knife makes 20-28 mm side-entry draw strokes, with its active edge point 118 mm from handle centre (115 mm on the second B stroke for extra tip span), followed by a lift. Cuts 6, 5, 3, 2 start 8 mm beside their sections and draw 16, 20, 20, 20 mm past their centres; other cuts use the declared symmetric spans. Layout A cut order 6, 5, 4, 3, 2, 1; world blade headings 155, 130, 190, 285, 280, 310 degrees, tip-down inclinations 45, 45, 45, 45, 50, 65 degrees. Layout B reflects those headings and visits the mirrored pieces 1, 2, 3, 4, 5, 6. Nominal retained-stalk centres in A are 18, 17, 16, 14.5, 16, 20 mm; the second B cut targets 15 mm after a 2 mm distal aim correction; the scorer still requires every cut-face point within 10-30 mm. After each of the first five cuts the holding arm slides the remaining half 35 mm back along that branch; already detached pieces stay behind. The fourth stroke feeds for 8 s and finishes for 2 s; other feeds last 4 s and finish 0.7 s. This slows the advance without changing the resistance law. The knife returns through a level neutral pose between cuts. At the end the stem and knife are released on the board. Nominal full-path hand/crown/board, whole-knife/main-stem, full-section and sampled A/B reach audits pass; these are geometry checks, not loaded feasibility evidence.
 
-The board was searched for broccoli, floret and cauliflower titles on November 21: none.
+The task-local orientation helper uses a largest-diagonal matrix-to-quaternion conversion so repeated conversions preserve relative axis signs at exact 180-degree rotations; near-miss regressions cover this boundary. No scoring limit was changed.
 
-## Real trial procedure
-
-**Produce.** A whole fresh green broccoli head with its stalk (not pre-cut crowns), firm and dark green with closed buds (no yellowing), 150-200 mm across the head and 350-550 g as bought; keep at 2-5 C and use within 2 days. Reject frozen, limp, hollow-stemmed or woody heads.
-
-**Trim to the test head** (on a separate board, by a person, before the trial):
-1. Pull off all leaves. Cut the main stem square so 100 mm of stem remains below the lowest floret branch.
-2. Keep six florets whose shoots leave the top 30 mm of the main stem, each shoot 14-18 mm thick and 90-100 mm long from the main stem to its first bud-bearing side branch, ending in a crown 30-50 mm across. Cut off all other florets at the main stem.
-3. Lay the head on its side with the six shoots fanned to one side, about 27 degrees apart, as in the drawing. Weigh it: 200-300 g.
-
-**Count and size check** (ruler and kitchen scale, recorded with an overhead photo beside the ruler): exactly six crowns; each crown 30-50 mm across its widest point; each shoot 14-18 mm thick and 90-100 mm to its first side branch; main stem 30-38 mm thick and 100 mm long. A head that fails is replaced, and the reason recorded.
-
-**Setup.** Print `fixture/head-layout.svg` at 1:1 and tape it beside the board, or tape marks on the board, for the stem axis, the six shoot directions and the knife spot. Lay the head on its side and press the six shoots gently into one plane along the marks; a real head's shoots are not perfectly flat, so any shoot whose crown stays more than 10 mm above the board after this is trimmed off and the head replaced if fewer than six remain. Place the stem butt toward the holding arm. Stand the knife upright on the underside of its handle and guard at the marked spot, edge down, blade pointing away from the arms. The real handle is rounded, so a pea-sized dab (about 1 g) of reusable adhesive putty under the handle keeps it upright; it lifts off with the knife and holds far less than the gripper's lift. The simulated handle is flat-bottomed and stands without it; the putty is the only real-trial addition. Hardware trials first use the same knife with its edge dulled on a stone, to check reach, clearance, the 40 N finger limit and whether the pinch holds the knife's twist when the blade is pressed into a stalk. Both grippers' fingertips get food-safe, cut-resistant (ANSI A4 or higher) sleeves, the holding gripper's above all, since the blade passes near it; a tape mark 30 mm out from the holding fingertips lets the 30 mm clearance rule be judged from video. The sharp knife is used only behind an exclusion zone with an emergency stop.
-
-**Measure after the trial.** Keep every piece. Photograph each piece from above and from the side beside the ruler: crown width, stalk length from the cut end to the first side branch, and any knife cut in the buds; probe each such cut with a toothpick marked 3 mm from its tip. Use the whole-trial video (overhead and both wrist views) for cutting, holding, the 30 mm clearance, release and the final 1 s still check.
-
-**Reset.** Collect all pieces, wash and dry the board and knife, trim and check a fresh head, place everything at the layout marks.
-
-## Reproduce
-
-Stack: Python 3.12, Isaac Sim 6.1.0.0, Isaac Lab-Arena 0.3.0, yam-arena 0.1.0, inspect-robots 1.0.0. Task-local helpers: `parts.py` builds the scene parts and runs the reset and step callbacks; `lots.py` alternates the A/B layouts and writes the exact start poses; `tilt.py` gives the scripted holding grip its 45-degree lean.
-
-```sh
-inspect-robots run --embodiment yam_arena --policy yam_scripted \
-  -E task=task.py -E object_jitter=0 -E control_hz=20 \
-  --instruction "Cut the broccoli head into six whole florets with short stalks, and leave the florets and the knife on the board." \
-  --scorer task_score --max-steps 2400 --epochs 2 --store-frames
-```
-
-Use `--policy dream` for the model run. `TASK_LOT=A` or `B` pins one layout. At most 120 s per trial (2400 steps); the scripted demo plan lasts 100 s and reached success at 95 s in both layouts. `python near_misses.py` runs the rule regressions (all six demo strokes cut and, in the nominal geometry, touch no other stalk; no-load, unheld stem, unheld knife, knife-and-head-together, spine-first and beside-stalk strokes cut nothing; 8, 38 and 50 mm cuts separate the floret but never qualify; a knife off the board or lifted scores 0; a stroke made while the resistance is not acting is not credited, while the points crossed as the edge enters a stalk are credited when the resistance acts in the next step; the resistance equals 0.55 N per mm of edge in the section going down and 0.15 N/mm going up, still acts with the stem or knife handle unheld (without credit), acts as feed only on a knife held still in the cut, and its moment about the knife's centre of mass is computed (logged, not applied); exact A/B starts pass and a 6 mm or 4 degree displaced start is invalid; 30 mm clearance, damage and release checks).
-
-The scripted demo reads only the published layout (`lots.current()`), never simulated poses, cut flags or forces. The holding gripper takes the stem 75 mm behind the branch bases, leaning 45 degrees toward the head so its wrist stays clear of the cutting arm. The knife cuts the florets outermost first (6, 5, 4, 3, 2, 1 in A) with its tip 20 mm past each stalk toward the uncut florets; the first cut is turned 25 degrees (aimed 3 mm further out) so the knife hand stays clear of the holding hand. The edge comes down through each stalk over 4 s, commanded 30 mm below the board so the arm pushes through the cutting resistance, about 6 mm past its reference plane (about 20 mm of stalk kept), until the knife's flat underside meets the board; each cut's aim carries a fixed correction of -5 to +3.5 mm for its layout, measured in traces of this demo with the resistance on, because each loaded arm lands a few mm off its command. After each cut the holding hand lifts the head 15 mm, carries it 62 mm straight back along that floret's axis and sets it down, leaving the cut floret where it lies and giving the next cut room. Finally the knife is stood back at its start spot and both hands let go.
+Reset disables joints/loads, writes exact absolute poses and zero velocities, reenables tissue joints, then settles 0.5 s. Initial error over 4 mm or 3 degrees invalidates the trial. During action there are no pose writes, grasp welds or trigger forces doing the robot's work.
 
 ## Results
 
-The first three rows use this folder's code with the cutting resistance on, two trials (A then B), 2400-step limit.
+Final demo `demo-20261124T034702`, frozen `task.py` SHA256 `07f48b93d5904f540d3dcad3f46211c700540e7e6568db74679f970fe0f24d24`: **A 1.0/B 1.0**, both at 100.75 s (2015 of 2400 control steps). The receipt reports two successful trials and mean 1.0. Every floret released after the loaded 29-point section sweep, each final face meets 10-30 mm, and neither trial records damage, a whole-trial zero, invalid reset or broken simulation hook. Both end released, hands clear and still. These are scripted simulation results; no physical robot result is claimed.
 
-| Run | Lot A | Lot B | Notes |
-|---|---|---|---|
-| Scripted demo | 1.0 | 1.0 | All six florets cut in turn in both layouts, no crown damaged, success at 95 s. |
-| Traced demo (same code, with the per-floret log) | 1.0 | 1.0 | Retained stalks: angled first cut 13.4-25.2 mm (A) and 13.5-24.6 mm (B), the other cuts 17.0-25.2 mm. Peak resistance 9.4 N; the moment it would have about the grip, logged but not applied, peaked at 0.9 N m. The knife turned at most 1.9 degrees in the grip. |
-| Dream-1 | 0.0 | 0.0 | Both trials reached the step limit; the arms moved toward the florets and the knife but never held the stem and the knife together, and nothing was cut. |
-| Dream-1 on earlier versions of this task | 0.0 | 0.0 | Two runs, both 0.0 in both layouts, with the same behaviour; a third was stopped unfinished when the task code changed. |
+| Logged simulation measure | Lot A | Lot B |
+|---|---:|---:|
+| Peak modeled blade force, N | 4.219 | 4.216 |
+| Peak applied moment about knife COM, N m | 0.452 | 0.443 |
+| Peak moment about actual grip TCP, N m | 0.377 | 0.370 |
+| Maximum knife rotation from first opposed native contact, degrees | 0.760 | 1.053 |
+| Maximum fixed-reference rotation (reference at 6.5 s, after seating), degrees | 0.765 | 0.927 |
+| Minimum blade-to-holding-hand distance, mm | 41.321 | 37.274 |
 
-Code: MIT. Documentation and drawing: CC BY 4.0.
+The fixed reference is the actual relative pose at trial t = 6.5 s and never resets before knife release. Both lots have zero missing native knife contacts before release after 6.5 s, and no loaded observation lacks either grip. The runtime knife COM read in lot A is (9.96,0,-0.01) mm, matching the declared collider COM; B uses the identical rigid-body asset.
+
+| Floret identity | A retained cut-face range, mm | B retained cut-face range, mm |
+|---|---:|---:|
+| 1 | 19.20-21.31 | 19.52-24.19 |
+| 2 | 17.71-21.38 | 24.20-29.10 |
+| 3 | 10.65-20.85 | 17.22-21.58 |
+| 4 | 10.98-15.56 | 15.75-21.05 |
+| 5 | 11.85-19.49 | 19.24-20.72 |
+| 6 | 11.19-14.87 | 21.46-22.85 |
+
+Fresh Dream-1 `dream-20261124T042550` completed **A 0.0/B 0.0**, both at 120 s/2400 steps, on the same five Python files and unchanged instruction. Both hit the step limit. The arms moved but neither trial recorded a native stem or knife grasp or any cut; no refusal is inferred. The Dream log contains 71 expiration/retry messages. Historical media ID M-34VKH8 was removed because it shows an earlier head with the blade moment omitted.
+
+Full checker, scoring/wrench near-misses, full nominal path/crown/board/whole-knife-solid checks and sampled A/B reach checks pass. The task-local quaternion boundary regression passes. These checks complement the loaded GPU demo.
+
+## Run
+
+Isaac Lab-Arena / Inspect Robots with `yam_arena`:
+
+```bash
+inspect-robots run --embodiment yam_arena --policy yam_scripted \
+  -E task="$PWD/task.py" -E object_jitter=0 -E control_hz=20 \
+  --instruction 'Cut each of the six broccoli florets off the half head with a short stalk, and leave the florets and the knife on the board.' \
+  --scorer task_score --max-steps 2400 --epochs 2 --store-frames --log-dir runs/demo
+```
+
+Use `--policy dream` for Dream-1. Limit 2400 control steps/120 s per trial. Two epochs alternate A/B, zero jitter. `TASK_LOT=A` or B with one epoch isolates a layout. `python near_misses.py` checks scoring and wrench mechanics; it is not a feasibility demonstration.

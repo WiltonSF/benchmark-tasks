@@ -59,13 +59,25 @@ def _quat_to_matrix(q) -> np.ndarray:
 
 
 def _matrix_to_quat(m) -> np.ndarray:
-    """xyzw, w >= 0."""
-    w = math.sqrt(max(0.0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2
-    x = math.copysign(math.sqrt(max(0.0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2, m[2, 1] - m[1, 2])
-    y = math.copysign(math.sqrt(max(0.0, 1 - m[0, 0] + m[1, 1] - m[2, 2])) / 2, m[0, 2] - m[2, 0])
-    z = math.copysign(math.sqrt(max(0.0, 1 - m[0, 0] - m[1, 1] + m[2, 2])) / 2, m[1, 0] - m[0, 1])
-    q = np.array([x, y, z, w])
-    return q / np.linalg.norm(q)
+    """xyzw, w >= 0; preserve relative axis signs for rotations at and near180 degrees."""
+    m = np.asarray(m, dtype=float)
+    trace = float(np.trace(m))
+    if trace > 0:
+        s = 2*math.sqrt(max(0.,1+trace))
+        q = np.array([(m[2,1]-m[1,2])/s,(m[0,2]-m[2,0])/s,(m[1,0]-m[0,1])/s,s/4])
+    else:
+        i = int(np.argmax(np.diag(m)))
+        if i == 0:
+            s = 2*math.sqrt(max(0.,1+m[0,0]-m[1,1]-m[2,2]))
+            q = np.array([s/4,(m[0,1]+m[1,0])/s,(m[0,2]+m[2,0])/s,(m[2,1]-m[1,2])/s])
+        elif i == 1:
+            s = 2*math.sqrt(max(0.,1+m[1,1]-m[0,0]-m[2,2]))
+            q = np.array([(m[0,1]+m[1,0])/s,s/4,(m[1,2]+m[2,1])/s,(m[0,2]-m[2,0])/s])
+        else:
+            s = 2*math.sqrt(max(0.,1+m[2,2]-m[0,0]-m[1,1]))
+            q = np.array([(m[0,2]+m[2,0])/s,(m[1,2]+m[2,1])/s,s/4,(m[1,0]-m[0,1])/s])
+    q /= np.linalg.norm(q)
+    return -q if q[3] < 0 else q
 
 
 def _x_to(axis) -> np.ndarray:
