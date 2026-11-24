@@ -46,7 +46,8 @@ def lanes(bend, lanes_xy, strokes=3):
     return path
 
 
-DEMO_LANES = [(-.006, .005, -.003), (-.002, .005, -.003), (.002, .005, -.003), (.006, -.013, -.021), (0., .005, -.003)]
+DEMO_LANES = [(-.013, .003, -.006), (-.010, .005, -.003), (-.006, .005, -.003), (-.002, .005, -.003), (.002, .005, -.003), (.004, -.012, -.020),
+              (.006, -.013, -.021), (.008, -.013, -.021)]
 fails = []
 
 
@@ -62,22 +63,22 @@ check('no contact: nothing removed, score 0', r.removed() == 0 and r.endpoint(**
 r = run([(.0, -.002, .003, 0.), (.0, -.002, .003, 10.)])
 check('pressed but not moving for 10 s: nothing removed', r.removed() == 0, f'removed {r.removed()}, load {r.force:.2f} N')
 r = run([(-.003, .0, .003, 0.)] + [(.005, .0, .003, 1.5), (.005, .0, -.004, .2), (-.003, .0, -.004, .5), (-.003, .0, .003, .2)] * 6)
-check('loaded strokes only toward the back (lifted clear coming forward): no underside cell removed', int((~r.attached[:40]).sum()) == 0, f'underside {int((~r.attached[:40]).sum())}, taper {int((~r.attached[40:]).sum())} (pressing onto the cone slides tufts along it)')
+check('loaded strokes only toward the back (lifted clear coming forward): nothing removed', r.removed() == 0, f'removed {r.removed()} of {model.N}')
 r = run([(-.004, -.005, .003, 0.)] + [(.004, .0006, .003, 1.5), (.004, .0006, -.004, .2), (-.004, -.005, -.004, .5), (-.004, -.005, .003, .2)] * 6)
 check('loaded strokes only toward the lead exit (back left, lifted clear coming back): nothing removed', r.removed() == 0, f'removed {r.removed()}')
 r = run([(.0, .006, .003, 0.)] + [(.0, -.006, .003, 1.5), (.0, -.006, -.004, .2), (.0, .006, -.004, .5), (.0, .006, .003, .2)] * 4)
 check('loaded sideways strokes away from the leads (to the right) do remove residue', r.removed() > 0 and not r.wire_hit, f'removed {r.removed()}')
 r = run(lanes(.001, DEMO_LANES))
-check('light touch, 1 mm bend (threshold 1.5 mm): at most 4 underside cells (beside the nozzle shoulder) removed, score 0.25 or less', int((~r.attached[:40]).sum()) <= 4 and r.endpoint(**GOOD) <= .25, f'underside {int((~r.attached[:40]).sum())}, taper {int((~r.attached[40:]).sum())}, score {r.endpoint(**GOOD)}')
+check('light touch, 1 mm bend (threshold 1.5 mm): score 0', r.endpoint(**GOOD) == 0., f'cleared {r.fraction():.1%}, score {r.endpoint(**GOOD)}')
 r = run(lanes(.003, DEMO_LANES))
-check('demo lanes with 3 mm bend: at least 57/60 removed, no strike, no wood touch, score 1.0', r.removed() >= 57 and not r.wire_hit and r.damage == 0. and r.endpoint(**GOOD) == 1., f'removed {r.removed()}, peak {r.peak:.2f} N, max bundle {r.max_bundle:.2f} N')
+check('eight forward-scrub lanes at a uniform 3 mm bend (a rule test, not the demo): at least 95% of the coupon cleared, no strike, no wood touch, score 1.0', r.fraction() >= .95 and not r.wire_hit and r.damage == 0. and r.endpoint(**GOOD) == 1., f'cleared {r.fraction():.1%}, peak {r.peak:.2f} N, max bundle {r.max_bundle:.2f} N')
 for k in GOOD:
     bad = dict(GOOD); bad[k] = 0. if k == 'hold' else False
     check(f'full removal but {k} gate failing: score 0', r.endpoint(**bad) == 0.)
 bad = dict(GOOD); bad['hold'] = 1.9
 check('full removal with only 1.9 s still: score 0', r.endpoint(**bad) == 0.)
 r2 = run(lanes(.003, DEMO_LANES)); r2.invalid = True
-check('full removal after a finger came within 3 mm of the hot block: score 0', r2.endpoint(**GOOD) == 0.)
+check('full removal after a (covered) finger came within 3 mm of the hot block: score 0', r2.endpoint(**GOOD) == 0.)
 naive = [(-.006, .005, -.003), (0., .005, -.003), (.006, .005, -.003)]
 r = run(lanes(.006, naive))
 check('naive hard scrub (6 mm bend) over the whole block up to the lead corner: strike, score 0', r.wire_hit and r.endpoint(**GOOD) == 0., f'removed {r.removed()}, strike {r.wire_hit}')
@@ -90,10 +91,18 @@ check('wood head pushed up onto the nozzle: wood-touch latch, score 0', r.damage
 r = run([(-.05, 0., -.004, 0.), (0., 0., -.004, 1.), (0., 0., .0075, 2.)])
 check('wood head stopped 0.5 mm below the nozzle tip: no touch', r.damage == 0., f'overlap {r.damage * 1000:.2f} mm')
 r = run(lanes(-.002, DEMO_LANES))
-check('forward strokes with bristle tips 2 mm short of the underside: no underside cell removed', r.removed() <= 20 and int((~r.attached[:40]).sum()) == 0, f'removed {r.removed()} (taper cells hang 6 mm lower)')
-for n, want in ((14, 0.), (15, .25), (29, .25), (30, .5), (47, .5), (48, .75), (56, .75), (57, 1.), (60, 1.)):
-    t = model.Residue(HOT); t.attached[:n] = False
-    check(f'{n} cells removed scores {want}', t.endpoint(**GOOD) == want)
+check('forward strokes with bristle tips 2 mm short of the underside: nothing removed', r.removed() == 0, f'removed {r.removed()}')
+import math as _m
+for frac, want in ((.25, .25), (.50, .5), (.80, .75), (.95, 1.)):
+    n = _m.ceil(frac * model.N - 1e-9)
+    for k, w in ((n - 1, {1.: .75, .75: .5, .5: .25, .25: 0.}[want]), (n, want)):
+        t = model.Residue(HOT); t.attached[:k] = False
+        check(f'{k} of {model.N} cells ({k / model.N:.1%}) removed scores {w}', t.endpoint(**GOOD) == w)
+t = model.Residue(HOT); t.attached[:] = False
+check('whole coupon removed scores 1.0', t.endpoint(**GOOD) == 1.)
+check('coupon area is 0.5 mm cells, all on the block underside, none within 3 mm of the lead-exit face or 4.5 mm of the nozzle axis',
+      bool(np.all(model.LOCAL_CELLS[:, 0] <= .0065 - model.LEAD_STRIP + 1e-9) and np.all(np.hypot(model.LOCAL_CELLS[:, 0], model.LOCAL_CELLS[:, 1]) >= model.NOZZLE_CLEAR)),
+      f'{model.N} cells, {model.COUPON_AREA_MM2:.1f} mm2')
 print('PASS' if not fails else f'{len(fails)} FAILURE(S)')
 if fails:
     raise SystemExit(1)

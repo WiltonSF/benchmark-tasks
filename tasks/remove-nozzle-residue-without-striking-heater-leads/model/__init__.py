@@ -4,7 +4,8 @@ Bristles: 27 bundles on the brush head, each a straight 14 mm ray along the head
 footprint radius and a 25 N/m spring. A bundle whose ray meets the heater block, nozzle or shroud is compressed by
 the overlap; its spring force and friction are applied back to the free brush body.
 
-Removal: a residue cell counts as removed once bundles pressing it with at least F_MIN have slid at least
+Residue: one standard PETG film coupon bonded to the block underside (see the coupon constants below), scored as
+0.5 mm area cells. A cell counts as removed once bundles pressing it with at least F_MIN have slid at least
 SWEEP_MIN across it in any direction that does not head toward the lead exit (the block's back left face, where the
 leads leave). Sliding toward the lead exit drags the loosened residue into it, so it earns nothing; so do stationary
 pressure, proximity and time.
@@ -14,9 +15,6 @@ Wood touch: the rigid wood head coming within 0.1 mm of the block or nozzle latc
 import math
 import numpy as np
 
-N = 60
-PATCH_R = .0006
-THICKNESS = .0005
 BUNDLE_RADIUS = .00175
 BRISTLE_LENGTH = .014
 TRACTION = .35  # brass on brass/PETG sliding friction estimate, used for the reaction only
@@ -36,24 +34,24 @@ def rotz(a):
 
 
 BLOCK_R = rotz(math.radians(35.))
-# Flat block underside outside the nozzle shoulder; equal-area, non-overlapping 1.2 mm discs.
-_local = []
-for x in np.linspace(-.0058, .0058, 7):
-    for y in np.linspace(-.0085, .0085, 8):
-        if math.hypot(x, y) < .0047:
-            continue
-        _local.append((x, y, -.006))
-_idx = np.linspace(0, len(_local) - 1, 40).round().astype(int)
-CELLS = np.array(_local)[_idx] @ BLOCK_R.T
-NORMALS = np.tile((0., 0., -1.), (40, 1))
-# 20 cells around the nozzle taper, including its far side.
-for z in (-.0098, -.0082):
-    r = .0006 + (z + .012) / .005 * .0034
-    for a in np.arange(10) * math.tau / 10:
-        CELLS = np.vstack((CELLS, (r * math.cos(a), r * math.sin(a), z)))
-        n = np.array((math.cos(a), math.sin(a), -.68))
-        NORMALS = np.vstack((NORMALS, n / np.linalg.norm(n)))
-assert len(CELLS) == N
+# Standard residue: one printed single-layer PETG coupon, COUPON_THICKNESS thick, bonded to the block underside. In the block
+# frame (x' toward the lead-exit face, y' along it) it covers the underside inset COUPON_INSET from each edge, leaves a
+# LEAD_STRIP bare strip along the lead-exit face and a NOZZLE_CLEAR hole around the nozzle shoulder. It is scored as
+# equal-area cells on a CELL grid; removed() is the cleared fraction of the coupon area.
+BLOCK_SIZE = (.013, .020, .012)
+COUPON_THICKNESS = .0002
+COUPON_INSET = .0005
+LEAD_STRIP = .003
+NOZZLE_CLEAR = .0045
+CELL = .0005
+_xs = np.arange(-BLOCK_SIZE[0] / 2 + COUPON_INSET + CELL / 2, BLOCK_SIZE[0] / 2 - LEAD_STRIP + 1e-9, CELL)
+_ys = np.arange(-BLOCK_SIZE[1] / 2 + COUPON_INSET + CELL / 2, BLOCK_SIZE[1] / 2 - COUPON_INSET + 1e-9, CELL)
+_local = np.array([(x, y, -BLOCK_SIZE[2] / 2) for x in _xs for y in _ys if math.hypot(x, y) >= NOZZLE_CLEAR])
+LOCAL_CELLS = _local
+CELLS = _local @ BLOCK_R.T
+N = len(CELLS)
+NORMALS = np.tile((0., 0., -1.), (N, 1))
+COUPON_AREA_MM2 = N * (CELL * 1000) ** 2
 
 
 def ray_box(roots, direction, centre, rotation, size):
@@ -122,7 +120,7 @@ class Residue:
     def __init__(self, centre):
         self.centre = np.asarray(centre, float)
         self.attached = np.ones(N, bool); self.sweep = np.zeros(N)
-        self.pos = CELLS + self.centre + NORMALS * THICKNESS / 2; self.vel = np.zeros((N, 3))
+        self.pos = CELLS + self.centre + NORMALS * COUPON_THICKNESS / 2; self.vel = np.zeros((N, 3))
         self.state = np.zeros(N, int)  # 0 bonded, 1 falling, 2 in tray, 4 on the bed
         self.tray_local = {}
         self.time = 0.; self.prev_contacts = None; self.prev_surface = None; self.prev_normals = None
@@ -179,7 +177,7 @@ class Residue:
             if float(tangent @ LEAD_DIR) > 0:
                 continue  # heading toward the lead exit
             dist = np.linalg.norm((CELLS + self.centre) - points[j], axis=1)
-            under = (dist <= BUNDLE_RADIUS + PATCH_R) & (NORMALS @ normals[j] > .25) & self.attached
+            under = (dist <= BUNDLE_RADIUS) & (NORMALS @ normals[j] > .25) & self.attached
             self.sweep[under] += ds
             done = under & (self.sweep >= SWEEP_MIN - 1e-12)
             self.attached[done] = False; self.state[done] = 1; self.vel[done] = NORMALS[done] * .02
@@ -187,10 +185,10 @@ class Residue:
         for i in np.flatnonzero(self.state == 1):
             self.vel[i, 2] -= 9.81 * dt; self.pos[i] = self.pos[i] + self.vel[i] * dt
             local = (self.pos[i] - pan_pos) @ pan_rot
-            if np.all(np.abs(local[:2]) <= TRAY_HALF) and local[2] <= .001 + PATCH_R:
-                local[2] = .001 + PATCH_R; self.tray_local[i] = local; self.state[i] = 2; self.vel[i] = 0.
-            elif self.pos[i, 2] <= bed_z + PATCH_R:
-                self.pos[i, 2] = bed_z + PATCH_R; self.state[i] = 4; self.vel[i] = 0.
+            if np.all(np.abs(local[:2]) <= TRAY_HALF) and local[2] <= .001 + CELL / 2:
+                local[2] = .001 + CELL / 2; self.tray_local[i] = local; self.state[i] = 2; self.vel[i] = 0.
+            elif self.pos[i, 2] <= bed_z + CELL / 2:
+                self.pos[i, 2] = bed_z + CELL / 2; self.state[i] = 4; self.vel[i] = 0.
         for i, local in self.tray_local.items():
             self.pos[i] = pan_pos + pan_rot @ local
         self.prev_contacts = points.copy(); self.prev_surface = surface.copy(); self.prev_normals = normals.copy(); self.time += dt
@@ -198,8 +196,11 @@ class Residue:
     def removed(self):
         return int((~self.attached).sum())
 
+    def fraction(self):
+        return self.removed() / N
+
     def endpoint(self, known, clear, still, released, hold):
         if not known or self.invalid or self.wire_hit or self.damage > 0. or not clear or not still or not released or hold < 2. - 1e-9:
             return 0.
-        fraction = self.removed() / N
+        fraction = self.fraction()
         return 1. if fraction >= .95 - 1e-9 else .75 if fraction >= .80 - 1e-9 else .5 if fraction >= .5 - 1e-9 else .25 if fraction >= .25 - 1e-9 else 0.

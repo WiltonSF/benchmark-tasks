@@ -3,6 +3,7 @@ import math
 from functools import lru_cache
 import numpy as np
 import parts
+import protection
 _tip_contact_view=None
 
 @lru_cache(maxsize=1)

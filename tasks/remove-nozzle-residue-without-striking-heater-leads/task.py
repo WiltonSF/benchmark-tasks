@@ -1,18 +1,30 @@
 """A complete Original Prusa MK4S stands on its counter, switched off after heating. Its print carriage is parked
-low above the build plate. Dark PETG residue coats the underside of the installed heater block and the brass
-nozzle taper. Two red heater leads and two white thermistor leads leave the back left face of the block (seen from the
+low above the build plate. A standard film of dark PETG residue is bonded to the underside of the installed heater
+block, leaving a bare strip along the face where the leads leave and a ring round the nozzle. Two red heater leads and two white thermistor leads leave the back left face of the block (seen from the
 front) at its mid-height, about 5 mm above its underside. A shallow steel catch tray lies on the build plate under the nozzle. A wood-handled
 brass nozzle brush lies bristles up on the counter to the left of the printer.
 """
 import json, math, os, pathlib, sys
 import numpy as np
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import parts, lots, model, observation
+import parts, lots, model, observation, protection
 observation.install_views()
+protection.install()
 from yam_arena.task_file import TABLE_TOP
 from yam_arena.demo import Waypoint, FINGER_OPEN, grip_rotation
 from yam_arena.constants import GRIPPER
 GRIPPER['effort'] = 40.0  # the declared per-finger force, in this process only
+# Physical preparation figures obtained by phone from a technician who works with
+# this product (Nov 2026). Reset-only: temperature/flow are not simulated.
+HOTEND_START_C = 250
+HEATUP_FROM_20C_S = 70
+PURGE_LENGTH_MM = 30
+PURGE_TIME_S = 12
+COUPON_PRESS_S = 8
+# Maker maintenance procedure: at least three minutes at 250 C before brushing.
+PREHEAT_HOLD_S = 180
+# Public Nextruder sock listing; not the rating of the separately chosen finger covers.
+NEXTRUDER_SOCK_MAX_C = 300
 SCENE = 'station'; TOP = TABLE_TOP[SCENE]; SCORE_OVER = 'end'; SUCCESS_HOLD_S = .1
 BLACK = (.11, .12, .13); ORANGE = (.92, .29, .025); STEEL = (.65, .68, .70); BRASS = (.73, .55, .18); WOOD = (.53, .31, .15)
 HOT = np.array((.27, 0., TOP + .182)); BED_Z = TOP + .100
@@ -44,7 +56,7 @@ for z, r in ((-.012, .0006), (-.007, .004)):
 faces = [tuple(range(23, -1, -1)), tuple(range(24, 48))] + [(i, (i + 1) % 24, (i + 1) % 24 + 24, i + 24) for i in range(24)]
 NOZZLE = parts.Part('installed_brass_nozzle', pos=tuple(HOT), shapes=[parts.hull(points, faces, BRASS), parts.cylinder(.004, .001, (0, 0, -.0065), BRASS)], contact_offset=.00015)
 # Leads leave the block's back left face (seen from the front) at mid-height, square to the face: two heater leads
-# and two thermistor leads, 4 to 8.8 mm from the face's centre line. They run 12 mm out from the face and turn up to
+# and two thermistor leads, 4 to 9 mm from the face's centre line. They run 12 mm out from the face and turn up to
 # the carriage. Block frame: x' along the face normal, turned 35 degrees like the block.
 LEAD_TURN = math.radians(35)
 WIRE_SEGMENTS = []; wires = []
@@ -63,7 +75,7 @@ OBJECTS = [PRINTER, CARRIAGE, BLOCK, NOZZLE, WIRES, BRUSH, PAN]
 LOTS = lots.declare(OBJECTS, lots.Lot('A', place={BRUSH.name: BRUSH.pos, PAN.name: PAN.pos}), lots.Lot('B', place={BRUSH.name: (.170, .255, TOP + .006), PAN.name: (.290, .010, BED_Z)}))
 DEMO_TOUCHES = ()
 _model = model.Residue(HOT); _known = False; _bad = False; _hold = 0.; _time = 0.; _cert = None; _active = False; _sim = None
-_visual = []; _fibers = []; _last_trace = -1.; _clear = False; _still = False; _released = False; _last_wrench = None
+_visual = []; _drawn = {}; _fibers = []; _last_trace = -1.; _clear = False; _still = False; _released = False; _last_wrench = None
 _motion_history = []; _brush_com = np.zeros(3)
 
 
@@ -162,7 +174,7 @@ def native_tick(dt):
 
 @parts.on_reset
 def reset(sim):
-    global _model, _known, _bad, _hold, _time, _cert, _active, _sim, _visual, _fibers, _last_trace, _clear, _still, _released
+    global _model, _known, _bad, _hold, _time, _cert, _active, _sim, _visual, _drawn, _fibers, _last_trace, _clear, _still, _released
     global _last_wrench, _motion_history, _brush_com
     _active = False; _last_wrench = None; _motion_history = []; _model = model.Residue(HOT); _known = False; _bad = False
     _hold = 0.; _time = float(sim.t); _cert = None; _sim = sim; _last_trace = -1.; _clear = False; _still = False; _released = False
@@ -184,9 +196,10 @@ def reset(sim):
         def update(dt, *args, **kw):
             original(dt, *args, **kw); native_tick(float(dt))
         base.scene.update = update; base.scene._nozzle_tick = True
-    _visual = []; _fibers = []
+    _visual = []; _drawn = {}; _fibers = []
     for i in range(model.N):
-        sp = UsdGeom.Cylinder.Define(stage, path + '/petg_residue/patch_' + str(i)); sp.CreateRadiusAttr(model.PATCH_R); sp.CreateHeightAttr(model.THICKNESS)
+        # One flat disc per 0.5 mm cell of the coupon film; neighbouring discs overlap so the film reads as one sheet.
+        sp = UsdGeom.Cylinder.Define(stage, path + '/petg_coupon/cell_' + str(i)); sp.CreateRadiusAttr(model.CELL * .62); sp.CreateHeightAttr(model.COUPON_THICKNESS)
         sp.CreateDisplayColorAttr([Gf.Vec3f(*linear_rgb((.17, .09, .025)))])
         ops = sp.GetOrderedXformOps(); op = ops[0] if ops else sp.AddTranslateOp(); op.Set(Gf.Vec3d(*map(float, _model.pos[i] + origin)))
         q = parts._matrix_to_quat(parts._x_to(model.NORMALS[i]) @ parts._rot((0, 1, 0), math.pi / 2))
@@ -233,15 +246,18 @@ def step(sim):
         _time = now; _cert = signature(st)
         from pxr import Gf
         origin = parts._np(sim.env.unwrapped.scene.env_origins[0])
-        for i, op in enumerate(_visual):
-            op.Set(Gf.Vec3d(*map(float, _model.pos[i] + origin)))
+        # Only detached cells move (falling, or riding in the tray); bonded cells keep their reset position.
+        for i in np.flatnonzero(_model.state != 0):
+            if _model.state[i] == 4 and _drawn.get(i) == 4:
+                continue
+            _visual[i].Set(Gf.Vec3d(*map(float, _model.pos[i] + origin))); _drawn[i] = int(_model.state[i])
         br = R(b); q = b.quat_xyzw
         for i, (root, (tr, ori, height)) in enumerate(zip(model.ROOTS, _fibers)):
             length = float(_model.last_lengths[i]); height.Set(max(length, .0001))
             tr.Set(Gf.Vec3d(*map(float, b.pos + br @ (root + np.array((0, 0, length / 2))) + origin))); ori.Set(Gf.Quatf(float(q[3]), Gf.Vec3f(*map(float, q[:3]))))
         if _log_path() and float(sim.t) - _last_trace >= .099:
-            row = dict(t=_time, lot=lots.current().name, score=score(st), removed=_model.removed(), states=np.bincount(_model.state, minlength=5).tolist(),
-                       sweep=[round(float(v), 5) for v in _model.sweep], load=_model.force, peak=_model.peak, max_bundle=_model.max_bundle,
+            row = dict(t=_time, lot=lots.current().name, score=score(st), removed=_model.removed(), cleared=round(_model.fraction(), 4), states=np.bincount(_model.state, minlength=5).tolist(),
+                       load=_model.force, peak=_model.peak, max_bundle=_model.max_bundle,
                        lengths=[round(float(v), 5) for v in _model.last_lengths], contacts=_model.hit_count, known=_known, bad=_bad,
                        invalid=_model.invalid, wire_hit=_model.wire_hit, damage=_model.damage, clear=_clear, still=_still, released=_released,
                        hold=_hold, brush=b.pos.tolist(), brush_quat=b.quat_xyzw.tolist(), brush_low=b.low.tolist(), pan=p.pos.tolist(),
@@ -282,9 +298,10 @@ GRASP_Z = TOP + .0155
 SAG = np.array((0., -.003, .007))  # extra lift commanded while the brush is up (arm compliance under the bristle load)
 YAW = -.022         # rad; the loaded wrist turned about 2.5 degrees in a lot A trace; half of that is turned back
 PRESS = .003        # intended bristle bend at the block underside, m
-# (lane y, back x, front x) of the head centre from the nozzle axis, and a press change: the lead-side lane presses
-# 3 mm less because fewer bristles bear on the block there, so the arm yields less and the wood would reach the nozzle.
-STROKES = [(-.010, .005, -.003, 0.), (-.006, .005, -.003, 0.), (-.002, .005, -.003, 0.), (0., .005, -.003, 0.), (.002, .005, -.003, 0.),
+# (lane y, back x, front x) of the head centre from the nozzle axis, and a press change. The first lane covers the
+# coupon's right edge. The three lead-side lanes stay forward of the lead exit and press 1.5 to 3 mm less: fewer
+# bristles bear on the block there, so the arm yields less and the wood would reach the nozzle.
+STROKES = [(-.013, .003, -.006, 0.), (-.010, .005, -.003, 0.), (-.006, .005, -.003, 0.), (-.002, .005, -.003, 0.), (0., .005, -.003, 0.), (.002, .005, -.003, 0.),
            (.004, -.012, -.020, -.0015), (.006, -.013, -.021, -.003), (.008, -.013, -.021, -.003)]
 
 
