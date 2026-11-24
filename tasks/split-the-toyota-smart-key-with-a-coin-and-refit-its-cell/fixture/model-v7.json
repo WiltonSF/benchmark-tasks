@@ -1,0 +1,97 @@
+{
+  "version": 7,
+  "status": "Partly measured original HYQ14FBA-key reference; native final-runtime demo A1/B1 complete; final-instruction Dream-1 A 0/B 0",
+  "units": "mm unless stated",
+  "case": [
+    71,
+    40,
+    15
+  ],
+  "seam_world": [
+    340,
+    0,
+    73
+  ],
+  "cover": "fully detachable free rigid body",
+  "notch": {
+    "width": 7,
+    "depth": 2.6,
+    "gap": 1.2,
+    "mouth_gap": 2.4
+  },
+  "cell_pocket": {
+    "inner_diameter": 21,
+    "height": 1.6,
+    "centre_local": [
+      12,
+      0,
+      -2.3
+    ],
+    "retention": "unmeasured gravity pocket, not confirmed OEM equivalent"
+  },
+  "tool": {
+    "model": "Wera 2035 05118012001",
+    "blade": [
+      0.6,
+      3.5,
+      80
+    ],
+    "handle_length": 97,
+    "envelope": [
+      177,
+      13,
+      13
+    ],
+    "mass_g": 20,
+    "flat_tip_length_estimate_mm": 10
+  },
+  "gates": {
+    "open_snap_force_N": 10,
+    "open_travel_mm": 1.2,
+    "paired_blade_load_N": 9.209726443768997,
+    "close_total_force_N": 12,
+    "close_snap_share_N": 6,
+    "closed_gap": 0.5,
+    "opening_lowest_point_above_table_mm": 70.5,
+    "opening_support_clearance_mm": 5
+  },
+  "estimates": [
+    "case width/thickness, half-mass allocation",
+    "opening force/travel",
+    "pocket geometry and retention",
+    "friction",
+    "notch gap/mouth",
+    "12 N conservative closing gate, above measured range"
+  ],
+  "source": "task.py is authoritative",
+  "measured_on_one_HYQ14FBA_key": {
+    "date": "2026-11-23",
+    "length_mm": 71,
+    "key_mass_g": 30.4,
+    "snap_count": 2,
+    "snap_end_offset_mm": 5.2,
+    "notch_width_mm": 7,
+    "notch_depth_mm": 2.6,
+    "cover_detaches": true,
+    "centre_close_scale_g": [
+      711,
+      864,
+      923,
+      843,
+      799
+    ],
+    "coin_and_small_flat_screwdriver_enter": true
+  },
+  "mass_accounting_g": {
+    "key": 30.4,
+    "cell": 3,
+    "base_with_board": 15.4,
+    "cover": 12,
+    "assumption": "reported key mass includes cell and excludes emergency blade; both scope details and half allocation need enrollment confirmation"
+  },
+  "work_pose_seam_above_table_mm": 73.5,
+  "left_grasp_below_seam_mm": 11.5,
+  "left_grasp_local_x_mm": 36,
+  "specimen": "Proposed specimen: Stallion aftermarket HYQ14FBA-pattern R-SHELL-79; original-key readings do not validate aftermarket equivalence",
+  "validation": "../validation-r32.json"
+}

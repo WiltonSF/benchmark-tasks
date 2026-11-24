@@ -1,0 +1,226 @@
+{
+  "kind": "native simulation evidence; no complete hardware task trial",
+  "task_py_sha256": "c52d265ceb1244b45fec616168625468865ddb9df11d24ec56877970ea5bd089",
+  "runtime_sha256": {
+    "task.py": "c52d265ceb1244b45fec616168625468865ddb9df11d24ec56877970ea5bd089",
+    "parts.py": "0756dfe728ffb12d75678939ce5064b1c3568bd222a9bd30b794788ea1011fb6",
+    "lots.py": "392279a36d669f2fb209be61d2675ab5c22c7c9bced6c00d3944a10856dfc217",
+    "tilt.py": "138c4d1b3a499c95b72d4e1070c9066fd96d914c9bbaa13637e16d5ca75eb567",
+    "mechanism/hands.py": "c8d9dc48a9ded99bc6ea5d52937bdf907a51371e17b1685c06d2d7ca074d6e5d"
+  },
+  "physics_hz": 240,
+  "control_hz": 20,
+  "finger_diagnostic_sample_hz": 20,
+  "finger_reference_N_per_pad": 50,
+  "finger_reference_scope": "YAM linear4310 model limit; not hardware calibrated; shorter contact spikes may be missed",
+  "object_jitter": 0,
+  "demo": {
+    "run": "demo-20261124T061116",
+    "max_steps_per_lot": 2400,
+    "epochs": 2,
+    "official_outcome": "2 succeeded",
+    "official_mean_task_score": 1.0,
+    "lots": {
+      "A": {
+        "t": 103.64999999999625,
+        "score": 1.0,
+        "latched": [
+          true,
+          true
+        ],
+        "relatched": [
+          true,
+          true
+        ],
+        "relatched_info": [
+          {
+            "t": 97.79999999999659,
+            "press": 12.552649817562505,
+            "press_x": 0.00017559399902922112,
+            "share": 6.239952466869054,
+            "offset_mm": [
+              0.09698113007059958,
+              -0.1013317895594,
+              -0.2279946403823245
+            ]
+          },
+          {
+            "t": 97.5999999999966,
+            "press": 12.029629768823883,
+            "press_x": 0.00017694921953941755,
+            "share": 6.049940851391175,
+            "offset_mm": [
+              0.09760199837740083,
+              -0.09775749085869508,
+              -0.211091054099213
+            ]
+          }
+        ],
+        "split_info": {
+          "t": 20.70000000000016,
+          "torque": 0.021646043594721512,
+          "turn": -0.4940057295111915,
+          "work": 0.006814214207829328,
+          "jaw_load": [
+            9.538827896118164,
+            9.233877182006836
+          ],
+          "blade_cover": 9.233872413635254,
+          "blade_base": 9.538825035095215,
+          "d": 0.001232846692826018,
+          "left": 28.7802677154541
+        },
+        "new_seated": true,
+        "old_in_tray": true,
+        "gap": 0.0001997181921165976,
+        "clear": true,
+        "hold": 0.9999999999999432,
+        "peak_finger": 24.113903045654297,
+        "peak_press": 14.631310226515653,
+        "zero": false,
+        "why": "",
+        "control_samples": 2073
+      },
+      "B": {
+        "t": 103.64999999999625,
+        "score": 1.0,
+        "latched": [
+          true,
+          true
+        ],
+        "relatched": [
+          true,
+          true
+        ],
+        "relatched_info": [
+          {
+            "t": 97.14999999999662,
+            "press": 12.118731962715628,
+            "press_x": -8.534193019778511e-05,
+            "share": 6.076432581642431,
+            "offset_mm": [
+              0.07396816270744538,
+              -0.1021094508961148,
+              -0.214360539365857
+            ]
+          },
+          {
+            "t": 97.14999999999662,
+            "press": 12.118731962715628,
+            "press_x": -8.534193019778511e-05,
+            "share": 6.042299381073198,
+            "offset_mm": [
+              0.07383979176894123,
+              0.022516253995092387,
+              -0.2195542806869871
+            ]
+          }
+        ],
+        "split_info": {
+          "t": 20.70000000000016,
+          "torque": 0.021498598021170975,
+          "turn": -0.48435375276974346,
+          "work": 0.00672775643476832,
+          "jaw_load": [
+            9.335458755493164,
+            9.224125862121582
+          ],
+          "blade_cover": 9.224122047424316,
+          "blade_base": 9.335457801818848,
+          "d": 0.0012162510485227616,
+          "left": 28.669214248657227
+        },
+        "new_seated": true,
+        "old_in_tray": true,
+        "gap": 0.0001997633513999656,
+        "clear": true,
+        "hold": 0.9999999999999432,
+        "peak_finger": 24.09514617919922,
+        "peak_press": 13.278806251873585,
+        "zero": false,
+        "why": "",
+        "control_samples": 2073
+      }
+    },
+    "instruction_scope": "Same frozen runtime; scripted policy ignores instruction text. Final instruction clarified afterward per coordinator review."
+  },
+  "dream": {
+    "state": "completed",
+    "run": "dream-20261124T074624",
+    "max_steps_per_lot": 2400,
+    "epochs": 2,
+    "same_runtime_and_final_instruction": true,
+    "official_score_lines": [
+      "[lots] trial 0: lot A",
+      "[lots] trial 1: lot B",
+      "run status: completed",
+      "outcome: 2 hit step limit",
+      "  task_score: 0"
+    ],
+    "lots": {
+      "A": {
+        "t": 119.99999999999532,
+        "score": 0.0,
+        "zero": false,
+        "why": "",
+        "split": false,
+        "cover_off": false,
+        "old_out": false,
+        "new_seated": false,
+        "old_in_tray": false,
+        "latched": [
+          true,
+          true
+        ],
+        "relatched": [
+          false,
+          false
+        ],
+        "clear": true,
+        "peak_finger": 0.387836754322052,
+        "peak_press": 0.0,
+        "hold": 119.04999999999532
+      },
+      "B": {
+        "t": 119.99999999999532,
+        "score": 0.0,
+        "zero": true,
+        "why": "part left mat: key_base",
+        "split": false,
+        "cover_off": false,
+        "old_out": false,
+        "new_seated": false,
+        "old_in_tray": false,
+        "latched": [
+          true,
+          true
+        ],
+        "relatched": [
+          false,
+          false
+        ],
+        "clear": true,
+        "peak_finger": 0.35966944694519043,
+        "peak_press": 0.0,
+        "hold": 0.0
+      }
+    },
+    "first_zero": {
+      "B": {
+        "t": 83.99999999999737,
+        "why": "part left mat: key_base"
+      }
+    },
+    "expired_response_messages": 98,
+    "warning_scope": "Dream-1 native simulation only; warning messages are execution timing diagnostics, not a model refusal or evidence of task competence"
+  },
+  "earlier_instruction_dream": {
+    "run": "dream-20261124T070155",
+    "score_by_lot": {
+      "A": 0,
+      "B": 0
+    },
+    "expired_response_messages": 98,
+    "reason_superseded": "Coordinator-required instruction correction: scored lift and spent-tray steps explicitly named; runtime unchanged"
+  }
+}
