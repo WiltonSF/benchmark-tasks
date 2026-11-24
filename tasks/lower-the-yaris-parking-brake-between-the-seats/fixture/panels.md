@@ -1,0 +1,18 @@
+# Reusable plywood access envelopes and guarded overhang
+
+18 mm plywood throughout. Outside dimensions and positions in dimensions.json are controlling; cabin dimensions are estimates. One-time machining/assembly is separate from a trial.
+
+- Floor 440×580. Each seat:560×89 top, two 560×122 long sides, two 53×122 ends; open bottom,89×560×140 outside. Four 18×18×100 internal cleats each.
+- Each console cheek:420×38 top, two 420×20 sides, open 2×20 end cavities (no screws through 2 mm fillers); outside 38×420×38. Rear 80×30×38 from 18 mm top and 20 mm machined laminate.
+- Rod tunnel 116×180×116: two 162×116 sides,80×162 lid and bottom, and a full 116×116×18 front cap. The cap occupies the front 18 mm of the 180 mm outside length; the other panels meet its rear face. The rear 80×80 cavity is open at the shared load-box overlap. Front cap:12×30 slot at local x=0, z=-10,62×101×5 external pocket,60×80×1 shutter, two 16×76×3 retainers in matching recessed seats; the pocket walls are integral travel stops. Their complete coordinates, accepted rod sweep and cut 18 mm #8 screws are specified in stock-load-design.md.
+- Rear box 116×240×180: two 240×180 sides,80×240 lid/bottom, two 80×144 ends. Remove the front end partition within the 18 mm tunnel overlap. Rear shelf 220×260. Internal 18×18 cleats sit in corners clear of the 60×60 steel cartridge and moving yoke. Lids use eight screws each, not finger latches.
+
+Side/base screws≤100 mm pitch,≥9 mm from edges; pilot on scrap. Closed overlaps≥10 mm; no accessible opening>8 mm apart from the fitted rod/shutter aperture. Cages and steel load plates retain the spring independently of plywood. The rear box begins 10 mm beyond the actual table rear; its bottom and shelf hang below tabletop on the steel rails/hangers. No below-table solid is placed through the table. Full offset collision envelopes are explicit in task.py. Never claim the complete box fits on the tabletop.
+
+The panels/cleats occupy less than 1.6 m² of the purchased 2.97 m² sheet, allowing kerfs. Verify all outside envelopes and rod travel before loading. Bolt the fixed steel feet through the bench with steel underside spreaders as drawn; the ten 158 mm through-bench OEM clamp/key studs retain the floor and fixed bracket; optional shop clamps serve unloaded fabrication positioning. Before enrollment, conduct the 1 kN axial frame proof and 100 N adverse grip/guard push for 60 s, inspect for damage/slip and repeat the complete load curve. These are required one-time acceptance steps, not performed tests. Reset thereafter is five clicks/button out/card placement and inspection, taking minutes.
+
+The physical bench is 60 mm thick. Use 118 mm bench studs and 158 mm OEM studs, not 2-inch bolts for those stacks. Recess the cradle feet 6.35 mm into the shelf underside; cut the two 7×50 mm post slots through both the shelf and rear-box bottom. At the rear foot bolts, insert heads from below and double nuts above, inside the declared assembly bounds. Exact stack/cut lengths in stock-load-design.md.
+
+Use the three purchased100-packs of wood screws for panel joints, cleats and the six cut shutter retainers. The open 2 mm console end cavities remain below the 8 mm access criterion; the declared solid console envelope conservatively includes them. Cut-list dimensions control over generic box assembly habits.
+
+OEM mount: recess its three 218×50 basebars0..6.35 mm and make the root console reliefs specified in stock-load-design.md. These reliefs are behind the actual grip; retain the native conservative full console reference. The rear cradle and 116 mm front-cap cut lists are unchanged.

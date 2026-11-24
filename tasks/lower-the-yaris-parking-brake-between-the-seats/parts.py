@@ -35,7 +35,7 @@ from yam_arena.task_file import GREY, ObjectState
 
 FRICTION = (1.2, 1.0)  # static, dynamic: yam_arena's grippy material
 CONTACT_OFFSET, REST_OFFSET = 0.001, 0.0  # as yam_arena's free objects
-SOLVER_ITERATIONS = (64, 8)  # articulation position, velocity iterations
+SOLVER_ITERATIONS = (128, 8)  # articulation position, velocity iterations
 MAX_DEPENETRATION = 1.0  # m/s: caps how hard PhysX pushes overlapping bodies apart
 
 
@@ -189,6 +189,8 @@ class Part(task_file.Box):
     shapes: tuple[Shape, ...] = ()
     joints: tuple[Joint, ...] = ()
     friction: tuple[float, float] = FRICTION
+    reset_joint_limits: tuple[tuple[str, float, float], ...] = ()
+    reset_joint_efforts: tuple[tuple[str, float], ...] = ()
 
     def __post_init__(self):
         object.__setattr__(self, "shapes", tuple(self.shapes))
@@ -210,6 +212,13 @@ class Part(task_file.Box):
                 raise ValueError(f"{self.name}.{j.name}: needs shapes, a positive mass and limits around 0")
             if j.spring < 0 or j.damping < 0 or not np.linalg.norm(j.axis) > 0:
                 raise ValueError(f"{self.name}.{j.name}: spring and damping must be >= 0 and the axis non-zero")
+        by_name = {j.name: j for j in self.joints}
+        for name, lo, hi in self.reset_joint_limits:
+            if name not in by_name or not np.isfinite([lo, hi]).all() or not by_name[name].lower <= lo <= 0 <= hi <= by_name[name].upper:
+                raise ValueError('invalid before-physics reset stop')
+        for name, force in self.reset_joint_efforts:
+            if name not in by_name or not np.isfinite(force) or abs(force) > by_name[name].max_effort:
+                raise ValueError('invalid before-physics passive load')
         for s in self.shapes + tuple(s for j in self.joints for s in j.shapes):
             if any(not 0.0 <= c <= 1.0 for c in s.color) or any(v <= 0 for v in s.half):
                 raise ValueError(f"{self.name}: shape {s} needs positive sizes and an sRGB colour in 0..1")
@@ -474,7 +483,24 @@ def _arena_object(part: Part):
             event = super()._build_reset_event()
             # Arena puts an articulation's root back on reset; the joints go back to 0 as well.
             if event is not None and self.object_type == ObjectType.ARTICULATION:
-                event.func = reset_articulation_pose_and_joints
+                # Restore authored stops after the harness resets the joints to zero and before any physics.
+                # This is episode initialization, never an in-trial pose/limit projection.
+                def reset_with_stops(env, env_ids, pose, asset_cfg, velocity=None):
+                    reset_articulation_pose_and_joints(env, env_ids, pose=pose, asset_cfg=asset_cfg, velocity=velocity)
+                    import torch
+                    asset = env.scene[part.name]
+                    initial_limits = {name: (lo, hi) for name, lo, hi in part.reset_joint_limits}
+                    for j in part.joints:
+                        i = asset.joint_names.index(j.name)
+                        lo, hi = initial_limits.get(j.name, (j.lower, j.upper))
+                        asset.write_joint_position_limit_to_sim_index(
+                            limits=torch.tensor([[[lo, hi]]], device=asset.device), joint_ids=[i])
+                    if part.reset_joint_efforts:
+                        asset.set_joint_effort_target_index(
+                            target=torch.tensor([[force for _, force in part.reset_joint_efforts]], device=asset.device),
+                            joint_ids=[asset.joint_names.index(name) for name, _ in part.reset_joint_efforts])
+                        asset.write_data_to_sim()
+                event.func = reset_with_stops
             return event
 
     if part.joints:
@@ -548,6 +574,20 @@ def _patch_scene(scene) -> None:
         out.update({n: _read(env.unwrapped, _SPECS[n]) for n in names if n in _SPECS})
         return {n: out[n] for n in names}
 
+    # Task-owned timestep sensitivity setting. No force, robot or scoring parameters change.
+    original_cfg_callback = scene.env_cfg_callback
+    def timestep_callback(control_hz=None):
+        configure = original_cfg_callback(control_hz)
+        def configure_timestep(cfg):
+            cfg = configure(cfg)
+            hz = globals().get('HANDBRAKE_PHYSICS_HZ', 240)
+            cfg.sim.physics.solver_type = globals().get('HANDBRAKE_SOLVER_TYPE', 1)
+            cfg.sim.dt = 1.0 / hz
+            cfg.decimation = round(hz / (10.0 if control_hz is None else control_hz))
+            cfg.sim.render_interval = cfg.decimation
+            return cfg
+        return configure_timestep
+    scene.env_cfg_callback = timestep_callback
     scene.task_object, scene.object_states = patched_task_object, patched_object_states
     scene._parts_patched = True
 

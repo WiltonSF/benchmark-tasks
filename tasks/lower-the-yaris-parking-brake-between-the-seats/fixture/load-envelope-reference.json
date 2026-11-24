@@ -1,0 +1,101 @@
+{
+  "scope": "Analytic design reference,not an OEM measurement or physical calibration. r35mm/preload1mm/gravity.8kg at125mm are labelled estimates. Actual complete fixture must pass enrollment before use.",
+  "minimum_example_lower_margin_N": 1.3610580100556433,
+  "single_rate_max_deficit_N": 15.166917085508501,
+  "rows": [
+    {
+      "deg": 0.0,
+      "reported_lower_N": 3.9,
+      "single_rate_reference_N": 4.540000000000001,
+      "progressive_reference_N": 4.540000000000001,
+      "estimated_gravity_bound_N": 4.671428571428572,
+      "model_cable_equivalent_N": 4.540000000000001,
+      "total_compression_mm": 1.0
+    },
+    {
+      "deg": 5.0,
+      "reported_lower_N": 13.5,
+      "single_rate_reference_N": 18.31907164497414,
+      "progressive_reference_N": 18.31907164497414,
+      "estimated_gravity_bound_N": 4.653652375371441,
+      "model_cable_equivalent_N": 18.31907164497414,
+      "total_compression_mm": 4.050450996168036
+    },
+    {
+      "deg": 10.0,
+      "reported_lower_N": 27.0,
+      "single_rate_reference_N": 31.644527585899812,
+      "progressive_reference_N": 31.644527585899812,
+      "estimated_gravity_bound_N": 4.600459074785601,
+      "model_cable_equivalent_N": 31.644527585899812,
+      "total_compression_mm": 7.077686218342563
+    },
+    {
+      "deg": 15.0,
+      "reported_lower_N": 40.5,
+      "single_rate_reference_N": 44.11030325135237,
+      "progressive_reference_N": 44.11030325135237,
+      "estimated_gravity_bound_N": 4.512253502807505,
+      "model_cable_equivalent_N": 44.11030325135237,
+      "total_compression_mm": 10.058666578588227
+    },
+    {
+      "deg": 20.0,
+      "reported_lower_N": 54.0,
+      "single_rate_reference_N": 55.33568008796358,
+      "progressive_reference_N": 55.33568008796358,
+      "estimated_gravity_bound_N": 4.389706957099887,
+      "model_cable_equivalent_N": 55.33568008796358,
+      "total_compression_mm": 12.970705016398407
+    },
+    {
+      "deg": 25.0,
+      "reported_lower_N": 67.5,
+      "single_rate_reference_N": 64.97686835894922,
+      "progressive_reference_N": 64.97686835894922,
+      "estimated_gravity_bound_N": 4.233752090871208,
+      "model_cable_equivalent_N": 67.5,
+      "total_compression_mm": 15.791639160924483
+    },
+    {
+      "deg": 26.5,
+      "reported_lower_N": 71.55000000000001,
+      "single_rate_reference_N": 67.51459327493063,
+      "progressive_reference_N": 70.02115452309013,
+      "estimated_gravity_bound_N": 4.180621946340889,
+      "model_cable_equivalent_N": 71.55000000000001,
+      "total_compression_mm": 16.61692345884331
+    },
+    {
+      "deg": 30.0,
+      "reported_lower_N": 81.0,
+      "single_rate_reference_N": 72.73747366385501,
+      "progressive_reference_N": 82.5668619968084,
+      "estimated_gravity_bound_N": 4.045575814821593,
+      "model_cable_equivalent_N": 82.5668619968084,
+      "total_compression_mm": 18.5
+    },
+    {
+      "deg": 35.0,
+      "reported_lower_N": 94.5,
+      "single_rate_reference_N": 78.37752900251247,
+      "progressive_reference_N": 97.25185350787257,
+      "estimated_gravity_bound_N": 3.8266102640357196,
+      "model_cable_equivalent_N": 97.25185350787257,
+      "total_compression_mm": 21.075175272286614
+    },
+    {
+      "deg": 36.5,
+      "reported_lower_N": 98.55000000000001,
+      "single_rate_reference_N": 79.62792300846536,
+      "progressive_reference_N": 100.86368366169602,
+      "estimated_gravity_bound_N": 3.7551599060261442,
+      "model_cable_equivalent_N": 100.86368366169602,
+      "total_compression_mm": 21.818797536296945
+    }
+  ],
+  "spring_rate_each_N_per_mm": 54.48,
+  "front_compression_stop_mm": 8,
+  "total_stop_mm": 22.1,
+  "operating_total_limit_mm": 22.0
+}

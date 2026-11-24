@@ -1,0 +1,97 @@
+{
+  "basis": "CAD composite-mesh ray sections, not physical nylon measurements; mesh does not separate nylon/rubber",
+  "visual_origin_mm": [
+    9.99321,
+    -91.4614,
+    129.783
+  ],
+  "mesh_sha256": "281354d77e4914ccd994b6c71fecce49a91527701f268d318f801769a6913685",
+  "urdf_sha256": "c0967cf85c4904a142c3aa2bb7453af609354ee94997900040fd0b3e1b756bb8",
+  "source": "https://github.com/i2rt-robotics/i2rt",
+  "ray_direction": [
+    0,
+    1,
+    0
+  ],
+  "left_rows": [
+    {
+      "fabrication_z_mm": 17,
+      "link_x_mm": 23.9931,
+      "link_z_mm": -84.3171,
+      "outer_y_mm": -49.092118,
+      "inner_y_mm": -44.542982,
+      "wall_mm": 4.549136,
+      "bare_web_to_outer_mesh_gap_mm": 3.419782
+    },
+    {
+      "fabrication_z_mm": 24,
+      "link_x_mm": 23.9931,
+      "link_z_mm": -77.3171,
+      "outer_y_mm": -50.326408,
+      "inner_y_mm": -44.542982,
+      "wall_mm": 5.783426,
+      "bare_web_to_outer_mesh_gap_mm": 2.185492
+    }
+  ],
+  "current_attachment": {
+    "inner_plate_face_fabrication_x_mm": -0.381082,
+    "inner_plate_thickness_receipt_range_mm": [
+      2.49,
+      2.5
+    ],
+    "outer_spreader_clearance_mm": 0.05,
+    "screw_cut_length_mm": 11.7,
+    "screw_cut_tolerance_mm": 0.03,
+    "physical_material_boundaries": "receipt inspection only",
+    "proof_N_per_shoe": 150,
+    "registered_full_span_bush": {
+      "material": "same1144heat,yieldMTR>=600MPa",
+      "OD_mm": [
+        4.39,
+        4.4
+      ],
+      "ID": "actual screw crest+.01..02mm,maximum3.02",
+      "length_formula_mm": "7.618918-plate_t+web_socket_depth+plate_socket_depth",
+      "web_socket_depth_mm": [
+        0.5,
+        0.55
+      ],
+      "plate_socket_depth_mm": [
+        0.58,
+        0.59
+      ],
+      "socket_diametral_clearance_mm": [
+        0,
+        0.01
+      ],
+      "outer_wedge_bore_mm": 4.5,
+      "nominal_length_mm": 6.198918,
+      "max_length_mm": 6.27
+    },
+    "bearing_reaction_arm_min_mm": 3,
+    "backing_bridge_span_max_mm": 6.8,
+    "proof_axial_component_N": 5,
+    "inner_plate_z_bounds_mm": [
+      12.8,
+      28.5
+    ],
+    "bore_z_mm": [
+      16.9,
+      23.7
+    ],
+    "inner_plate_size_mm": [
+      2.5,
+      13,
+      15.7
+    ],
+    "minimum_actual_nylon_support_mm2_per_side": 60,
+    "proof_relative_steel_displacement_max_mm": 0.02,
+    "inner_plate_material": "1144 cold finished;received heat MTR yield>=600MPa",
+    "back_bottom_chamfer_mm": [
+      0.4,
+      0.4
+    ],
+    "counterbore_mouth_mm": 6.76,
+    "bolt_group_height_above_root_mm": 16.3
+  }
+}

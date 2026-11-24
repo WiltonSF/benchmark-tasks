@@ -1,4 +1,4 @@
-"""Per-physics-step observations from PhysX; no pose writes or robot control."""
+"""Per-physics-step observations from PhysX and the ratchet stops; no pose writes and no robot control."""
 import json, math, os, pathlib
 from itertools import product
 import numpy as np
@@ -29,8 +29,10 @@ class Monitor:
   manager.step=staticmethod(step)
  def disable(self):self.active=False
  def start(self):
-  self.time=0.;self.view=None;self.certificate=None;self.metrics={};self.history=0;self.cable_theta=self.g['ANGLE'];self.judge.reset();self.active=True
- def contact(self,pivot,axis):
+  self.time=0.;self.view=None;self.certificate=None;self.metrics={};self.history=0;self.sensor_keys=[]
+  self.peak_contact=0.;self.window_peak=0.;self.peak_lift=0.;self.peak_press=0.;self.cable_theta=self.g['ANGLE'];self.judge.reset();self.active=True
+ def contact(self,pivot,axis,lever_axis):
+  self.grip_contact=False
   if self.view is None:
    from isaaclab_physx.physics import PhysxManager
    from yam_arena.robot import asset_link_paths
@@ -46,19 +48,50 @@ class Monitor:
   ff,fp,fc,fs=map(arr,self.view.get_friction_data(dt=self.base.sim.get_physics_dt()))
   points=points-self.origin;fp=fp-self.origin
   if count.sum()>=2048 or fc.sum()>=2048:raise ValueError('contact buffer exhausted')
-  forces=np.zeros((2,2,3));moments=np.zeros((2,2));other=0.;details=[]
+  forces=np.zeros((2,2,3));moments=np.zeros((2,2));other=0.;details=[];self.patches=[]
   for i,(h,name) in enumerate(self.sensor_keys):
    for target in (0,1):
     a,n=int(start[i,target]),int(count[i,target]);b,k=int(fs[i,target]),int(fc[i,target])
     nf=normal[a:a+n].reshape(-1,1)*normals[a:a+n]
     tf=ff[b:b+k]
     total=nf.sum(0)+tf.sum(0)
+    if not all(np.isfinite(x).all() for x in (nf,tf,points[a:a+n],fp[b:b+k])):raise ValueError('nonfinite contact data')
+    if os.environ.get('HB_TRACE_FULL'):
+     for pt,f in zip(points[a:a+n],nf):
+      if np.linalg.norm(f)>1e-6:self.patches.append(dict(hand=h,link=name,target=target,kind='normal',point=pt.tolist(),force_on_hand=f.tolist()))
+     for pt,f in zip(fp[b:b+k],tf):
+      if np.linalg.norm(f)>1e-6:self.patches.append(dict(hand=h,link=name,target=target,kind='friction',point=pt.tolist(),force_on_hand=f.tolist()))
     moment=-float((np.cross(points[a:a+n]-pivot,nf).sum(0)+np.cross(fp[b:b+k]-pivot,tf).sum(0))@axis)
     if name in ('gripper','tip_left','tip_right'):
      forces[h,target]+=total;moments[h,target]+=moment
+     if target==0:
+      # Only physical contact on the original 170-272 mm grip counts as support, not the steel boss.
+      for pts,fsum in ((points[a:a+n],nf),(fp[b:b+k],tf)):
+       delta=pts-pivot;along=delta@lever_axis
+       radial=np.linalg.norm(delta-along[:,None]*lever_axis,axis=1)
+       if np.any((along>=.170)&(along<=.272)&(radial<=.020)&(np.linalg.norm(fsum,axis=1)>1e-6)):
+        self.grip_contact=True
     else:other+=float(np.linalg.norm(nf,axis=1).sum()+np.linalg.norm(tf,axis=1).sum())
     if n or k:details.append([h,name,target,n,k,total.tolist(),moment])
   return forces,moments,other,details
+ def drive_diagnostics(self):
+  # Read-only audit channels. The primary scorer does not use any of these quantities.
+  names=('get_dof_projected_joint_forces','get_dof_velocities','get_dof_position_targets',
+         'get_dof_velocity_targets','get_dof_max_forces','get_dof_stiffnesses','get_dof_dampings')
+  out={}
+  for name in names:
+   try:out[name]=[arr(getattr(r.root_view,name)())[0].tolist() for r in self.robots]
+   except Exception as exc:out[name]={'unavailable':type(exc).__name__+': '+str(exc)}
+  try:
+   if getattr(self,'all_contact_view',None) is None:
+    from yam_arena.robot import asset_link_paths
+    prefix=self.base.scene.env_prim_paths[0];links=asset_link_paths()
+    paths=[prefix+'/'+arm+links[name] for arm in ('LeftArm','RightArm')
+           for name in ('link1','link2','link3','link4','link5','gripper','tip_left','tip_right')]
+    self.all_contact_view=self.manager.get_physics_sim_view().create_rigid_contact_view(paths)
+   out['net_all_contacts_on_robot_links']=arr(self.all_contact_view.get_net_contact_forces(dt=self.base.sim.get_physics_dt())).tolist()
+  except Exception as exc:out['net_all_contacts_on_robot_links']={'unavailable':type(exc).__name__+': '+str(exc)}
+  return out
  def poses(self):
   bp=arr(self.asset.root_view.get_link_transforms())[0]
   bp=bp.copy();bp[:,:3]-=self.origin
@@ -109,30 +142,47 @@ class Monitor:
   self.time+=dt
   g=self.g;j=self.judge
   try:
-   bp,q,rp=self.poses();part=g['BRAKE'];theta=g['ANGLE']+float(q[self.qids['lever']]);button=float(q[self.qids['button']])
+   bp,q,rp=self.poses();theta=g['ANGLE']+float(q[self.qids['lever']]);button=float(q[self.qids['button']])
    rot=g['parts']._quat_to_matrix;axis=rot(bp[self.bids['base'],3:])@np.asarray(g['LEVER'].axis)
    lever_axis=rot(bp[self.bids['lever'],3:])@g['U0']
    pivot=bp[self.bids['base'],:3]
-   forces,moments,other,details=self.contact(pivot,axis)
-   effort=float(arr(self.asset.root_view.get_dof_actuation_forces())[0,self.qids['lever']])
+   # Contact forces are logged as evidence only; the judge never reads them.
+   forces,moments,other,details=self.contact(pivot,axis,lever_axis)
+   actuation=arr(self.asset.root_view.get_dof_actuation_forces())[0]
+   effort=float(actuation[self.qids['lever']]);button_effort=float(actuation[self.qids['button']])
    clear=0.
-   if j.pressed_once and theta<=20*math.pi/180 and not j.released:clear=self.clear(bp,rp)
-   s=Sample(self.time,theta,button,forces,moments,forces[:,1]@lever_axis,clear,self.integrity(bp,q),effort,other,cable_reference_theta=self.cable_theta)
-   j.step(s)
-   lower=getattr(j,'lower',j.tooth)-g['ANGLE'];hi=getattr(j,'button_hi',.001)
-   g['write_limits'](self.asset,lower,hi)
-   g['set_cable_effort'](self.asset,theta)
-   applied_reference=self.cable_theta;self.cable_theta=theta
+   if j.released_once and not j.free and theta<=20*math.pi/180+1e-6:clear=self.clear(bp,rp)
+   hand_on_grip=self.grip_contact
+   j.step(Sample(self.time,theta,button,clear,self.integrity(bp,q),hand_on_grip))
+   motor_caps_ok=all(g['motors'].limits_valid(arr(r.root_view.get_dof_max_forces())[0],r.joint_names) for r in self.robots)
+   if not motor_caps_ok:j.fail('declared motor cap exceeded or unavailable')
+   expected=g['cable_moment'](self.cable_theta)
+   if not math.isfinite(effort) or abs(effort+expected)>.5:j.fail('declared cable load absent')
+   if not math.isfinite(button_effort) or abs(button_effort+g['BUTTON_RETURN_N'])>.01:j.fail('declared button load absent')
+   # Pawl on its tooth = lever lower stop; loaded pawl = button stop. Stops are never set past the present pose.
+   limit_writes=g['write_limits'](self.asset,j.lower-g['ANGLE'],j.button_hi)
+   g['set_cable_effort'](self.asset,theta);self.cable_theta=theta
    self.certificate=None if j.invalid else np.r_[bp[self.bids['base']],q[self.qids['lever']],q[self.qids['button']]]
-   self.metrics=dict(t=self.time,theta_deg=math.degrees(theta),button_mm=button*1000,forces=forces.tolist(),moments=moments.tolist(),
-      press=s.press.tolist(),cable_effort=effort,cable_reference_deg=math.degrees(applied_reference),other_link_force=other,clear=clear,supported=getattr(j,'supported',False),
-      released=j.released,lifted=j.lifted_once,pressed=j.pressed_once,held=j.hold,invalid=j.invalid,reason=j.reason,score=j.score(),contacts=details,
-      gripper_poses=[p[r.body_names.index('gripper')].tolist() for p,r in zip(rp,self.robots)],robot_q=[arr(r.root_view.get_dof_positions())[0].tolist() for r in self.robots],
-      peak_moment=j.peak_moment.tolist(),peak_support=j.peak_support.tolist(),peak_press=j.peak_press.tolist(),lift_work=j.work.tolist(),tooth_deg=math.degrees(j.tooth))
+   norms=np.linalg.norm(forces,axis=2);press=forces[:,1]@lever_axis
+   peak=float(norms.max());self.peak_contact=max(self.peak_contact,peak);self.window_peak=max(self.window_peak,peak)
+   self.peak_lift=max(self.peak_lift,float(moments[:,0].sum()));self.peak_press=max(self.peak_press,float(press.max()))
+   self.metrics=dict(t=self.time,theta_deg=math.degrees(theta),button_mm=button*1000,tooth_deg=math.degrees(j.tooth),free=j.free,
+      lever_contact_N=norms[:,0].tolist(),button_contact_N=norms[:,1].tolist(),lift_moment_Nm=moments[:,0].tolist(),
+      press_N=press.tolist(),button_effort=button_effort,cable_effort=effort,cable_moment=g['cable_moment'](theta),other_link_force=other,clear=clear,
+      hand_on_grip=hand_on_grip,unheld_descent_deg=math.degrees(j.unheld_descent),resting=j.resting,released=j.released_once,dropped=j.dropped,held=j.hold,invalid=j.invalid,reason=j.reason,score=j.score(),
+      motor_caps_ok=motor_caps_ok,window_peak_contact_N=self.window_peak,peak_contact_N=self.peak_contact,peak_lift_moment_Nm=self.peak_lift,peak_press_N=self.peak_press,
+      button_hi_mm=j.button_hi*1000,lower_deg=math.degrees(j.lower),contacts=details,
+      gripper_poses=[p[r.body_names.index('gripper')].tolist() for p,r in zip(rp,self.robots)],
+      robot_q=[arr(r.root_view.get_dof_positions())[0].tolist() for r in self.robots],
+      robot_effort=[arr(r.root_view.get_dof_actuation_forces())[0].tolist() for r in self.robots])
+   if os.environ.get('HB_TRACE_FULL'):self.metrics['drive_audit']=self.drive_diagnostics()
+   if os.environ.get('TRACE_OUT') and os.environ.get('HB_TRACE_FULL'):
+    with pathlib.Path(os.environ['TRACE_OUT']).with_name('handbrake-physics.jsonl').open('a') as f:
+     f.write(json.dumps(dict(t=self.time,dt=dt,theta_deg=math.degrees(theta),button_mm=button*1000,lever_contact_N=norms[:,0].tolist(),button_contact_N=norms[:,1].tolist(),button_hi_mm=j.button_hi*1000,free=j.free,patches=self.patches,limit_writes=limit_writes,hand_on_grip=hand_on_grip,cable_effort=effort,button_effort=button_effort,invalid=j.invalid,reason=j.reason,joint_limits=arr(self.asset.root_view.get_dof_limits())[0].tolist(),joint_velocities=arr(self.asset.root_view.get_dof_velocities())[0].tolist(),robot_q=self.metrics['robot_q'],robot_effort=self.metrics['robot_effort'],drive_audit=self.metrics.get('drive_audit')))+'\n')
   except Exception as exc:
+   # A failed observation invalidates the trial and leaves the stops as they were.
    self.certificate=None;j.fail('native observation: '+type(exc).__name__+': '+str(exc));self.metrics=dict(t=self.time,invalid=True,reason=j.reason,score=0.)
-   # Missing observations may never leave a released ratchet in force.
-   g['write_limits'](self.asset,j.tooth-g['ANGLE'],.001)
  def log(self):
   if os.environ.get('TRACE_OUT'):
-   with pathlib.Path(os.environ['TRACE_OUT']).with_name('handbrake-v3.jsonl').open('a') as f:f.write(json.dumps(self.metrics)+'\n')
+   with pathlib.Path(os.environ['TRACE_OUT']).with_name('handbrake.jsonl').open('a') as f:f.write(json.dumps(self.metrics)+'\n')
+  self.window_peak=0.

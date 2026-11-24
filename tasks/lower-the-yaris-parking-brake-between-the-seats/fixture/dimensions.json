@@ -1,70 +1,77 @@
 {
-  "version": "0.10.1",
+  "version": "0.19.4",
   "units": "mm",
-  "basis": "stated access and linkage geometry estimates; no OEM dimensions measured",
-  "lever_product": "Toyota 46201-52080-B0",
-  "bracket_product": "Toyota 46235-52020",
-  "board": {
-    "material": "birch plywood",
+  "basis": "Access and lever-profile geometry are estimates, not OEM dimensional measurements. Button force/stroke and cable load use the on-car phone figures; custom hardware dimensions are manufacturing specifications.",
+  "pivot_above_table": [
+    300,
+    -420,
+    68
+  ],
+  "yaw_deg": 0,
+  "floor": {
     "size": [
       440,
       580,
       18
     ],
-    "fixed_to": "table with four through-bolts or equivalent clamps; table stiffness qualification required",
-    "shim_height_mm": 104.5,
-    "centre_relative_to_pivot": [
+    "centre_local": [
       0,
       150,
       -59
     ]
   },
-  "pivot_from_arm_midpoint": [
-    670,
-    -100,
-    172.5
-  ],
-  "axis": "installed local x, yawed68.60717 degrees about world z",
-  "lever_length": 297,
-  "grip_diameter": 35,
-  "button_diameter": 15,
-  "seat_bolster_envelopes": {
+  "grip": {
+    "diameter": 35,
+    "radius_range": [
+      170,
+      272
+    ]
+  },
+  "button": {
+    "diameter": 15,
+    "end_radius": 297,
+    "travel": 8,
+    "force_N": 7.4,
+    "spring_N_per_m": 0,
+    "bore_diameter": 15,
+    "constant_return_N": 7.5962,
+    "damping_Ns_per_m": 2
+  },
+  "seats": {
     "size": [
-      90,
+      89,
       560,
-      150
+      140
     ],
-    "centres_relative_to_pivot": [
+    "centres_local": [
       [
-        -155,
+        -154.5,
         150,
-        25
+        20
       ],
       [
-        155,
+        154.5,
         150,
-        25
+        20
       ]
-    ],
-    "clear_width": 220
+    ]
   },
   "console_cheeks": {
     "size": [
-      40,
+      38,
       420,
-      36
+      38
     ],
-    "clear_width": 80,
-    "centres_relative_to_pivot": [
+    "centres_local": [
       [
-        -60,
+        -59,
         135,
-        -32
+        -31
       ],
       [
-        60,
+        59,
         135,
-        -32
+        -31
       ]
     ]
   },
@@ -72,174 +79,361 @@
     "size": [
       80,
       30,
-      36
+      38
     ],
-    "centre_relative_to_pivot": [
+    "centre_local": [
       0,
       -60,
-      -32
+      -31
     ]
   },
-  "load": {
-    "torque_Nm": "3+112.2*angle_rad",
-    "range_deg": [
-      0,
-      36
+  "extension": null,
+  "load": "max(0.210*reported_pull,progressive_bench_reference_torque),plus conservative model gravity",
+  "physical_fixture_status": "dimensioned adjustable yoke/cartridge/guard; one-time receipt fit and proof required, not performed",
+  "start_deg": 25,
+  "tooth_pitch_deg": 5,
+  "load_guard": {
+    "size": [
+      116,
+      180,
+      116
     ],
-    "start_deg": 24,
-    "handle_check_radius_mm": 250,
-    "start_handle_force_N": 200,
-    "assumed_cable_radius_mm": 33.8363408066486,
-    "equivalent_tension_at_start_N": 1477.6487322730538,
-    "required_linear_spring_N_per_mm": 98,
-    "preload_N": 88.66206949335731,
-    "extension_at_24_deg_mm": 14.173333293670371,
-    "spring_product": "5 x MISUMI SWF25-50 in parallel; 19.6 N/mm each; 25 mm OD, 13.5 mm ID, 50 mm free length",
-    "spring_catalogue": "https://uk.misumi-ec.com/pdf/fa/2014/P2_0365-0366_F37_EN.pdf",
-    "spring_bank_precompression_mm": 0.9047149948301766,
-    "spring_bank_max_compression_at_27_deg_mm": 16.849714950209343,
-    "cable_product": "Loos GC18879M 3/16 inch commercial galvanized 7x19 cable, 4200 lbf minimum breaking strength",
-    "cartridge": {
-      "endplates_mm": [
-        100,
-        100,
-        6
+    "centre_local": [
+      0,
+      -168,
+      -10
+    ]
+  },
+  "guard_floor": {
+    "size": [
+      220,
+      260,
+      18
+    ],
+    "centre_local": [
+      0,
+      -360,
+      -119
+    ],
+    "collision_envelope": {
+      "size": [
+        220,
+        260,
+        60
       ],
-      "spring_centres_mm": [
+      "centre_local": [
+        0,
+        -360,
+        -115
+      ],
+      "includes": "18 mm shelf, feet, bolts/nuts; conservative gaps included"
+    }
+  },
+  "shoes": {
+    "per_shoe_mass_g": 50,
+    "foot_mm": [
+      27,
+      22,
+      4
+    ],
+    "physical_web_mm": [
+      28,
+      22,
+      4
+    ],
+    "web_and_hardware_collision_box_mm": [
+      22,
+      8.8,
+      30
+    ],
+    "attachment": "1144 one-piece backing13x15.7x2.49..2.50mm,z12.8..28.5,0.4back-bottom chamfer;bores16.9/23.7;uniform4.39..4.40mm registered1144bushes;received heat yield>=600MPa",
+    "grip_friction": [
+      0,
+      0
+    ],
+    "loaded_pad_command_mm": 38,
+    "toe_inward_extension_mm": 2,
+    "foot_top_and_outer_edge": "unchanged from25 mm foot; extends2 mm toward grip centre"
+  },
+  "rear_load_guard": {
+    "size": [
+      116,
+      240,
+      180
+    ],
+    "centre_local": [
+      0,
+      -360,
+      -20
+    ]
+  },
+  "supports": {
+    "edge_on_rails": {
+      "size": [
+        6.35,
+        400,
+        25
+      ],
+      "centres_local": [
         [
-          -20,
-          -20
+          -90,
+          -340,
+          -55.5
         ],
         [
-          -20,
-          20
+          90,
+          -340,
+          -55.5
+        ]
+      ]
+    },
+    "hangers": {
+      "size": [
+        6.35,
+        25,
+        85
+      ],
+      "centres_local": [
+        [
+          -90,
+          -280,
+          -85.5
         ],
         [
-          20,
-          -20
+          -90,
+          -450,
+          -85.5
         ],
         [
-          20,
-          20
+          90,
+          -280,
+          -85.5
         ],
         [
-          0,
-          0
+          90,
+          -450,
+          -85.5
+        ]
+      ]
+    },
+    "bench_stud_assemblies": {
+      "collision_size": [
+        80,
+        100,
+        120
+      ],
+      "centres_local": [
+        [
+          -90,
+          -180,
+          -98
+        ],
+        [
+          90,
+          -180,
+          -98
         ]
       ],
-      "guide_rods": "four M8 steel rods at (+/-40,+/-40) through endplates",
-      "guide_span_mm": 70,
-      "spring_guides": "five 12 mm diameter steel guide pins at spring centres",
-      "preload_adjustment": "M8 guided carriage adjuster offset from central spring; qualify with handle force gauge"
-    },
-    "spring_bank_max_compression_at_36_deg_mm": 22.16471493533573,
-    "max_tension_at_36_deg_N": 2172.1420636629023,
-    "termination_requirement": "Professionally swaged thimbled eyes; assembled certified working load >= 2.5 kN after termination efficiency and at least 5:1 strength factor. Reject uncertified cable ends.",
-    "anchor_requirement": "Two M8 class 8.8 bolts per steel cartridge endplate through steel backing plate; anchored board/table connection qualified to >= 2.5 kN cable tension and 100 N m bracket torque.",
-    "calibration_instrument": {
-      "product": "VEVOR OCS-L300 kg hanging scale",
-      "capacity_kg": 300,
-      "division_kg": 0.05,
-      "source": "https://www.vevor.com/crane-scale-c_10459/vevor-digital-crane-scale-660-lbs-300-kg-max-capacity-handheld-hanging-scale-with-cast-aluminum-case-lcd-display-0-1-lbs-division-3-unit-switch-portable-design-for-farm-hunting-fishing-orange-p_010480870666",
-      "installation": "Inline in the horizontal cable route, housing supported without axial shunt; adjust complete assembled spring curve. Read kg*9.80665 N. No physical calibration performed."
-    },
-    "enrollment_tension_N": [
-      88.66206949335731,
-      551.6576237532561,
-      1014.653178013155,
-      1477.6487322730538
-    ]
+      "actual_bench_thickness": 60,
+      "bench_stud_length": 118
+    }
   },
-  "enrollment": {
-    "start_angle_deg": [
-      23,
-      25
+  "front_rod_entry_design": {
+    "basis": "Manufactured acceptance bounds, not measured OEM geometry",
+    "slot_size_mm": [
+      12,
+      30
     ],
-    "tooth_pitch_deg": [
-      3.5,
-      4.5
+    "slot_centre_xz_mm": [
+      0,
+      -10
     ],
-    "button_travel_mm": [
-      7.5,
-      8.5
+    "rod_swept_centre_x_mm": [
+      -0.5,
+      0.5
     ],
-    "button_force_at_5mm_N": [
-      5,
-      6
+    "rod_swept_centre_z_mm": [
+      -20,
+      0
     ],
-    "handle_force_at_24deg_N": [
-      200,
-      210
-    ]
+    "shutter_size_mm": [
+      60,
+      80,
+      1
+    ],
+    "shutter_rod_aperture_mm": 10,
+    "shutter_y_mm": [
+      -82.5,
+      -81.5
+    ],
+    "shutter_centre_z_mm": [
+      -20,
+      0
+    ],
+    "minimum_vertical_overlap_mm": 15,
+    "pin_cartridge_axis_z_mm": [
+      -30,
+      0
+    ],
+    "oem_nut_washer_mm": [
+      26,
+      8.5,
+      3
+    ],
+    "front_cap_mm": [
+      116,
+      116,
+      18
+    ],
+    "pocket_mm": [
+      62,
+      101,
+      5
+    ],
+    "pocket_centre_xz_mm": [
+      0,
+      -10
+    ],
+    "retaining_strips_mm": [
+      16,
+      76,
+      3
+    ],
+    "shutter_stop_centre_limits_z_mm": [
+      -20.5,
+      0.5
+    ],
+    "travel_stops": "Integral pocket end walls",
+    "retainer_screw_count": 6,
+    "retainer_wood_screw_cut_length_mm": 18
   },
-  "fabrication": "Anchor 18 mm floor board on 104.5 mm anchored risers to the table. Bolt OEM bracket through board using original mounting holes. Key the two adapter blocks onto exposed 12 x 26 mm steel bar at 100 and 150 mm radii, not onto the rubber grip. Attach offset spine and named 200 mm RRS handle. Leave stock button and its entire 8 mm travel unobstructed. Install all seat and console envelopes with listed local dimensions and full yawed geometry; they do not assist lever motion. Loading spring cartridge has fixed steel reaction plates and qualified cable ends.",
-  "qualification": "Unmeasured fixture proposal; maker spring and cable specifications verified. Five SWF25-50 springs have 22.165 mm compression at 36 deg below 25 mm; 3/16 inch GC18879M cable replaces underspecified 1/8 inch. Qualify complete terminated route at all listed angles before real trials.",
-  "yaw_deg": 68.60717430187768,
-  "extension": {
-    "product": "RRS DTMVHHBE 200 mm extension handle",
-    "source": "https://www.demon-tweeks.com/eu/rrs-extension-handle-for-hydraulic-handbrake-dtmvhhbe/",
-    "maker_intended_use": "RRS hydraulic handbrake; fitting to the Yaris requires the custom adapter below and is not maker-approved compatibility",
-    "length": 200,
-    "diameter_estimate": 30,
-    "axis_offset_x": -90,
-    "radii_from_pivot": [
-      592,
-      792
+  "oem_fixed_mount": {
+    "basis": "Manufactured/receipt bounds, not measured OEM dimensions",
+    "base_bars_mm": [
+      218,
+      50,
+      6.35
     ],
-    "loaded_assembly_mass_kg_estimate": 1.57,
-    "adapter": {
-      "material": "6061 aluminum split blocks and 20 x 20 mm spine; standard stock",
-      "split_blocks_centres_y": [
-        100,
-        150
+    "base_centres_local_mm": [
+      [
+        0,
+        -50,
+        -46.825
       ],
-      "split_blocks_outer": [
+      [
+        0,
+        0,
+        -46.825
+      ],
+      [
+        0,
+        50,
+        -46.825
+      ]
+    ],
+    "shim_union_mm": [
+      150,
+      80,
+      10
+    ],
+    "capture_actual_mm": [
+      212,
+      50,
+      12.7
+    ],
+    "capture_rear_relief_mm": [
+      20,
+      30
+    ],
+    "registered_flange_top_above_table_mm": [
+      20,
+      32
+    ],
+    "foot_width_max_mm": 150,
+    "foot_length_mm": [
+      60,
+      80
+    ],
+    "main_studs": {
+      "count": 2,
+      "length_mm": 158,
+      "centres_xy_mm": [
+        [
+          -90,
+          0
+        ],
+        [
+          90,
+          0
+        ]
+      ]
+    },
+    "keys": {
+      "count": 4,
+      "layer_mm": [
+        36,
+        25,
+        6.35
+      ],
+      "layers_per_key": 4,
+      "centre_abs_x_mm": [
+        30,
+        50
+      ],
+      "centre_abs_y_mm": [
+        42.5,
+        52.5
+      ],
+      "paired_studs_per_key": 2,
+      "stud_length_mm": 158,
+      "common_spreader_mm": [
+        36,
         40,
-        20,
-        40
-      ],
-      "keyed_pocket": [
-        12.2,
-        20,
-        26.2
-      ],
-      "block_fasteners": "two M6 class 8.8 screws per split block, counterbored outside the lever; transfer actual purchased bar section",
-      "crossbars": [
-        120,
-        20,
-        20
-      ],
-      "spine": [
-        20,
-        512,
-        20
-      ],
-      "spine_centre": [
-        -90,
-        346,
-        0
-      ],
-      "extension_connection": "split collet around actual 30 mm estimated base; transfer measured purchased diameter/thread before machining, without drilling the OEM lever",
-      "qualification": "100 N m about pivot and500 N transverse without slip or deformation; physical proof not performed"
+        6.35
+      ]
     },
-    "grasp_radius": 780,
-    "coating": {
-      "product": "3M GM614/TB614",
-      "thickness_mm": 1.07,
-      "radii": [
-        692,
-        792
-      ],
-      "effective_pair_static_dynamic_estimate": [
-        1.6,
-        1.4
-      ],
-      "enrollment": "dry pair must sustain112 N tangential traction under80 N total normal load; no measurement yet",
-      "material_combination": "Explicit max combination for estimated pair1.6/1.4; robot pad materials unchanged",
-      "basis": "3M trial-bag TDS: matedGM613/TB614 dry kinetic2.8, wet2.6. Not synthetic-leather or YAM data. Model1.6/1.4 remains an unmeasured pair estimate; physical traction qualification required."
-    },
-    "lever_adapter_mass_kg_estimate": 1.57,
-    "button_mass_kg_estimate": 0.02,
-    "total_moving_mass_kg_estimate": 1.59
+    "native_bounds": "See task.py MOUNTS: complete positive-key,relieved-clamp,stud,spreader and weld-bead unions; all rigid obstacles included."
+  },
+  "progressive_cartridge": {
+    "rate_each_N_per_mm": 54.48,
+    "initial_series_rate_N_per_mm": 27.24,
+    "front_compression_stop_mm": 8,
+    "total_compression_hard_stop_mm": 22.1,
+    "operating_compression_limit_mm": 22.0,
+    "staged_sleeve_OD_ID_mm": [
+      23,
+      21
+    ],
+    "staged_sleeve_exposed_length": "measuredL2-8mm",
+    "staged_sleeve_insertion_mm": 3,
+    "front_seat_washer_mm": [
+      20.8,
+      10.5,
+      3
+    ],
+    "separator_OD_ID_thickness_mm": [
+      24,
+      10.5,
+      3
+    ],
+    "reference_effective_link_radius_estimate_mm": 35,
+    "reference_preload_estimate_mm": 1
+  },
+  "numerics": {
+    "default_physics_hz": 480,
+    "comparison_physics_hz": 960,
+    "control_hz": 20,
+    "position_iterations": 128,
+    "velocity_iterations": 8,
+    "solver": "PGS",
+    "rejected_physics_hz": 240
+  },
+  "physical_enrollment_bounds": {
+    "shoe_complete_mass_max_g": 50,
+    "rear_complete_mass_max_kg": 15,
+    "bench_stud_spacing_mm": 50,
+    "max_span_from_front_stud_mm": 385,
+    "adverse_force_application_height_above_rail_max_mm": 250,
+    "scope": "Design receipt limits,not measured masses or proof results"
   }
 }

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720"><rect width="1200" height="720" fill="white"/>
+<text x="35" y="40" font-family="Arial" font-size="25" fill="#172a38">Passive shoe attachment — registered steel shear path</text>
+<text x="35" y="70" font-family="Arial" font-size="17" fill="#172a38">Manufactured design, mm. Actual nylon boundaries, fits and physical proof require receipt inspection.</text>
+<text x="35" y="110" font-family="Arial" font-size="19" fill="#172a38">Axial stack at a bolt line; transverse size schematic</text>
+<rect x="75" y="180" width="116" height="180" fill="#adc2d2" stroke="#334d60"/>
+<rect x="191" y="180" width="62.883078000000005" height="180" fill="#dae3e8" stroke="#334d60"/>
+<rect x="191" y="180" width="98.235035" height="180" fill="#c6d3db" stroke="#334d60"/>
+<rect x="290.68503499999997" y="180" width="48.76358700000001" height="180" fill="#e8cc88" stroke="#334d60"/>
+<rect x="339.448622" y="180" width="72.5" height="180" fill="#adc2d2" stroke="#334d60"/>
+<rect x="176.5" y="237" width="179.768622" height="66" fill="#6f8e9f" stroke="#334d60"/>
+<rect x="176.5" y="255" width="179.768622" height="30" fill="white" stroke="#334d60"/>
+<line x1="72.64862199999999" y1="270" x2="411.948622" y2="270" stroke="#a94435" stroke-width="1.5"/>
+<text x="42" y="395" font-family="Arial" font-size="16" fill="#172a38">Web</text>
+<text x="170" y="395" font-family="Arial" font-size="16" fill="#172a38">Contoured spreader</text>
+<text x="338" y="395" font-family="Arial" font-size="16" fill="#172a38">Nylon</text>
+<text x="443" y="395" font-family="Arial" font-size="16" fill="#172a38">Inner plate</text>
+<text x="40" y="435" font-family="Arial" font-size="17" fill="#172a38">Web x −12..−8; ≥3 full M3 thread after socket/chamfers</text>
+<text x="40" y="465" font-family="Arial" font-size="17" fill="#172a38">Bush OD 4.39..4.40; ID = actual screw crest +0.01..0.02</text>
+<text x="40" y="495" font-family="Arial" font-size="17" fill="#172a38">Web socket 0.50..0.55; plate 0.58..0.59; OD fit 0..0.01</text>
+<text x="40" y="525" font-family="Arial" font-size="17" fill="#172a38">Bush L = 7.618918 − plate t + both socket depths</text>
+<text x="40" y="555" font-family="Arial" font-size="17" fill="#172a38">Plate t 2.49..2.50; screw overall 11.70 ±0.03</text>
+<text x="40" y="620" font-family="Arial" font-size="17" fill="#172a38">1144 plate/bushes: received MTR yield ≥600 MPa</text>
+<text x="40" y="585" font-family="Arial" font-size="17" fill="#172a38">Nominal full stack 11.618918; bush L 6.198918</text>
+<text x="665" y="110" font-family="Arial" font-size="19" fill="#172a38">Backing-plate face (lever-facing)</text>
+<rect x="712.5" y="309.5" width="195" height="235.5" fill="#dce6ed" stroke="#334d60"/>
+<circle cx="810" cy="483.5" r="50.699999999999996" fill="white" stroke="#334d60"/>
+<circle cx="810" cy="483.5" r="24.75" fill="#e8cc88" stroke="#334d60"/>
+<line x1="685" y1="483.5" x2="935" y2="483.5" stroke="#7b8d99" stroke-width="1.5"/>
+<text x="955" y="489.5" font-family="Arial" font-size="17" fill="#172a38">z 16.9</text>
+<circle cx="810" cy="381.5" r="50.699999999999996" fill="white" stroke="#334d60"/>
+<circle cx="810" cy="381.5" r="24.75" fill="#e8cc88" stroke="#334d60"/>
+<line x1="685" y1="381.5" x2="935" y2="381.5" stroke="#7b8d99" stroke-width="1.5"/>
+<text x="955" y="387.5" font-family="Arial" font-size="17" fill="#172a38">z 23.7</text>
+<text x="665" y="590" font-family="Arial" font-size="17" fill="#172a38">Plate 13 ×15.7; z 12.8..28.5; holes y 0</text>
+<text x="665" y="620" font-family="Arial" font-size="17" fill="#172a38">M3 clearance 3.3; 90° mouth 6.76</text>
+<text x="35" y="675" font-family="Arial" font-size="17" fill="#172a38">Proof: 150 N radial +5 N axial, both toe ends, 60 s; relative steel-stack motion ≤0.02 mm. No physical proof claimed.</text>
+</svg>
