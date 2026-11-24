@@ -1,0 +1,32 @@
+check_specimen: casting files vs task.py
+  ok   R_FORMER = 0.019 in task.py and make_mould.py
+  ok   R_SKIN = 0.02 in task.py and make_mould.py
+  ok   PIN_L = 0.002 in task.py and make_mould.py
+  ok   PIN_D = 0.001 in task.py and make_mould.py
+  ok   R_TIP = 0.022 in task.py and make_mould.py
+  ok   N_PINS = 532 in task.py and make_mould.py
+  ok   SKIRT_TOP = 0.025 in task.py and make_mould.py
+  ok   make_mould.py pin directions and rings identical to task.py (bitwise)
+  ok   ring counts [1, 9, 14, 20, 25, 30, 35, 40, 43, 47, 50, 52, 54, 56, 56] (sum 532) at [0.0, 9.0, 15.0, 21.0, 27.0, 33.0, 39.0, 45.0, 51.0, 57.0, 63.0, 69.0, 75.0, 81.0, 87.0] degrees from the apex
+  ok   painting former: r 19 mm dome and body to z 25 mm = the core's and the skin's inside
+  ok   pins.csv: 532 pins, max error vs task.py root 5.0e-07 mm, tip 4.9e-07 mm, rings equal
+  ok   master.stl: 28766 triangles, closed and consistently oriented: True ; volume 59079.7 mm3 (outward normals)
+  ok   core.stl: 12582 triangles, closed and consistently oriented: True ; volume 61044.4 mm3 (outward normals)
+  ok   box_tube.stl: 1280 triangles, closed and consistently oriented: True ; volume 44209.7 mm3 (outward normals)
+  ok   box_base.stl: 2556 triangles, closed and consistently oriented: True ; volume 14762.9 mm3 (outward normals)
+  ok   silicone_mould_reference.stl: 29390 triangles, closed and consistently oriented: True ; volume 164374.7 mm3 (outward normals)
+  ok   skin_reference.stl: 33664 triangles, closed and consistently oriented: True ; volume 6142.9 mm3 (outward normals)
+  ok   master.stl: 532 flat pin-tip faces at r 22.0 mm, each on its own task.py tip point (worst 0.0000 mm)
+  ok   skin_reference.stl: 532 flat pin-tip faces at r 22.0 mm, each on its own task.py tip point (worst 0.0000 mm)
+  ok   silicone_mould_reference.stl: 532 flat pin-tip faces at r 22.0 mm, each on its own task.py tip point (worst 0.0000 mm)
+  ok   skin: skirt outside radius 20.000 mm (task.py 20.000)
+  ok   skin: skirt inside radius 19.000 mm (task.py 19.000)
+  ok   skin: dome outside radius (between pins) 20.000 mm (task.py 20.000)
+  ok   skin: dome inside radius 19.000 mm (task.py 19.000)
+  ok   skin: rim height above the dome's centre 25.000 mm (task.py 25.000)
+  ok   skin: apex pin tip below the dome's centre 22.000 mm (task.py 22.000)
+  ok   skin: across opposite tips of the 87 degree ring 43.94 mm (2 x 22 x sin 87 = 43.94)
+  ok   skin: volume 6143 mm3, 6.39 g at VytaFlex 60's 1.04 g/cm3 (analytic 6143.8 mm3 without the rim notch)
+  ok   core: r 19 mm dome and body below the rim, the painting former's size
+  ok   MANIFEST.sha256: 12 files, mismatches []
+PASS

@@ -34,9 +34,9 @@ GLASS, ACRYLIC = (0.80, 0.88, 0.92), (0.86, 0.92, 0.95)
 # -- the skin on its former (former frame F: origin at the dome's centre, +z up the handle; the apex is at -z) ----
 R_FORMER = 0.019  # the former's dome and body (the everted skin's inside)
 R_SKIN = 0.020  # the skin's surface, 1 mm of Vytaflex 60 over the former: the pins stand on it
-PIN_L, PIN_D = 0.002, 0.001  # pin length and diameter (estimates; the printed TacTip's pins are 2.0 mm long)
+PIN_L, PIN_D = 0.002, 0.001  # task-designed pin length and hexagon across corners; specimen/pins.csv
 R_TIP = R_SKIN + PIN_L  # the pin tips' sphere
-N_PINS = 532  # Open TacTip cast skin: 40 mm dome, 532 pins (Lepora 2021, Table II)
+N_PINS = 532  # Open TacTip cast skin: 40 mm dome, 532 pins (Lepora 2021, Table I)
 SKIRT_TOP = 0.025  # the skin's cylindrical skirt over the former's body, from the dome's equator up 25 mm
 SHANK = (0.012, SKIRT_TOP, 0.031)  # bare former above the skirt: radius, bottom, top
 FLANGE = (0.040, 0.031, 0.035)  # 80 mm flange that hangs the former on the beaker's rim
@@ -135,8 +135,8 @@ def _former_visuals():
     return (parts.Visual("pins", p, t, color=BLACK), *[_cap_visual(i) for i in range(N_PINS)])
 
 
-# -- the beaker (Corning Pyrex 1000-250, 250 mL low-form Griffin: 70 mm across, 95 mm tall) ----------------------
-BK_R, BK_H, BK_WALL, BK_BASE = 0.035, 0.095, 0.0018, 0.0025
+# -- the beaker (Corning Pyrex 1000-250, 250 mL low-form Griffin: 68 mm across, 90 mm tall) ----------------------
+BK_R, BK_H, BK_WALL, BK_BASE = 0.034, 0.090, 0.0018, 0.0025
 BK_RIN = BK_R - BK_WALL
 BK_MASS = 0.110  # an estimate for 250 mL borosilicate
 BK_STAVES = 28
@@ -155,7 +155,8 @@ def _beaker_shapes():
 
 # -- the paint bar: clear cast acrylic square bar, 1.5 in (38.1 mm), cut to 6 in (152.4 mm), white enamel on one end
 BAR_R, BAR_L = 0.01905, 0.1524  # half its width, its length
-BAR_MASS = 0.263  # 221 cm3 of cast acrylic at 1.19 g/cm3
+ACRYLIC_DENSITY = 1190.0  # kg/m3, PERSPEX cast acrylic typical physical properties; calculated mass, not weighed
+BAR_MASS = (2 * BAR_R) ** 2 * BAR_L * ACRYLIC_DENSITY
 WET_R = 0.016  # the wet paint: a 32 mm circle centred on the end face
 PAINT_T = 0.00015  # the enamel film, 0.15 mm (an estimate)
 
@@ -163,7 +164,7 @@ PAINT_T = 0.00015  # the enamel film, 0.15 mm (an estimate)
 def _bar_shapes():
     return [
         parts.box((BAR_L, 2 * BAR_R, 2 * BAR_R), color=ACRYLIC),  # along the part's x
-        parts.cylinder(WET_R, 0.0003, at=(BAR_L / 2 + 0.00015, 0.0, 0.0), color=WHITE, axis="x", collide=False),
+        parts.cylinder(WET_R, PAINT_T, at=(BAR_L / 2 + PAINT_T / 2, 0.0, 0.0), color=WHITE, axis="x", collide=False),
     ]
 
 
@@ -199,7 +200,8 @@ LOTS = lots.declare(
 )
 
 # -- the paint rule ---------------------------------------------------------------------------------------------
-F_MIN = 0.3  # N between the pins and the bar's end face: a press that paints
+CONTACT_EPS = 0.0001  # m numerical surface classification tolerance; never creates a contact
+F_MIN = 0.4  # N transfer press, obtained by phone from a technician who works with this product (Nov 2026)
 K_FIELD = 8.3  # N/mm^2: the pin field yields sqrt(F / K_FIELD) mm under F newtons (0.6 mm at 3 N; an estimate)
 F_FOLD = 19.0  # N: harder than this folds the pins over (1.5 mm), and the skin between them touches the paint
 SLIDE_MAX = 0.002  # m the dome may slide over the wet face within one press before it smears the paint
@@ -250,9 +252,10 @@ SLIDE_DEADBAND = 0.0001  # m a step: contact jitter below this is not counted in
 TWIST_MAX = 15.0  # degrees the dome may turn about the face's normal within one contact (summed by size)
 TWIST_DEADBAND = 0.3  # degrees a step: contact jitter below this is not counted
 F_LIGHT = 0.1  # N: motion over the wet paint counts toward slide and twist from this light a touch
-OFF_STEPS = 3  # control steps the dome must stay 0.5 mm off the face before a new contact starts
+OFF_STEPS = 3  # control steps without a qualifying loaded wet-face contact before a new contact starts
 
 
+# Point samples below are used ONLY by the offline demo clearance planner, never paint-state updates.
 def _former_rim_points():
     """Sample points on the skirt, shank, flange (rim and both faces) and square handle (its four faces), in F: none
     of these may touch the paint."""
@@ -284,82 +287,125 @@ def _contact_reset():
     _S["loaded"] = False
 
 
-def record_press(force, fst, rst):
-    """One control step of the dome against the bar. Paint goes on every pin whose tip lies within the pin field's
-    yield plus the film of the end face's plane, inside the wet circle, while the press is at least F_MIN. Breaking
-    rules: a press over F_FOLD; within one contact (from the dome touching the face until it has been 0.5 mm off it
-    for OFF_STEPS steps, whatever the force), the dome sliding more than SLIDE_MAX over the wet face (the larger of
-    the net slide and the path summed over steps that move more than SLIDE_DEADBAND, counted on every step touching
-    the wet paint with F_LIGHT or more) or turning more than TWIST_MAX about the face's normal (summed by size); a press centred past THETA_SKIRT from the apex (the skirt in the paint); any point of the
-    skirt, shank, flange or handle within 0.5 mm of the wet circle."""
-    o, r = former_frame(fst)
+def wet_face_contacts(contacts, rst):
+    """Select actual loaded, non-separated contacts on the wet end, with face-normal reaction.
+
+    contacts: (normal load N, world point, world normal, separation m) tuples from PhysX.
+    Point tolerances classify a reported contact; they never generate contact from proximity.
+    """
     p, n = bar_face(rst)
+    out = []
+    for load, point, normal, separation in contacts:
+        point, normal = np.asarray(point, float), np.asarray(normal, float)
+        h = float((point - p) @ n)
+        lateral = point - p - h * n
+        alignment = abs(float(normal @ n))
+        if (load > 0.0 and separation <= 0.0 and alignment >= 0.95
+                and abs(h) <= PAINT_T + CONTACT_EPS
+                and np.linalg.norm(lateral) <= WET_R + EPS):
+            out.append((float(load) * alignment, point))
+    return out
+
+
+def dome_contact(point, fst):
+    """Classify a reported contact by nearest actual collision surface, not a pose-only trigger.
+
+    Contact points lie on the pair interface and may be on the bar side of penetration or a margin.
+    A hemisphere's equatorial edge must not be confused with the 2 mm smaller skirt beside it.
+    """
+    o, r = former_frame(fst)
+    x, y, z = r.T @ (np.asarray(point)-o)
+    radial = math.hypot(x, y)
+    dome = abs(math.sqrt(x*x+y*y+z*z)-R_TIP) if z <= 0 else math.hypot(radial-R_TIP, z)
+    def cylinder_distance(radius, z0, z1):
+        q = np.array([radial-radius, abs(z-(z0+z1)/2)-(z1-z0)/2])
+        return abs(float(np.linalg.norm(np.maximum(q, 0)) + min(float(q.max()), 0)))
+    others = [cylinder_distance(R_SKIN, 0, SKIRT_TOP),
+              cylinder_distance(SHANK[0], SHANK[1], SHANK[2]),
+              cylinder_distance(FLANGE[0], FLANGE[1], FLANGE[2])]
+    q = np.abs(np.array([x,y,z-(HANDLE[1]+HANDLE[2])/2])) - np.array([HANDLE[0],HANDLE[0],(HANDLE[2]-HANDLE[1])/2])
+    others.append(abs(float(np.linalg.norm(np.maximum(q,0)) + min(float(q.max()),0))))
+    return dome < min(others)
+
+
+def record_press(contacts, fst, rst):
+    """Accumulate paint and smear only from actual loaded wet-face contacts.
+
+    The 0.4 N transfer load is technician-reported; footprint, fold and smear thresholds are uncalibrated estimates.
+    Both bodies' rotations enter relative slip/twist; common rigid motion contributes zero.
+    """
+    o, r = former_frame(fst)
+    rc, rr = np.asarray(rst.pos, float), parts._quat_to_matrix(rst.quat_xyzw)
+    p, n = bar_face(rst)
+    wet_contacts = wet_face_contacts(contacts, rst)
+    dome_force = 0.0
+    for load, point in wet_contacts:
+        local = r.T @ (point - o)
+        if dome_contact(point, fst):
+            dome_force += load
+        elif (np.linalg.norm(local) <= 0.10 and load >= F_LIGHT - EPS):
+            if "the former or the skirt touched the paint" not in _S["ruled"]:
+                print("[tactip-contact-classification] " + json.dumps(dict(load=load, local_mm=(local*1000).tolist(), norm_mm=float(np.linalg.norm(local)*1000))), flush=True)
+            _S["ruled"].add("the former or the skirt touched the paint")
+    force = dome_force
+    if force < F_LIGHT - EPS:
+        no_press()
+        return
+    centre = o - R_TIP * n
+    gap = float((o - p) @ n) - R_TIP
+    lateral = centre - p - ((centre - p) @ n) * n
+    # Explicit contact data, not centre proximity, determines whether a contact exists.
+    _S["off"] = 0
     if force > F_FOLD + EPS:
         _S["ruled"].add("pins folded: the skin between the pins touched the paint")
-    rim = o + FORMER_RIM_PTS @ r.T
-    hr = (rim - p) @ n
-    lr = np.linalg.norm((rim - p) - np.outer(hr, n), axis=1)
-    if ((hr <= 0.0005) & (hr >= -0.01) & (lr <= WET_R)).any():
-        _S["ruled"].add("the former or the skirt touched the paint")
-    centre = o - R_TIP * n  # the dome's lowest point toward the face
-    gap = float((o - p) @ n) - R_TIP
-    lateral = (centre - p) - ((centre - p) @ n) * n
-    rc, rr = np.asarray(rst.pos, float), parts._quat_to_matrix(rst.quat_xyzw)
-    loc = rr.T @ (centre - rc)
-    on_face = abs(loc[1]) <= BAR_R and abs(loc[2]) <= BAR_R
-    touching = on_face and gap <= 0.0005 and (force > 0.05 or gap <= PAINT_T)
-    if not touching:
-        _S["off"] = _S.get("off", 0) + 1
-        if _S["off"] >= OFF_STEPS:
-            _contact_reset()
-        _S["loaded"] = False
-        if force >= F_MIN and not on_face:
-            _S["off_face"] = _S.get("off_face", 0) + 1
-        return
-    _S["off"] = 0
-    wet = np.linalg.norm(lateral) <= WET_R - EPS
     m_now = r.T @ (centre - o)
+    relative = rr.T @ r
     prev = _S.get("prev")
-    if prev is not None:  # where the dome's material point that was at the contact last step is now, on the face
-        m_prev, face_prev, r_prev = prev
+    if prev is not None:
+        m_prev, face_prev, relative_prev = prev
         d = rr.T @ (o + r @ m_prev - rc) - face_prev
-        d[0] = 0.0  # the bar's x is the face's normal: keep the motion along the face
-        if wet and (force >= F_LIGHT - EPS or gap <= PAINT_T):  # any real touch on the wet paint, light or firm
-            _S["slide_v"] = _S.get("slide_v", np.zeros(3)) + d
-            step = float(np.linalg.norm(d))
-            if step > SLIDE_DEADBAND:
-                _S["path"] = _S.get("path", 0.0) + step
-            _S["slide"] = max(float(np.linalg.norm(_S["slide_v"])), _S["path"])
-            dr = r @ r_prev.T  # the dome's turn since last step; its part about the face's normal
-            ang = math.atan2(float((dr[1, 0] - dr[0, 1]) * n[2] + (dr[0, 2] - dr[2, 0]) * n[1] + (dr[2, 1] - dr[1, 2]) * n[0]) / 2,
-                             (float(np.trace(dr)) - 1) / 2)
-            if abs(math.degrees(ang)) > TWIST_DEADBAND:  # summed by size: a back-and-forth wobble adds up too
-                _S["twist"] = _S.get("twist", 0.0) + abs(math.degrees(ang))
-    _S["prev"] = (m_now, rr.T @ (centre - rc), r)
-    if _S.get("slide", 0.0) > SLIDE_MAX + EPS:
+        d[0] = 0.0
+        _S["slide_v"] += d
+        step = float(np.linalg.norm(d))
+        if step > SLIDE_DEADBAND:
+            _S["path"] += step
+        _S["slide"] = max(float(np.linalg.norm(_S["slide_v"])), _S["path"])
+        dr = relative @ relative_prev.T
+        # Rotation-vector projection onto the wet-face normal (bar-frame +x).
+        skew = np.array([dr[2, 1]-dr[1, 2], dr[0, 2]-dr[2, 0], dr[1, 0]-dr[0, 1]]) / 2
+        sine = float(np.linalg.norm(skew))
+        angle = math.atan2(sine, (float(np.trace(dr)) - 1) / 2)
+        if sine > 1e-10:
+            turn = math.degrees(angle * skew[0] / sine)
+        elif angle > math.pi / 2:
+            # A near-180-degree sampled jump has ambiguous axis; fail closed as a smear.
+            turn = 180.0
+        else:
+            turn = 0.0
+        if abs(turn) > TWIST_DEADBAND:
+            _S["twist"] += abs(turn)
+    _S["prev"] = (m_now, rr.T @ (centre - rc), relative)
+    if _S["slide"] > SLIDE_MAX + EPS:
         _S["ruled"].add("the dome slid over the wet paint and smeared it")
-    if abs(_S.get("twist", 0.0)) > TWIST_MAX + EPS:
+    if _S["twist"] > TWIST_MAX + EPS:
         _S["ruled"].add("the dome turned on the wet paint and smeared it")
-    loaded = force >= F_MIN - EPS
-    if not loaded:
+    if force < F_MIN - EPS:
         _S["loaded"] = False
         return
     if not _S["loaded"]:
         _S["presses"] += 1
     _S["loaded"] = True
     c_f = r.T @ (-n)
-    theta = math.degrees(math.acos(max(-1.0, min(1.0, -c_f[2]))))
-    _S["last"] = dict(theta=round(theta, 1), lat_mm=round(float(np.linalg.norm(lateral)) * 1000, 1),
-                      gap_mm=round(gap * 1000, 2))
-    if wet and theta > THETA_SKIRT + EPS:
+    theta = math.degrees(math.acos(np.clip(-c_f[2], -1, 1)))
+    _S["last"] = dict(theta=round(theta, 1), lat_mm=round(float(np.linalg.norm(lateral))*1000, 1),
+                      gap_mm=round(gap*1000, 2))
+    if theta > THETA_SKIRT + EPS:
         _S["ruled"].add("the skirt touched the paint")
-    if not wet:
-        return
     tips = tips_world(fst)
     h = (tips - p) @ n
-    lat = (tips - p) - np.outer(h, n)
+    lat = tips - p - np.outer(h, n)
     reach = compression(force) / 1000 + PAINT_T
-    hit = (h <= reach + EPS) & (np.linalg.norm(lat, axis=1) <= WET_R + EPS)
+    hit = (h <= reach + EPS) & (h >= -reach - EPS) & (np.linalg.norm(lat, axis=1) <= WET_R + EPS)
     if hit.any():
         _S["painted"] |= hit
         _S["wet"] = True
@@ -422,7 +468,7 @@ def beaker_ok(bst) -> bool:
     c, r = beaker_frame(bst)
     lot = lots.current()
     x0, y0, _ = lot.pos("beaker")
-    return bool(float(r[2, 2]) >= math.cos(math.radians(5.0)) - EPS and c[2] <= TOP + 0.002 + EPS
+    return bool(float(r[2, 2]) >= math.cos(math.radians(5.0)) - EPS and TOP - 0.002 - EPS <= c[2] <= TOP + 0.002 + EPS
                 and math.hypot(c[0] - x0, c[1] - y0) <= 0.015 + EPS)
 
 
@@ -433,8 +479,8 @@ def bar_down(rst) -> bool:
     ax = r[:, 0]
     ang = np.linspace(0.0, 2 * math.pi, 48, endpoint=False)
     u, v = r[:, 1], r[:, 2]
-    rim_pts = np.concatenate([c + e * ax * BAR_L / 2 + BAR_R * (np.outer(np.cos(ang), u) + np.outer(np.sin(ang), v))
-                              for e in (-1, 1)])
+    rim_pts = np.array([c + e * ax * BAR_L / 2 + y * BAR_R * u + z * BAR_R * v
+                        for e in (-1, 1) for y in (-1, 1) for z in (-1, 1)])
     wet_pts = c + ax * BAR_L / 2 + WET_R * (np.outer(np.cos(ang), u) + np.outer(np.sin(ang), v))
     low = float(rim_pts[:, 2].min())
     return bool(TOP - 0.001 - EPS <= low <= TOP + 0.002 + EPS and float(wet_pts[:, 2].min()) >= TOP + 0.001 - EPS)
@@ -479,14 +525,57 @@ def _arr(x) -> np.ndarray:
     return np.asarray(x)
 
 
-def _make_views():
+def _make_views(base):
     from isaaclab_physx.physics import PhysxManager
+    from isaaclab.sim.utils import get_current_stage
+    from pxr import UsdPhysics
 
     sv = PhysxManager.get_physics_sim_view()
-    former, bar = parts._PATHS["former"], parts._PATHS["bar"]
-    view = sv.create_rigid_contact_view(former, filter_patterns=[bar], max_contact_data_count=64)
-    print("[tactip] contact view: former->bar", file=sys.stderr, flush=True)
-    return {"press": view}
+    stage = get_current_stage()
+    hands, tables = [], []
+    for prim in stage.Traverse():
+        path = str(prim.GetPath())
+        if "/env_0/" not in path:
+            continue
+        if prim.GetName() in HAND_LINKS and prim.HasAPI(UsdPhysics.RigidBodyAPI):
+            hands.append(path)
+        if prim.GetName().lower() == "table":
+            tables.append(path)
+    if len(hands) != 6 or len(tables) != 1:
+        raise RuntimeError(f"contact targets not found: {len(hands)} hands, {len(tables)} tables")
+    filters = [parts._PATHS["bar"], parts._PATHS["beaker"], tables[0], *hands]
+    press = sv.create_rigid_contact_view(parts._PATHS["former"], filter_patterns=filters,
+                                         max_contact_data_count=1024)
+    handpaint = sv.create_rigid_contact_view(parts._PATHS["bar"], filter_patterns=hands,
+                                             max_contact_data_count=512)
+    print(f"[tactip] contact targets: {filters}", file=sys.stderr, flush=True)
+    return {"press": press, "handpaint": handpaint}
+
+
+def contact_rows(view, dt, origin):
+    """Decode each sensor/filter pair; use only reported points, normal loads and separations."""
+    loads, points, normals, separations, counts, starts = map(_arr, view.get_contact_data(dt=dt))
+    loads, separations = loads.reshape(-1), separations.reshape(-1)
+    points, normals = points.reshape(-1, 3), normals.reshape(-1, 3)
+    counts, starts = counts.reshape(-1), starts.reshape(-1)
+    if int(counts.sum()) >= len(loads):
+        raise RuntimeError("contact buffer full; contamination cannot be excluded")
+    pairs = []
+    for count, start in zip(counts, starts):
+        pairs.append([(float(loads[i]), points[i] - origin, normals[i], float(separations[i]))
+                      for i in range(int(start), int(start + count))])
+    return pairs
+
+
+def painted_pin_contact(contacts, fst):
+    """Actual loaded collision point intersects a painted tip's disk-sized neighbourhood.
+
+    Continuous PhysX collider queries replace sampled hand surfaces. The rigid tip envelope remains a proxy.
+    """
+    tw = tips_world(fst)[_S["painted"]]
+    return bool(len(tw) and any(load >= F_LIGHT - EPS and separation <= 0.0
+                and np.linalg.norm(tw - point, axis=1).min() <= PIN_D / 2 + CONTACT_EPS
+                for load, point, normal, separation in contacts))
 
 
 def _hull_surface(h, spacing=0.004):
@@ -521,25 +610,6 @@ def hand_points(base) -> np.ndarray:
     return np.concatenate(pts)
 
 
-def hands_on_tips(points, fst, only=None) -> bool:
-    """A hand point within TOUCH_GAP of a pin tip (of those marked in ``only``, if given)."""
-    tw = tips_world(fst) if only is None else tips_world(fst)[only]
-    o = np.asarray(fst.pos, float)
-    near = points[np.linalg.norm(points - o, axis=1) <= R_TIP + 0.003]
-    if len(tw) == 0 or len(near) == 0:
-        return False
-    d = np.linalg.norm(near[:, None, :] - tw[None, :, :], axis=2)
-    return bool((d <= PIN_D / 2 + TOUCH_GAP).any())
-
-
-def hands_in_paint(points, rst) -> bool:
-    """A hand point on the wet circle (within 0.5 mm of the end face's plane, inside the circle)."""
-    p, n = bar_face(rst)
-    h = (points - p) @ n
-    lat = np.linalg.norm((points - p) - np.outer(h, n), axis=1)
-    return bool(((np.abs(h) <= 0.0005) & (lat <= WET_R)).any())
-
-
 def hands_clear(points, objects) -> bool:
     from yam_arena import analysis
 
@@ -572,16 +642,18 @@ def _on_step(sim) -> None:
     try:
         base = sim.env.unwrapped
         if _S.get("views") is None:
-            _S["views"] = _make_views()
+            _S["views"] = _make_views(base)
         v = _S["views"]
         dt = base.physics_dt
         st = sim.states()
         f, rd, bk = st["former"], st["bar"], st["beaker"]
-        force = float(np.linalg.norm(_arr(v["press"].get_contact_force_matrix(dt=dt)).reshape(-1, 3).sum(axis=0)))
+        origin = parts._np(base.scene.env_origins[0])
+        contacts = contact_rows(v["press"], dt, origin)
+        force = sum(load for load, _ in wet_face_contacts(contacts[0], rd))
         _S["maxforce"] = max(_S["maxforce"], force)
         was = bool(_S["loaded"])
         before = n_painted()
-        record_press(force, f, rd)
+        record_press(contacts[0], f, rd)
         if _S.get("press_log") is not None and _S.get("prev") is not None:
             _S["press_log"]["slide"] = max(_S["press_log"]["slide"], _S["slide"])
         if _S["loaded"]:
@@ -599,16 +671,14 @@ def _on_step(sim) -> None:
                                                       gap_mm=pk.get("gap_mm"), off_face=_S.get("off_face", 0))),
                   flush=True)
         pts = hand_points(base)
-        if hands_in_paint(pts, rd):
+        handcontacts = contact_rows(v["handpaint"], dt, origin)
+        if any(sum(load for load, _ in wet_face_contacts(pair, rd)) >= F_LIGHT - EPS for pair in handcontacts):
             _S["ruled"].add("a hand touched the wet paint")
         if _S["wet"]:
-            wet_pins = _S["painted"]
-            if tips_touch_table(f, wet_pins):
-                _S["ruled"].add("painted pins touched the table")
-            if tips_touch_beaker(f, bk, wet_pins):
-                _S["ruled"].add("painted pins touched the beaker")
-            if hands_on_tips(pts, f, wet_pins):
-                _S["ruled"].add("a hand touched the painted pins")
+            for pair, label in ((contacts[1], "beaker"), (contacts[2], "table"),
+                                ([row for pair in contacts[3:] for row in pair], "hand")):
+                if painted_pin_contact(pair, f):
+                    _S["ruled"].add(f"painted pins touched the {label}")
         if not beaker_ok(bk) and float(parts._quat_to_matrix(bk.quat_xyzw)[2, 2]) < math.cos(math.radians(30.0)):
             _S["ruled"].add("the beaker was knocked over")
         still = f.resting() and rd.resting() and bk.resting()
@@ -624,7 +694,7 @@ def _on_step(sim) -> None:
             o, r = former_frame(f)
             print("[tactip] " + json.dumps(dict(
                 t=round(float(sim.t), 2), force=round(force, 2), maxforce=round(_S["maxforce"], 2),
-                painted=n_painted(), presses=_S["presses"], slide=round(_S["slide"] * 1000, 2),
+                painted=n_painted(), missing=(np.flatnonzero(~_S["painted"]).tolist() if n_painted() >= N_PINS-10 else None), presses=_S["presses"], slide=round(_S["slide"] * 1000, 2),
                 ruled=sorted(_S["ruled"]), clear=_S["clear"], hold=_S["hold"],
                 former=[round(float(x), 4) for x in o], axis=[round(float(x), 3) for x in r[:, 2]],
                 bar=[round(float(x), 4) for x in rd.pos], bar_q=[round(float(x), 4) for x in rd.quat_xyzw],
@@ -643,7 +713,7 @@ GRIP_HANDLE = -0.004  # finger target: 8 mm between the pads on the 20 mm handle
 GRIP_BAR = -0.013  # 26 mm on the 38.1 mm bar
 ALPHA_PLAN = float(os.environ.get("TACTIP_ALPHA", "13.0"))  # degrees: the patch each dab is planned to paint
 OVERLAP = float(os.environ.get("TACTIP_OVERLAP", "0.022"))  # m past first touch, used to check reach (the arms give way)
-PRESS = {0.0: 0.024, 22.0: 0.024, 40.0: 0.018}  # m past first touch at each tip of the bar: about 2.5 N (from traces)
+PRESS = {0.0: 0.026, 22.0: 0.026, 40.0: 0.020}  # m past first touch at each tip of the bar: about 2.5 N (from traces)
 STANDOFF = 0.010  # m off the face before and after each dab
 BETAS = (0.0, 22.0, 40.0)  # degrees the bar's painted end is tipped up toward the dome
 FACE_Z = {b: max(0.072, BAR_L * math.sin(math.radians(b)) + BAR_R * math.cos(math.radians(b)) + 0.010)
@@ -651,6 +721,7 @@ FACE_Z = {b: max(0.072, BAR_L * math.sin(math.radians(b)) + BAR_R * math.cos(mat
 MEET = (0.315, 0.0)  # the end face's centre, x and y (lot A)
 BAR_GRIP = 0.0  # the bar is held at its middle (its weight then turns nothing in the grip)
 BAR_SAG = {0.0: (0.005, 0.0, 0.006), 22.0: (0.005, 0.0, 0.006), 40.0: (0.005, 0.0, 0.006)}  # m, from traces
+B_BAR_X_CORRECTION = -0.008  # m demo compensation, measured B-vs-A loaded x bias in round-2 traces
 GRASPS = (math.radians(55.0), math.radians(-125.0))  # the left hand's grip yaw on the handle, first and second
 YAW_RANGE = (-140.0, 72.0)  # degrees of grip yaw the left arm turns through comfortably (right arm: mirrored)
 TILT_MAX = 46.0
@@ -734,7 +805,8 @@ def bar_pose(beta_deg):
 def bar_hand_target(beta_deg):
     """The bar hand's commanded TCP: bar_pose's, raised by the bar hand's measured sag under the bar and the dabs."""
     tcp = bar_pose(beta_deg)[0]
-    return tcp + np.asarray(BAR_SAG.get(beta_deg, (0.0, 0.0, 0.0)))
+    correction = np.array([B_BAR_X_CORRECTION, 0.0, 0.0]) if lots.current().name == "B" else np.zeros(3)
+    return tcp + np.asarray(BAR_SAG.get(beta_deg, (0.0, 0.0, 0.0))) + correction
 
 
 _SEEDS = ([0.0, 1.0, 1.0, -0.6, 0.0, 0.0], [0.3, 0.8, 0.8, -0.8, 0.5, 1.0], [-0.3, 1.2, 1.4, -0.4, -0.5, -1.0])
@@ -897,7 +969,15 @@ def dab_list():
     half to verify every pose's reach and clearance, too long to repeat at every reset)."""
     if os.environ.get("TACTIP_REPLAN") or not DAB_TABLE:
         return plan_dabs()[0]
-    return [_dab_from_row(r) for r in DAB_TABLE]
+    dabs = [_dab_from_row(r) for r in DAB_TABLE]
+    if lots.current().name == "B":
+        # Waypoint mirroring reflects local y, so these rows target the reflected atlas IDs.
+        extra = _dab_from_row(B_FIRST_GRASP_DAB)
+        at = next(i for i, e in enumerate(dabs)
+                  if (e["grasp"] == 0 and e["beta"] == 40.0 and e["yaw"] > extra["yaw"]) or e["grasp"] == 1)
+        dabs.insert(at, extra)
+        dabs.extend(_dab_from_row(r) for r in B_COMPLETION_DABS)
+    return dabs
 
 
 def table_rows(dabs):
@@ -984,7 +1064,19 @@ DAB_TABLE: tuple = (  # (grasp, beta deg, spin deg, dome direction x, y, z), fro
     (1, 0.0, 350.000, -0.963572, 0.034553, -0.265206),
     (1, 0.0, 350.000, -0.956471, -0.093941, -0.276295),
     (1, 0.0, 345.000, -0.965209, -0.125673, -0.229298),
+    # Completion dabs follow the original 79-dab path so they preserve earlier coverage.
+    (1, 40.0, 260.000, 0.836797715, 0.056017016, -0.544639035),  # atlas pin 217
+    (1, 40.0, 230.000, 0.253404407, 0.253404407, -0.933580426),  # atlas pin 26
 )
+
+# Additional visible-layout reference motions for residual lot-B gaps observed in contact traces.
+B_FIRST_GRASP_DAB = (0, 40.0, 340.0, 0.270598050, -0.653281482, -0.707106781)  # B atlas141
+B_COMPLETION_DABS = (
+    (1, 40.0, 230.0, 0.439727553, -0.112902846, -0.891006524),  # B atlas45
+    (1, 40.0, 230.0, 0.098224626, 0.035750840, -0.994521895),   # apex/9-degree ring
+    (1, 40.0, 210.0, 0.270598050, 0.653281482, -0.707106781),  # B atlas166
+)
+
 
 
 def demo():

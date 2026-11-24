@@ -1,8 +1,7 @@
 """Near misses and unintended strategies for painting the TacTip pin tips.
 
 Painting is a history of presses, so the behaviour cases drive the scorer's own recorder (`task.record_press`,
-which the simulator callback calls every control step with the force the simulator reports between the former and
-the bar, and both poses). Each case starts from a fresh history and checks score() with both hands clear and
+which the simulator callback calls with loaded wet-face contact rows and both poses). Each case starts from a fresh history and checks score() with both hands clear and
 everything still unless it says otherwise. CASES (run by factory/check.py) then checks end states."""
 
 from __future__ import annotations
@@ -60,8 +59,20 @@ def press(d, force=3.0, beta=0.0, spin=0.0, lateral=(0.0, 0.0), sink=0.0, bar=No
     u, v = task._orth(n)
     o = face + lateral[0] * u + lateral[1] * v + (task.R_TIP - sink) * n
     fs = task.FORMER.state(pos=o, quat_xyzw=task.parts._matrix_to_quat(rf))
-    task.record_press(force, fs, rs)
+    record(force, fs, rs)
     return fs, rs
+
+
+def record(force, fs, rs, *, separation=0.0, normal=None, point=None):
+    """Synthetic reported contact for a recorder unit probe; never a robot rollout."""
+    face, n = task.bar_face(rs)
+    o, _ = task.former_frame(fs)
+    centre = o - task.R_TIP * n
+    if point is None:
+        point = centre
+    if normal is None:
+        normal = n
+    task.record_press([(force, point, normal, separation)], fs, rs)
 
 
 def apex_dir(theta_deg, az_deg=0.0):
@@ -76,7 +87,7 @@ def demo_presses(alpha=None, force=3.0):
         bar = bar_state(e["beta"], face=e["touch"] - task.R_TIP * e["n"])
         rs, n, face = bar
         fs = task.FORMER.state(pos=e["touch"], quat_xyzw=task.parts._matrix_to_quat(e["rf"]))
-        task.record_press(force, fs, rs)
+        record(force, fs, rs)
         lift()
 
 
@@ -116,8 +127,20 @@ def run_behaviour_cases():
         fresh(); demo_presses(force=f); released()
         out.append((f"the demo's {len(task.dab_list())} dabs at {f} N paint all {task.N_PINS} pins", end(), 1.0))
     fresh(); demo_presses(force=1.0); released()
-    out.append(("the demo's dabs at only 1.0 N leave gaps (fewer than 90 % painted)", end(),
-                0.75 if task.n_painted() >= 479 else (0.5 if task.n_painted() >= 266 else 0.25)))
+    out.append(("the demo's dabs at 1.0 N leave some pins unpainted", end(), 0.75))
+    for f, want in ((0.0, 0.0), (0.399, 0.0), (0.4, 1.0)):
+        fresh(); press(apex_dir(0), force=f)
+        out.append((f"transfer threshold {f} N", float(task.n_painted() > 0), want))
+    # Contact buffers are decoded for each pair without resultant-force cancellation.
+    class View:
+        def get_contact_data(self, dt):
+            return (np.array([[0.4], [19.5], [0.0]]), np.array([[0,0,0], [1,2,3], [0,0,0]]),
+                    np.array([[1,0,0], [0,1,0], [1,0,0]]), np.array([[0.], [-0.001], [0.001]]),
+                    np.array([[1,1]]), np.array([[0,1]]))
+    rows = task.contact_rows(View(), 0.005, np.array([0.1,0.2,0.3]))
+    out.append(("contact decoder preserves distinct pair load/point/separation",
+                float(len(rows) == 2 and rows[0][0][0] == 0.4 and rows[1][0][0] == 19.5
+                      and np.allclose(rows[1][0][1], [0.9,1.8,2.7]) and rows[1][0][3] == -0.001), 1.0))
     # breaking rules
     fresh(); demo_presses(force=3.0); press(apex_dir(0), force=19.5); lift(); released()
     out.append(("one press at 19.5 N folds the pins (skin between them in the paint)", end(), 0.0))
@@ -141,14 +164,14 @@ def run_behaviour_cases():
         step = task.R_TIP * math.radians(3.0) * k
         rf = task._axis_angle(np.cross(n, u), step / task.R_TIP) @ r0
         o = face - 0.004 * u + step * u + task.R_TIP * n
-        task.record_press(3.0, task.FORMER.state(pos=o, quat_xyzw=task.parts._matrix_to_quat(rf)), rs)
+        record(3.0, task.FORMER.state(pos=o, quat_xyzw=task.parts._matrix_to_quat(rf)), rs)
     lift(); released()
     out.append(("dome rolled 12 degrees without sliding", end(), 1.0))
     fresh(); demo_presses(force=3.0)
-    for k in range(14):  # a light wipe: the force flickers under 0.3 N while the dome slides 0.4 mm a step
+    for k in range(14):  # a light wipe: the force flickers under 0.4 N while the dome slides 0.4 mm a step
         press(apex_dir(30), force=(0.5 if k % 2 else 0.2), lateral=(0.0004 * k, 0.0))
     lift(); released()
-    out.append(("a light wipe whose force flickers under 0.3 N still smears", end(), 0.0))
+    out.append(("a light wipe whose force flickers under 0.4 N still smears", end(), 0.0))
     fresh(); demo_presses(force=3.0)
     for k in range(8):  # scrubbing back and forth 0.6 mm: no net slide, 4.2 mm of path
         press(apex_dir(30), force=3.0, lateral=(0.0006 * (k % 2), 0.0))
@@ -175,11 +198,11 @@ def run_behaviour_cases():
     lift(); released()
     out.append(("a 2 degree twist in one press is allowed", end(), 1.0))
     fresh(); demo_presses(force=3.0); press(apex_dir(97), force=0.0); lift(); released()
-    out.append(("the skirt laid on the wet paint with no reported force", end(), 0.0))
+    out.append(("zero-force skirt contact makes no paint state change", end(), 1.0))
     fresh(); demo_presses(force=3.0); press(apex_dir(93), force=2.0); lift(); released()
     out.append(("press centred 93 degrees from the apex: the skirt in the paint", end(), 0.0))
     fresh(); demo_presses(force=3.0); press(apex_dir(91), force=2.0); lift(); released()
-    out.append(("press centred 91 degrees from the apex: pins only", end(), 1.0))
+    out.append(("press centred 91 degrees from the apex remains on dome edge", end(), 1.0))
     # shortcuts
     fresh(); press(apex_dir(0), force=18.0); lift(); released()
     out.append((f"one hard straight-down press ({task.n_painted()} pins)", end(), 0.0))
@@ -198,13 +221,13 @@ def run_behaviour_cases():
     out.append(("wiping the dome across the face (smear)", end(), 0.0))
     fresh(); demo_presses(force=3.0)
     rs, n, face = bar_state(0.0)
-    task.record_press(3.0, task.FORMER.state(pos=face + (task.R_TIP + 0.02) * n), rs)  # far off: no contact
+    record(3.0, task.FORMER.state(pos=face + (task.R_TIP + 0.02) * n), rs)  # far off: no contact
     released()
     out.append(("a reported force with the dome 20 mm off the face paints nothing new", end(), 1.0))
     fresh()
     rs, n, face = bar_state(0.0)
     o = face + n * task.R_TIP + np.array([0.0, 0.0, 0.03])  # pressed on the bar's dry side, not its end
-    task.record_press(3.0, task.FORMER.state(pos=o), rs); lift(); released()
+    record(3.0, task.FORMER.state(pos=o), rs); lift(); released()
     out.append(("pressing on the bar's dry side paints nothing", end(), 0.0))
     # contamination after painting
     fresh(); press(apex_dir(0), force=3.0); lift()
@@ -217,13 +240,42 @@ def run_behaviour_cases():
     out.append(("painted pins touched the table", end(), 0.0))
     fresh(); all_painted()
     fs = task.FORMER.state()
-    pts = task.tips_world(fs)[:1] + np.array([0.0, 0.0, -0.0002])
-    out.append(("a hand point on a painted pin is detected", float(task.hands_on_tips(pts, fs, task._S["painted"])), 1.0))
-    rs, n, face = bar_state(0.0)
-    out.append(("a hand point on the wet circle is detected", float(task.hands_in_paint((face + 0.0002 * n)[None], rs)),
-                1.0))
-    out.append(("a hand point 1 mm off the wet circle is not", float(task.hands_in_paint((face + 0.001 * n)[None], rs)),
-                0.0))
+    tip = task.tips_world(fs)[0]
+    for load, sep, offset, want in ((0.4, 0.0, 0.0, 1.0), (0.0, 0.0, 0.0, 0.0),
+                                   (0.4, 0.0004, 0.0, 0.0), (0.4, 0.0, 0.002, 0.0)):
+        rows = [(load, tip + np.array([offset, 0, 0]), np.array([0, 0, 1.0]), sep)]
+        out.append((f"painted pin actual contact load={load}, gap={sep}, offset={offset}",
+                    float(task.painted_pin_contact(rows, fs)), want))
+    # Reviewer counterexamples: bar-only spin smears; common rotation does not.
+    for common, want in ((False, 0.0), (True, 1.0)):
+        fresh(); demo_presses(force=3.0)
+        fs, rs = press(apex_dir(20))
+        face, n = task.bar_face(rs)
+        rf = task.parts._quat_to_matrix(fs.quat_xyzw)
+        rb = task.parts._quat_to_matrix(rs.quat_xyzw)
+        for k in range(1, 6):
+            dr = task._axis_angle(n, math.radians(4*k))
+            bs = task.BAR.state(pos=face + dr @ (np.array(rs.pos)-face),
+                                quat_xyzw=task.parts._matrix_to_quat(dr @ rb))
+            ff = task.FORMER.state(pos=face + dr @ (np.array(fs.pos)-face),
+                                  quat_xyzw=task.parts._matrix_to_quat(dr @ rf)) if common else fs
+            record(3.0, ff, bs)
+        lift(); released()
+        out.append(("both objects co-rotate 20 degrees" if common else "bar-only 20-degree turn after full coverage", end(), want))
+    # No force, separated contacts and dry-side overloads must never transfer/fold/smear.
+    for kind in ("zero force", "separated", "dry side", "dome 20 mm away"):
+        fresh(); demo_presses(force=3.0)
+        rs, n, face = bar_state()
+        for k in range(8):
+            rf = task._rot_between(apex_dir(30), -n)
+            o = face + task.R_TIP*n + np.array([0.0005*k, 0, 0])
+            if kind == "dome 20 mm away": o += 0.02*n
+            fs = task.FORMER.state(pos=o, quat_xyzw=task.parts._matrix_to_quat(rf))
+            record(0 if kind == "zero force" else 19.5, fs, rs,
+                   separation=0.0004 if kind == "separated" else 0.0,
+                   normal=np.array([1., 0, 0]) if kind == "dry side" else n)
+        lift(); released()
+        out.append((kind + " sweep/overload leaves completed painting valid", end(), 1.0))
     return out
 
 
@@ -266,6 +318,16 @@ CASES = [
     ("beaker pushed 14 mm (former still on it)", {
         "beaker": task.BEAKER.state(pos=_bk + np.array([0.014, 0.0, 0.0])),
         "former": task.FORMER.state(pos=np.asarray(task.FORMER.pos) + np.array([0.014, 0.0, 0.0]))}, 1.0, True),
+]
+
+# Additional strict-review end-state bypasses.
+CASES += [
+    ("beaker base sunk 3 mm below table, former follows", {
+        "beaker": task.BEAKER.state(pos=_bk-np.array([0.,0.,0.003])),
+        "former": task.FORMER.state(pos=np.asarray(task.FORMER.pos)-np.array([0.,0.,0.003]))}, 0.0, False),
+    ("square bar rotated 45 degrees about its long axis at circular-rim height", {
+        "bar": task.BAR.state(pos=_rp, quat_xyzw=task.parts._matrix_to_quat(
+            task.parts._quat_to_matrix(_rq) @ task._axis_angle(np.array([1.,0.,0.]), math.pi/4)))}, 0.0, False),
 ]
 
 

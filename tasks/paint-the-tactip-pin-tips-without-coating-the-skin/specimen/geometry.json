@@ -1,0 +1,60 @@
+{
+ "units": "mm, mm3, g",
+ "ring_deg": [
+  0.0,
+  9.0,
+  15.0,
+  21.0,
+  27.0,
+  33.0,
+  39.0,
+  45.0,
+  51.0,
+  57.0,
+  63.0,
+  69.0,
+  75.0,
+  81.0,
+  87.0
+ ],
+ "ring_count": [
+  1,
+  9,
+  14,
+  20,
+  25,
+  30,
+  35,
+  40,
+  43,
+  47,
+  50,
+  52,
+  54,
+  56,
+  56
+ ],
+ "n_pins": 532,
+ "volume": {
+  "master": 59079.65,
+  "box_tube": 44209.693,
+  "box_base": 14762.939,
+  "core": 61044.442,
+  "silicone_mould_reference": 164374.658,
+  "skin_reference": 6142.896
+ },
+ "genus": {
+  "master": 0,
+  "box_tube": 1,
+  "box_base": 0,
+  "core": 5,
+  "silicone_mould_reference": 0,
+  "skin_reference": 0
+ },
+ "pins_on_master": 532,
+ "pins_on_skin_reference": 532,
+ "skin_volume_analytic_no_notch": 6143.8,
+ "skin_mass_g_at_sg_1.04": 6.39,
+ "silicone_volume_cm3": 164.4,
+ "silicone_mass_g_at_sg_1.18": 194.0
+}
