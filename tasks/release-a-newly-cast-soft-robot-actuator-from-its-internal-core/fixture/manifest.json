@@ -1,11 +1,14 @@
 {
-  "asset_version": 2,
+  "asset_version": 5,
   "units": "mm",
-  "kind": "reconstruction from published dimensions; not recovered native maker CAD",
-  "geometry_source": "https://softroboticstoolkit.com/book/fr-make-actuator-body",
-  "files": {
-    "actuator.scad": "49f3d1fba863096afc73d906f43c6b8e5fbb752258d3a2b65aef43d301ce3b97",
-    "README.md": "e5b29a8e96f35e87de8a19ca92b3696b9c3d9b1ead9315b86727a5dba34685b7"
+  "kind": "original drawing of the real-trial bench; bought parts drawn as envelopes",
+  "sources": {
+    "tube": "https://www.usplastic.com/catalog/item.aspx?itemid=36291",
+    "vise": "https://www.penntoolco.com/yost-model-bv-4-4-inch-utility-bench-vise-56489/",
+    "core": "https://www.zoro.com/zoro-select-stainlesssteelrod-13mm-od-12in-l-2pk-rd013304-1/i/G913866509/"
   },
-  "validation": "Analytic CSG cavity/core clearance checks; no OpenSCAD mesh export or physical print/casting qualification performed."
+  "files": {
+    "bench.scad": "7e9011bc2990d34a2f7b751236aeff53a9a94b927ad2512763a8243f2fef4fa2"
+  },
+  "validation": "Drawing nominal geometry checked against task.py; simplified vise envelope at the simulated jaw-contact size, not manufacturer CAD. Not printed or test-fitted."
 }

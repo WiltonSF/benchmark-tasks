@@ -115,6 +115,8 @@ class Shape:
     faces: tuple | None = None  # "hull": its faces (vertex index tuples), for the look; PhysX collides the hull
     friction: tuple[float, float] | None = None  # (static, dynamic) for this shape alone, if given
 
+    compliance: tuple[float, float] | None = None  # native contact spring N/m and damping N s/m
+
     @property
     def R(self) -> np.ndarray:
         return np.eye(3) if self.quat is None else _quat_to_matrix(self.quat)
@@ -301,6 +303,7 @@ class Part(task_file.Box):
     report: tuple[str, ...] = ()  # links whose contacts the simulator reports (PhysxContactReportAPI)
     visuals: tuple[Visual, ...] = ()
     link_friction: tuple[tuple[str, tuple[float, float]], ...] = ()  # (link, (static, dynamic)) overrides
+    max_depenetration_velocity: float = MAX_DEPENETRATION
     angular_damping: float | None = None  # 1/s, PhysX rigid-body angular damping (None: PhysX default)
 
     def __post_init__(self):
@@ -529,7 +532,9 @@ def _author(part: Part, root_path: str, translation, orientation):
             return
         UsdPhysics.RigidBodyAPI.Apply(prim)
         rb = PhysxSchema.PhysxRigidBodyAPI.Apply(prim)
-        rb.CreateMaxDepenetrationVelocityAttr(MAX_DEPENETRATION)
+        rb.CreateMaxDepenetrationVelocityAttr(part.max_depenetration_velocity)
+        rb.CreateSolverPositionIterationCountAttr(32)
+        rb.CreateSolverVelocityIterationCountAttr(16)
         if part.angular_damping is not None:
             rb.CreateAngularDampingAttr(float(part.angular_damping))
         UsdPhysics.MassAPI.Apply(prim).CreateMassAttr(float(mass))
@@ -607,11 +612,15 @@ def _author(part: Part, root_path: str, translation, orientation):
             col.CreateContactOffsetAttr(float(part.contact_offset))
             col.CreateRestOffsetAttr(REST_OFFSET)
             if s.friction is not None:
-                key = ("shape", s.friction)
+                key = ("shape", s.friction, s.compliance)
                 if key not in mats:
                     mats[key] = f"{root_path}/friction_s{len(mats)}"
                     spawn_physics_material(mats[key], sim_utils.RigidBodyMaterialCfg(
-                        static_friction=s.friction[0], dynamic_friction=s.friction[1]))
+                        static_friction=s.friction[0], dynamic_friction=s.friction[1],
+                        **({"compliant_contact_stiffness":s.compliance[0],
+                            "compliant_contact_damping":s.compliance[1],
+                            "compliant_contact_acceleration_spring":False,
+                            "friction_combine_mode":"min"} if s.compliance is not None else {})))
                 bind_physics_material(sp, mats[key], stage=stage)
             else:
                 bind_physics_material(sp, mats.get(link, friction), stage=stage)

@@ -154,7 +154,12 @@ def _apply(emb) -> bool:
         obj = base.scene[name]
         pose = obj.data.root_link_pose_w
         pose = (pose.torch if hasattr(pose, "torch") else pose).clone()
-        if name in lot.place:
+        if name in lot.roles.get('nominal_reset', ()):
+            # Task-specific enrolment at reset only: remove previous episode's settled roll/offset.
+            pose[:, :3] = base.scene.env_origins + torch.tensor(lot.pos(name), dtype=pose.dtype, device=pose.device)
+            yaw = lot.yaw_of(name)
+            pose[:, 3:] = torch.tensor([0.,0.,math.sin(yaw/2),math.cos(yaw/2)], dtype=pose.dtype, device=pose.device)
+        elif name in lot.place:
             delta = [a - b for a, b in zip(lot.place[name], spec.pos)]
             pose[:, :3] += torch.tensor(delta, dtype=pose.dtype, device=pose.device)
         if name in lot.yaw:

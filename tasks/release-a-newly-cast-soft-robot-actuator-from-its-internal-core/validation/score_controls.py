@@ -1,28 +1,46 @@
-import importlib.util,pathlib,sys
-import numpy as np
-p=pathlib.Path(__file__).resolve().parents[1];sys.path.insert(0,str(p))
-spec=importlib.util.spec_from_file_location('task_under_test',p/'task.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
-def reset():m.S=m.fresh()
-def states(body=(.32,.205,None),core=(.22,-.27,None)):
- b=(*body[:2],m.TOP+.009) if body[2] is None else body
- c=(*core[:2],m.TOP) if core[2] is None else core
- return {o.name:o.state(pos=b if o.name=='actuator' else c if o.name=='core' else o.pos) for o in m.OBJECTS}
-def ready(t=3,clear=0,still=0):m.S.update(known=True,steps=5,physics=12,observed_physics=12,t=t,clear=clear,still=still)
-def check(label,want,o):
- got=m.score(o);assert got==want,(label,got,want);assert m.success(o)==(got==1);print(label,got)
-reset();o=states();check('unknown histories',0,o)
-ready();check('intact centred released',1,o)
-m.S['clear']=None;check('held / hand unknown',0,o)
-ready(t=1.5);check('one second release tier',.5,o)
-ready();check('offcentre inside tray',.75,states(body=(.337,.205,None)))
-check('released on table',.25,states(body=(.32,0,m.TOP+.003)))
-o2=states();o2['core']=m.CORE.state(pos=(.32,.18,m.TOP+.009));check('still partly on core',0,o2)
-m.fail('tear');check('latched tear',0,o);ready();check('return to start cannot erase tear',0,o)
-reset();o={a.name:a.state() for a in m.OBJECTS};o['core']=m.CORE.state(lin_vel=(0,-.03,0))
-for _ in range(240):f,overlap,va=m.resistance(o)
-assert 5.9<=np.linalg.norm(f)<=6.01;assert f@o['core'].lin_vel<0
-print('resistance reaches6N from actual relative velocity',np.linalg.norm(f))
-o['core']=m.CORE.state(pos=(m.X+.0041,-.025,m.Z));m.resistance(o);assert m.S['zero'];print('offaxis permanentzero',m.S['why'])
-reset();o={a.name:a.state() for a in m.OBJECTS};h=np.array([[m.X,m.L/2,m.Z+.01]])
-assert not m.hand_clear(h,o);print('face-adjacent hand blocks release')
-print('PASS scorer/material controls')
+"""Independent CPU scorer/contact-buffer controls. Native force calibration is GPU evidence, not a CPU claim."""
+import sys,pathlib,numpy as np
+folder=pathlib.Path(__file__).resolve().parents[1];sys.path.insert(0,str(folder))
+import task,near_misses
+start={p.name:p.state() for p in task.OBJECTS};count=0
+for label,changes,want,success in near_misses.CASES:
+ states=start|changes;got=task.score(states)
+ assert abs(got-want)<1e-9 and task.success(states)==success,(label,got,want)
+ count+=1
+class View:
+ def __init__(self,kind):
+  self.kind=kind;self.fs=np.array([200.,200.]) if kind=='jaw' else np.array([-5. if kind=='body' else 5.])
+  self.ns=np.array([[0.,0.,1.],[0.,0.,-1.]]) if kind=='jaw' else np.array([[1.,0.,0.]])
+  self.pts=np.array([[task.X,task.JAW_Y,task.Z-task.R],[task.X,task.JAW_Y,task.Z+task.R]]) if kind=='jaw' else np.array([[task.X+task.R,0.,task.Z]])
+  self.sep=np.zeros(len(self.fs));self.counts=np.ones((1,2 if kind=='jaw' else 1));self.first=np.array([[0.,1.]]) if kind=='jaw' else np.zeros((1,1))
+ def get_contact_data(self,dt):return self.fs,self.pts,self.ns,self.sep,self.counts,self.first
+ def get_friction_data(self,dt):
+  sign=-1 if self.kind=='body' else 1
+  return np.array([[0.,sign,0.]]),np.array([[task.X+task.R,0.,task.Z]]),np.ones((1,1)),np.zeros((1,1))
+def views():return [View('body'),View('jaw'),View('core')]
+def read(v):
+ task.S.clear();task.S.update(task.fresh());task.S.update(org=np.zeros(3),iview=v)
+ return task.native_contacts(1/240)
+v=views();read(v)
+assert task.S['jaw_valid'];assert np.linalg.norm(task.S['native_wrench']['net_force'])<1e-10
+assert np.linalg.norm(task.S['native_wrench']['net_moment_world'])<1e-10
+print('PASS signed normal + tangential contact reaction and world-moment parsing')
+# Active corruption must fail closed; unused GPU capacity must not be read.
+for label,mutate in [
+ ('NaN active normal force',lambda v:v[0].fs.__setitem__(0,np.nan)),
+ ('NaN separation',lambda v:v[0].sep.__setitem__(0,np.nan)),
+ ('nonunit normal',lambda v:v[0].ns.__setitem__((0,0),2.)),
+ ('missing filter table',lambda v:setattr(v[0],'counts',np.zeros((1,0)))),
+ ('overlapping jaw contact ranges',lambda v:v[1].first.__setitem__((0,1),0.)),
+ ('out of bounds active buffer',lambda v:v[0].counts.__setitem__((0,0),3.)),
+]:
+ v=views();mutate(v)
+ try:read(v)
+ except (ValueError,IndexError):pass
+ else:raise AssertionError(label+' accepted')
+ print('PASS reject',label)
+v=views()
+for w in v:
+ w.fs=np.r_[w.fs,np.nan];w.pts=np.vstack([w.pts,[np.nan]*3]);w.ns=np.vstack([w.ns,[np.nan]*3]);w.sep=np.r_[w.sep,np.nan]
+read(v);assert task.S['jaw_valid'];print('PASS ignore inactive undefined capacity')
+print('PASS',count,'scoring cases plus8 contact-buffer/reaction controls')
